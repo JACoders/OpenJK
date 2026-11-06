@@ -580,6 +580,7 @@ typedef struct vk_tess_s {
 	VkSemaphore			image_acquired;
 	uint32_t			swapchain_image_index;
 	qboolean			swapchain_image_acquired;
+	qboolean			toSwapchain;			// OpenJK-rpmod: this frame goes to the window, decided once as it begins
 #ifdef USE_UPLOAD_QUEUE
 	VkSemaphore			rendering_finished2;
 #endif
@@ -1058,6 +1059,7 @@ void		vk_create_swapchain( VkPhysicalDevice physical_device, VkDevice device,
 
 // frame
 void		vk_begin_frame( void );
+VkResult	vk_wait_fence( VkFence fence, const char *caller );
 void		vk_end_frame( void );
 void		vk_present_frame( void );
 void		vk_create_framebuffers( void );

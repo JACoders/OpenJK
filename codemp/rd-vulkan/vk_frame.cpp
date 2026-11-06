@@ -99,6 +99,7 @@ void vk_destroy_sync_primitives( void )
         qvkDestroyFence(vk.device, vk.tess[i].rendering_finished_fence, NULL);
         vk.tess[i].waitForFence = qfalse;
         vk.tess[i].swapchain_image_acquired = qfalse;
+        vk.tess[i].toSwapchain = qfalse;
     }
 
 #ifdef USE_UPLOAD_QUEUE
@@ -357,6 +358,28 @@ static qboolean vk_find_screenmap_drawsurfs( void )
     }
 }
 
+/*
+OpenJK-rpmod: a graphics card kept busy for a while (another game loading on it, its memory
+full and swapped by Windows) is waited for, not taken for dead: a wait of 10 seconds used to
+end the game. A minute, then it gives up; a card that really failed says so (device lost)
+*/
+#define VK_FENCE_WAIT_STEP_NS	5000000000ULL
+#define VK_FENCE_WAIT_MAX_S		60
+
+VkResult vk_wait_fence( VkFence fence, const char *caller )
+{
+	VkResult res;
+	int waited = 0;
+
+	while ( ( res = qvkWaitForFences( vk.device, 1, &fence, VK_TRUE, VK_FENCE_WAIT_STEP_NS ) ) == VK_TIMEOUT ) {
+		waited += (int)( VK_FENCE_WAIT_STEP_NS / 1000000000ULL );
+		if ( waited >= VK_FENCE_WAIT_MAX_S )
+			break;
+		ri.Printf( PRINT_WARNING, "Vulkan: the graphics card has been busy for %i seconds (%s), still waiting\n", waited, caller );
+	}
+	return res;
+}
+
 void vk_begin_frame( void )
 {
 	VkCommandBufferBeginInfo begin_info;
@@ -373,7 +396,7 @@ void vk_begin_frame( void )
 
 	if ( vk.cmd->waitForFence ) {
 		vk.cmd->waitForFence = qfalse;
-		res = qvkWaitForFences( vk.device, 1, &vk.cmd->rendering_finished_fence, VK_FALSE, 1e10 );
+		res = vk_wait_fence( vk.cmd->rendering_finished_fence, __func__ );
 		if ( res != VK_SUCCESS ) {
 			if ( res == VK_ERROR_DEVICE_LOST ) {
 				// silently discard previous command buffer
@@ -386,7 +409,13 @@ void vk_begin_frame( void )
 		VK_CHECK( qvkResetFences( vk.device, 1, &vk.cmd->rendering_finished_fence ) );
     }
 
-	if ( !ri.VK_IsMinimized() && !vk.cmd->swapchain_image_acquired ) {
+	// OpenJK-rpmod: whether this frame goes to the window is decided here, once, and the rest of
+	// the frame keeps to it. Asked of the window again at the end, a window restored in between
+	// had the frame wait for a window image never asked for: the card waited forever
+	const qboolean minimized = ri.VK_IsMinimized();
+
+	vk.cmd->toSwapchain = qfalse;
+	if ( !minimized && !vk.cmd->swapchain_image_acquired ) {
 		qboolean retry = qfalse;
 _retry:
         res = qvkAcquireNextImageKHR( vk.device, vk.swapchain, 5 * 1000000000ULL, vk.cmd->image_acquired, VK_NULL_HANDLE, &vk.cmd->swapchain_image_index );
@@ -404,7 +433,9 @@ _retry:
 		}
         vk.cmd->swapchain_image_acquired = qtrue;
 	}
-    
+	if ( !minimized && vk.cmd->swapchain_image_acquired )
+		vk.cmd->toSwapchain = qtrue;
+
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     begin_info.pNext = VK_NULL_HANDLE;
     begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -681,7 +712,7 @@ void vk_end_frame( void )
                 qvkCmdDraw(vk.cmd->command_buffer, 4, 1, 0, 0);
             }
 
-            if ( !ri.VK_IsMinimized() ) {
+            if ( vk.cmd->toSwapchain ) {
                 vk_end_render_pass();
 
                 vk.renderWidth = gls.windowWidth;
@@ -708,7 +739,7 @@ void vk_end_frame( void )
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &vk.cmd->command_buffer;
 
-    if ( !ri.VK_IsMinimized() ) {
+    if ( vk.cmd->toSwapchain ) {
 #ifdef USE_UPLOAD_QUEUE
 		if ( vk.image_uploaded != VK_NULL_HANDLE ) {
 			waits[0] = vk.cmd->image_acquired;
@@ -772,7 +803,8 @@ void vk_present_frame( void )
 	VkPresentInfoKHR present_info;
 	VkResult res;
 
-	if ( ri.VK_IsMinimized() || !vk.cmd->swapchain_image_acquired )
+	// as the frame began: one drawn for the window is shown, even if it was minimized since
+	if ( !vk.cmd->toSwapchain || !vk.cmd->swapchain_image_acquired )
 		return;
 
 	if ( !vk.cmd->waitForFence ) {
@@ -797,8 +829,10 @@ void vk_present_frame( void )
 			break;
 		case VK_SUBOPTIMAL_KHR:
 		case VK_ERROR_OUT_OF_DATE_KHR:
-			// swapchain re-creation needed
-			vk_restart_swapchain( __func__ );
+			// swapchain re-creation needed; not while minimized, it would be made at size 0:
+			// asking for the next image says it's out of date again once the window is back
+			if ( !ri.VK_IsMinimized() )
+				vk_restart_swapchain( __func__ );
 			break;
 		case VK_ERROR_DEVICE_LOST:
 			// we can ignore that

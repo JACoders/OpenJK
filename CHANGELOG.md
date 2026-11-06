@@ -6,6 +6,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 
 ## 0.8.2
 
+- [Fixed] `Vulkan: "vkWaitForFences returned VK_TIMEOUT"`. With a second game started next to it, two clients at once, the graphics card can be kept busy for a while, and after 10 seconds the game closed with this error. It waits now, saying so in the console, and gives up only after a minute. A window restored from the taskbar at the wrong moment could also leave the card waiting for good, with the same error; not any more.
 - [Fixed] `"Ran out of transform space for Ghoul2 Models"`. Near a very detailed character model, a saber hit or anything else that checks its exact shape could drop you to the menu with this error. The game has eight times the room for it now (2 MB, JKA's was 256 KB).
 
 ## 0.8.1 - Nov 3rd 2026
