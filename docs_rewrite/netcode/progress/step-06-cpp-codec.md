@@ -108,6 +108,28 @@ Validation matrix of the first stage (6 November 2026): MSVC x64 Release and Deb
 
 The first run gave 12,332 ns for the netcodec encoder: `MessageEncoder::Encode` resized its output to the 1 MB maximum on every message (zero fill). Fixed (an internal buffer grown once); the table above is after the fix. These are the reference numbers of the second stage.
 
+## Second stage, part 1: structure and hot paths, same bytes (6 November 2026)
+
+Profile of the first stage (phase timers, clang `-O3`): encoding spent 57 % in entities (21 % in a first scan of the 132 fields to know whether an entity changed, then a second scan to code it), 20 % in the player state, 18 % in rANS; decoding 73 % in entities (31 % copying the unchanged entities of the base, which the engine does too, 30 % decoding about 45 fields per message).
+
+Changes, bytes unchanged (golden tests 0 mismatches):
+
+- Units: `src/schema.h` (field descriptors, state image access, field values), `src/numeric.h` (integer and float operations of the format), `src/model.h` / `model.cpp` (tables built once), `src/coder.h` (symbols, raw bits, classes, strings over rANS), `src/field_codec.h` (one changed field and its predictions; a header so that the message loops inline it), `src/message_codec.cpp` (player states, entities, messages). The generated source is split: `jka_schema.inc` (schema and context indices) and `jka_tables.inc` (frequencies, compiled once in `model.cpp`). Typed enumerations (`CType`, `PredMode`) in the generated schema.
+- One pass over an entity's fields: the list of changed fields is built once (raw words compared first, the codec value only when they differ) and used to code.
+- The decoder reuses the operations of the previous message (no allocation per message once warm).
+- clang-tidy at zero on the library (`.clang-tidy`: Core Guidelines, bugprone, performance, modernize, readability; the disabled checks are listed with their reason). No comment of the C++ refers to the Python prototype any more.
+
+| clang 23 x64 `-O3`, best of 10 | encode, ns per message | decode, ns per message |
+|---|---|---|
+| first stage | 3,400 to 3,800 | 3,600 to 3,700 |
+| after this part | 3,080 (−15 %) | 2,850 (−22 %), below the legacy decoder (3,490) |
+
+MSVC x64 Release (owner's virtual machine): encode 3,393 (first stage 4,365), decode 3,170 (4,271) ns per message; legacy 9,592 and 4,064. MSVC x64 Release and Debug and Win32 build with no warning and pass both golden tests.
+
+GCC 12.2 x64 Release: encode 2,847 (first stage 3,027), decode 3,162 (3,857); legacy 7,975 and 4,754. Clang 14 x64: encode 2,660 (2,890), decode 3,026 (3,499); legacy 8,943 and 3,993. GCC Release, Debug, ASan + UBSan, x86 and Clang build with no warning and pass both golden tests.
+
+Run-to-run variation on this machine reaches 8 % (the legacy timings move as much); against the legacy timings of the same run, encoding takes 0.33 to 0.35 of the legacy time and decoding 0.82, before and after the clang-tidy cleanup.
+
 ## CMake project (owner's request, 6 November 2026)
 
 Structure after [cpp-best-practices/cmake_template](https://github.com/cpp-best-practices/cmake_template), keeping what fits a library that OpenJK also builds:
@@ -125,6 +147,6 @@ clang-tidy (`mingw-clang-tidy` preset, Core Guidelines, bugprone, performance, m
 
 ## Next
 
-1. Export from Python: schema (from `fields.json`), tables and per-field modes (generated source), golden traces (local).
-2. `fieldcodec`, `msgcodec`, `escape`; byte identity with Python on all captures and demos; fuzz; sanitizers; determinism on MSVC, GCC, Clang, x86 and x64.
-3. Profile the whole codec and optimise where the time goes.
+1. Second stage, part 2: the format in C++ only (option B): training of the tables in C++ from the demo traces (the Python only reads the `.dm_26` files), a size benchmark on the training and held-out demos, then the format fixes, each measured: `-0.0`, prediction enabled by a non-zero base, per-field modes keyed by bare names, uniform tables computed instead of stored, the field index coded as a gap, the angle test without a double division.
+2. `escape` (worst case), garbage-input fuzzing with libFuzzer, determinism tests (angle indices, positions) on every compiler.
+3. Engine-facing interface for step 7.

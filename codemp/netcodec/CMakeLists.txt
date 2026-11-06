@@ -55,10 +55,17 @@ add_library(netcodec_warnings INTERFACE)
 netcodec_set_warnings(netcodec_warnings ${netcodec_WARNINGS_AS_ERRORS})
 
 add_library(netcodec STATIC
-	src/codec.cpp
-	src/generated/jka_codec.inc
 	include/netcodec/codec.h
-	include/netcodec/rans.h)
+	include/netcodec/rans.h
+	src/coder.h
+	src/field_codec.h
+	src/message_codec.cpp
+	src/model.cpp
+	src/model.h
+	src/numeric.h
+	src/schema.h
+	src/generated/jka_schema.inc
+	src/generated/jka_tables.inc)
 add_library(netcodec::netcodec ALIAS netcodec)
 target_include_directories(netcodec PUBLIC "${PROJECT_SOURCE_DIR}/include")
 target_compile_features(netcodec PUBLIC cxx_std_20)

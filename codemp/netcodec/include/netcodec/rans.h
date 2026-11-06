@@ -33,7 +33,7 @@ namespace rans {
 constexpr uint32_t kProbBits = 15;
 constexpr uint32_t kProbScale = 1u << kProbBits;
 constexpr uint32_t kProbMask = kProbScale - 1;
-constexpr uint32_t kLow = 1u << 23;            // lower bound of the normalisation interval
+constexpr uint32_t kLow = 1U << 23U;           // lower bound of the normalisation interval
 constexpr uint32_t kRawChunk = 15;             // raw bits are coded in chunks of at most this many bits
 constexpr size_t kStateBytes = 4;
 
@@ -49,7 +49,7 @@ struct EncSymbol {
 // start + freq <= kProbScale, freq >= 1
 [[nodiscard]] constexpr EncSymbol MakeEncSymbol(uint32_t start, uint32_t freq) noexcept {
 	EncSymbol s{};
-	s.xMax = ((kLow >> kProbBits) << 8) * freq;
+	s.xMax = ((kLow >> kProbBits) << 8U) * freq;
 	s.cmplFreq = static_cast<uint16_t>(kProbScale - freq);
 	if (freq < 2) {             // freq 1: q = x - 1 (state is never 0), see rans_byte.h
 		s.rcpFreq = ~0u;
@@ -79,7 +79,7 @@ public:
 
 	void Put(const EncSymbol &s) noexcept {
 		if (n_ == ops_.size()) { overflow_ = true; return; }
-		ops_[n_++] = Op{ &s, 0, 0 };
+		ops_[n_++] = Op{ .sym = &s, .value = 0, .bits = 0 };
 	}
 
 	// value < 2^bits, bits 0 to 32; chunks of kRawChunk bits, lowest first
@@ -88,7 +88,7 @@ public:
 		while (bits > 0) {
 			const uint32_t b = bits < kRawChunk ? bits : kRawChunk;
 			if (n_ == ops_.size()) { overflow_ = true; return; }
-			ops_[n_++] = Op{ nullptr, value & ((1u << b) - 1), b };
+			ops_[n_++] = Op{ .sym = nullptr, .value = value & ((1u << b) - 1), .bits = b };
 			value >>= b;
 			bits -= b;
 		}
@@ -105,16 +105,16 @@ public:
 				const EncSymbol &s = *op.sym;
 				while (x >= s.xMax) {
 					if (pos == kStateBytes) return 0;
-					out[--pos] = static_cast<uint8_t>(x); x >>= 8;
+					out[--pos] = static_cast<uint8_t>(x); x >>= 8U;
 				}
-				const uint32_t q = static_cast<uint32_t>((uint64_t{ x } * s.rcpFreq) >> s.rcpShift);
-				x = x + s.bias + q * s.cmplFreq;
+				const auto q = static_cast<uint32_t>((uint64_t{ x } * s.rcpFreq) >> s.rcpShift);
+				x = x + s.bias + (q * s.cmplFreq);
 			} else {
 				const uint32_t sh = kProbBits - op.bits;           // freq = 2^sh, start = value << sh
 				const uint32_t xMax = 1u << (31 - op.bits);       // ((kLow >> kProbBits) << 8) << sh
 				while (x >= xMax) {
 					if (pos == kStateBytes) return 0;
-					out[--pos] = static_cast<uint8_t>(x); x >>= 8;
+					out[--pos] = static_cast<uint8_t>(x); x >>= 8U;
 				}
 				x = ((x >> sh) << kProbBits) + (x & ((1u << sh) - 1)) + (op.value << sh);
 			}
@@ -151,7 +151,7 @@ public:
 	[[nodiscard]] uint32_t Slot() const noexcept { return x_ & kProbMask; }
 
 	void Advance(uint32_t start, uint32_t freq) noexcept {
-		x_ = freq * (x_ >> kProbBits) + (x_ & kProbMask) - start;
+		x_ = (freq * (x_ >> kProbBits)) + (x_ & kProbMask) - start;
 		Refill();
 	}
 
@@ -176,7 +176,7 @@ public:
 
 private:
 	void Refill() noexcept {
-		while (x_ < kLow && pos_ < data_.size()) x_ = (x_ << 8) | data_[pos_++];
+		while (x_ < kLow && pos_ < data_.size()) x_ = (x_ << 8U) | data_[pos_++];
 	}
 
 	uint32_t x_ = 0;

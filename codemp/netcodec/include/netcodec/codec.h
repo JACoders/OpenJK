@@ -1,5 +1,5 @@
-// netcodec: whole-message codec of the new protocol (server to client), C++ port of the Python reference
-// docs_rewrite/netcode/tools/python/codec.py and codec2.py; byte-identical to it (tests/test_codec.cpp).
+// netcodec: whole-message codec of the new protocol (server to client): server commands, gamestate, download
+// blocks and snapshots (player state, vehicle player state, entities), entropy-coded with static trained tables.
 //
 // States are byte images of the engine structures (entityState_t, playerState_t): the codec reads and writes the
 // networked fields at the offsets of the generated schema, so the engine passes its own structures unchanged.
@@ -105,6 +105,11 @@ private:
 
 // Looks up the base of a delta: returns false if the client does not hold it.
 struct BaseLookup {
+	BaseLookup() = default;
+	BaseLookup(const BaseLookup &) = delete;
+	BaseLookup &operator=(const BaseLookup &) = delete;
+	BaseLookup(BaseLookup &&) = delete;
+	BaseLookup &operator=(BaseLookup &&) = delete;
 	virtual ~BaseLookup() = default;
 	[[nodiscard]] virtual bool Find(uint32_t delta, const Snapshot *&snap, const HeaderRecord *&header) const = 0;
 };
