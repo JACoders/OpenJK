@@ -1055,6 +1055,12 @@ void CL_ConSettings_RendererRestarted( void );
 void CL_Feedback_Init( void );
 void CL_Feedback_Shutdown( void );
 void CL_Feedback_Frame( void );
+// cl_presence.cpp: the tools' hooks only to the players with this client
+void CL_Presence_Init( void );
+void CL_Presence_Shutdown( void );
+void CL_Presence_Frame( void );
+void CL_Presence_Disconnect( void );
+qboolean CL_Presence_Outgoing( const char *cmd );
 qboolean CL_Feedback_Active( void );
 void CL_Feedback_Close( void );
 void CL_Feedback_Draw( void );

@@ -44,6 +44,7 @@ Some features reach other players through workarounds only this client understan
 - [Model Safeguards](#model-safeguards)
 - [Update Check](#update-check)
 - [Feedback](#feedback)
+- [Hooks Only for Players with the Client](#hooks-only-for-players-with-the-client)
 - [Vulkan Renderer](#vulkan-renderer-experimental)
 - [Experimental features](#experimental-features)
 
@@ -732,6 +733,18 @@ Send a bug or an idea for the OpenJK-RPMod project, and read the answers, withou
 - Reading the answers needs no login: your game makes a private key the first time you send a report, kept in `feedback.key` in your game's home folder, and only that key sees your reports. Another computer, or the file deleted, doesn't see them
 - One bug or idea a report, please: each is answered on its own. A few reports an hour at most
 - On Linux and macOS it needs libcurl, as the update check does
+
+## Hooks Only for Players with the Client
+
+The tools share what they do with everyone with this client through hidden `rpnotify` messages ("hooks": NPC walks and talk, cinematics, objectives, map edits, the sky, emotes...). Sent to everyone, a hook shows as a `cmd:` line to the players without the client. Now it goes only to those who have it.
+
+- Once loaded into a server, your game tells the project's feedback bot which server you're on, your client number, your name and your client's version. It says it again when the map, your number or your name changes and every few minutes, and that you've left as you disconnect. The bot keeps it in memory only and forgets it 6 minutes later. Nothing in the game shows it
+- A hook you send goes to you, then to each player on the server the bot says has the client, one after the other, as the server's flood protection lets them through. A player counts only while their slot still has the name they told the bot
+- While hooks are going out, your other commands wait their turn behind them, so nothing comes out of order or is dropped by the flood protection. With several players with the client, a long cinematic or map edit takes longer to reach the last of them
+- If the bot doesn't answer, a hook waits up to 5 seconds and then isn't sent, rather than showing to everyone; the console says so
+- `/clientusers` lists who on the server has the client, and their version
+- `cl_hookGap` sets the milliseconds between the hooks to each player (0, the default: the server's flood protection)
+- `cl_presenceUrl` is the bot's address; empty, the game tells it nothing, and hooks go to everyone as before. On a server of your own (`/devmap`), hooks go to everyone
 
 ## Vulkan Renderer *(experimental)*
 

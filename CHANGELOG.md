@@ -4,6 +4,10 @@ What changed in OpenJK-rpmod from version to version, newest first. What each fe
 
 OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the changes OpenJK itself made, see [its changelog](https://github.com/JACoders/OpenJK/blob/master/CHANGELOG.md).
 
+## 0.8.3
+
+- [Added] `Hooks only for players with the client`. The hidden messages the tools share what they do with (NPC walks and talk, cinematics, objectives, map edits, the sky, emotes...) no longer go to everyone, where players without the client saw them as `cmd:` lines: they go only to the players with this client, one after the other, as the server's flood protection lets them through. Who has it is known from the project's feedback bot, which each game tells which server and client number it's on, kept in memory only. If the bot doesn't answer, a hook isn't sent. `/clientusers` lists who has the client.
+
 ## 0.8.2 - Nov 7th 2026
 
 - [Added] `Asset manager`. `/assetmanager` lists what's on the map (rpmodels, rpeffects, looping rpsounds, overlays and remapped shaders) and the pk3 each comes from, custom or the base game's, and packs the custom ones into a new pk3 in `assetpacks/` with what they need: shaders, textures, LODs, skins, skeletons, an effect's models and sounds.

@@ -505,6 +505,7 @@ if(BuildMPEngine)
 		"${MPDir}/client/cl_discord.cpp"
 		"${MPDir}/client/cl_consettings.cpp"
 		"${MPDir}/client/cl_feedback.cpp"
+		"${MPDir}/client/cl_presence.cpp"
 		"${MPDir}/client/cl_http.cpp"
 		"${MPDir}/client/cl_http.h"
 		"${MPDir}/client/cl_gizmo.h"
