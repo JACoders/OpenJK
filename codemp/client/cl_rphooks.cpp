@@ -191,24 +191,58 @@ static rhResult_t RH_Npc( char **argv, int argc, const char *message ) {
 static qboolean rhExperimental;
 static cvar_t *cl_rpExperimental;		// on as the game starts: rpexperimental
 
+#define RH_TEMPLE_RANKS		"Department Head, Council and God"
+
+// why experimental features can't be on here, or NULL: on Temple they're only for some ranks,
+// and off until the server has said the rank is one of them
+const char *CL_RpHooks_ExperimentalBlocked( void ) {
+	if ( !CL_RpAdmin_OnTemple() )
+		return NULL;
+	switch ( CL_RpAdmin_TempleRank() ) {
+	case RA_TEMPLE_YES:
+		return NULL;
+	case RA_TEMPLE_NO:
+		return "On Temple, experimental features are only for " RH_TEMPLE_RANKS;
+	default:
+		return "On Temple, experimental features are only for " RH_TEMPLE_RANKS ": checking your rank, try again in a moment";
+	}
+}
+
 qboolean CL_RpHooks_Experimental( void ) {
-	return rhExperimental;
+	return (qboolean)( rhExperimental && !CL_RpHooks_ExperimentalBlocked() );
+}
+
+// on Temple with a rank that may not have them: turned off, for good if they were kept on
+void CL_RpHooks_ExperimentalFrame( void ) {
+	if ( !rhExperimental && !cl_rpExperimental->integer )
+		return;
+	if ( !CL_RpAdmin_OnTemple() || CL_RpAdmin_TempleRank() != RA_TEMPLE_NO )
+		return;
+	rhExperimental = qfalse;
+	if ( cl_rpExperimental->integer )
+		Cvar_Set( "cl_rpExperimental", "0" );
+	Com_Printf( S_COLOR_YELLOW "Experimental features turned off: on Temple they're only for " RH_TEMPLE_RANKS "\n" );
 }
 
 // rpexperimental [on|off]: experimental features on or off now, and so every time the game starts.
 // A tool's TOGGLE EXPERIMENTAL is for the session only
 static void CL_RpExperimental_f( void ) {
 	const char *arg = Cmd_Argv( 1 );
+	const char *blocked;
 	qboolean on;
 
 	if ( !arg[0] )
-		on = (qboolean)!rhExperimental;
+		on = (qboolean)!CL_RpHooks_Experimental();
 	else if ( !Q_stricmp( arg, "on" ) || !Q_stricmp( arg, "1" ) )
 		on = qtrue;
 	else if ( !Q_stricmp( arg, "off" ) || !Q_stricmp( arg, "0" ) )
 		on = qfalse;
 	else {
 		Com_Printf( "usage: rpexperimental [on|off]   experimental features, kept for every time the game starts\n" );
+		return;
+	}
+	if ( on && ( blocked = CL_RpHooks_ExperimentalBlocked() ) != NULL ) {
+		Com_Printf( S_COLOR_YELLOW "%s\n", blocked );
 		return;
 	}
 	rhExperimental = on;
@@ -218,9 +252,17 @@ static void CL_RpExperimental_f( void ) {
 		Com_Printf( S_COLOR_YELLOW "%s\n", RP_EXPERIMENTAL_WARNING );
 }
 
-void CL_RpHooks_SetExperimental( qboolean on ) {
+// a tool's TOGGLE EXPERIMENTAL, for this session: qfalse if they can't be on here (said why)
+qboolean CL_RpHooks_SetExperimental( qboolean on ) {
+	const char *blocked;
+
+	if ( on && ( blocked = CL_RpHooks_ExperimentalBlocked() ) != NULL ) {
+		Com_Printf( S_COLOR_YELLOW "%s\n", blocked );
+		return qfalse;
+	}
 	rhExperimental = on;
 	Com_Printf( "Experimental features %s\n", on ? S_COLOR_YELLOW "on" S_COLOR_WHITE " for this session" : "off" );
+	return qtrue;
 }
 
 // a part of the hook: what would end it early, a / or the : before the message, goes as ~s and

@@ -5787,8 +5787,8 @@ static void ST_DrawExperimentalPopup( void ) {
 	ST_Text( x + 8, y + 8, S_COLOR_YELLOW "Experimental features", stWhite );
 	ST_TextWrapped( x + 8, y + 26, w - 16, RP_EXPERIMENTAL_WARNING, stWhite, 5 );
 	if ( ST_Button( x + 8, y + h - 22, 80, "OK", qfalse, qtrue ) ) {
-		CL_RpHooks_SetExperimental( qtrue );
-		ST_Message( S_COLOR_YELLOW "Experimental features on, for this session" );
+		ST_Message( CL_RpHooks_SetExperimental( qtrue ) ? S_COLOR_YELLOW "Experimental features on, for this session"
+			: va( S_COLOR_YELLOW "%s", CL_RpHooks_ExperimentalBlocked() ) );
 		st.popup = ST_POPUP_NONE;
 	}
 	if ( ST_Button( x + w - 88, y + h - 22, 80, "Cancel", qfalse, qtrue ) )
@@ -6714,6 +6714,8 @@ void CL_Storyteller_Draw( void ) {
 		if ( CL_RpHooks_Experimental() ) {
 			CL_RpHooks_SetExperimental( qfalse );
 			ST_Message( "Experimental features off" );
+		} else if ( CL_RpHooks_ExperimentalBlocked() ) {
+			ST_Message( va( S_COLOR_YELLOW "%s", CL_RpHooks_ExperimentalBlocked() ) );
 		} else {
 			st.popup = ST_POPUP_EXPERIMENTAL;
 			st.focus = ST_F_NONE;

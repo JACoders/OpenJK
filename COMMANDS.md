@@ -232,11 +232,11 @@ The console commands, keys and settings this client adds. What each feature does
 
 ## Other tools
 
-- `/toolaccess` shows whether the admin tools open for you on this server; `/toolaccess check` asks again
+- `/toolaccess` shows whether the admin tools open for you on this server, and on Temple whether your rank may turn experimental features on; `/toolaccess check` asks again
 - `/feedback` sends a bug report or an idea for the OpenJK-RPMod project, with your RPMod account, and shows the answers; `/feedback mine` opens on your reports, `/feedback close` closes it
 - `/clientusers` lists who on this server has this client, and their version: the players the tools' hooks go to
 - `/version` shows your OpenJK-rpmod version and whether it's the newest, with the link to a newer one; `/version check` asks GitHub again
-- `/rpexperimental [on|off]` turns the experimental features on or off, and keeps them so every time the game starts
+- `/rpexperimental [on|off]` turns the experimental features on or off, and keeps them so every time the game starts; on Temple only for Department Head, Council and God, and turned off for anyone else
 - `/emotepreview` lists the emotes the Help menu can preview; `/emotepreview forget <emote>` learns one again; `/emotepreview watch` prints your animation's changes after an emote
 
 ## Console and scripts

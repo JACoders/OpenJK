@@ -775,6 +775,8 @@ Some features reach other players through workarounds that are only available to
 - Client required (Experimental): reaches other players hidden in an `rpnotify`, so only those with this client see it, and it needs **TOGGLE EXPERIMENTAL** on
 - Not required (everyone): works with the toggle off
 
+On JEDI Temple only the admin ranks Department Head, Council and God may turn the toggle on. Your rank is asked with `rpstatus` a few seconds after you join; until it's in, the toggle stays off, and for any other rank it's turned off, `/rpexperimental` too. Seeing what others share doesn't need the toggle.
+
 Features not listed here are not experimental.
 
 - **Cinematic Manager**

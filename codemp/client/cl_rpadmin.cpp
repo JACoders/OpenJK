@@ -31,8 +31,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // A server run on this computer has no RPMod to ask: the tools open there as always.
 // Logging in or out of an RPMod account ("You are now logged in as ...") can change the rank:
 // the answer is forgotten, the next tool opened asks again.
+//
+// On Temple, experimental features are only for the ranks in raTempleRanks: there the rank is
+// asked a few seconds into the game, and asked again while the server doesn't answer.
 
 #include "client.h"
+
+#define RA_TEMPLE		"temple.jediholo.net"
+#define RA_TEMPLE_PORT	"29070"
+
+// the admin ranks that may have experimental features on, on Temple
+static const char *raTempleRanks[] = { "Department Head", "Council", "God" };
 
 #define RA_COMMAND		"rpstatus"
 #define RA_TIMEOUT		4000	// ms the reply has to start in
@@ -42,6 +51,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define RA_LINE_LEN		160
 #define RA_RANK_LEN		64
 #define RA_LABEL		"admin rank"
+#define RA_TEMPLE_WAIT	5000	// ms in game before Temple is asked, its welcome prints not hidden
 
 typedef enum {
 	RA_UNKNOWN,
@@ -61,6 +71,8 @@ static struct {
 	char		command[MAX_STRING_CHARS];	// and the command that opens it again
 	char		lines[RA_MAX_LINES][RA_LINE_LEN];
 	int			numLines;
+	qboolean	templeKnown, temple;	// whether this server is Temple, found once a connection
+	int			activeTime;				// in game from then
 } ra;
 
 // what follows the label is a rank, not "none" or nothing at all
@@ -175,6 +187,16 @@ qboolean CL_RpAdmin_ServerPrint( const char *text ) {
 }
 
 void CL_RpAdmin_Frame( void ) {
+	if ( cls.state == CA_ACTIVE && !ra.activeTime )
+		ra.activeTime = cls.realtime;
+	if ( cls.state == CA_ACTIVE && CL_RpAdmin_OnTemple() && cls.realtime - ra.activeTime >= RA_TEMPLE_WAIT ) {
+		// on Temple the rank is always wanted; a server that didn't answer is asked again
+		if ( ra.state == RA_UNKNOWN
+			|| ( ra.state == RA_NOT_ADMIN && !ra.lastLineTime && cls.realtime - ra.answerTime >= RA_RETRY_MS ) ) {
+			ra.tool[0] = ra.command[0] = '\0';
+			RA_Ask( qfalse );
+		}
+	}
 	if ( ra.state != RA_ASKING )
 		return;
 	if ( ra.lastLineTime ? cls.realtime - ra.lastLineTime < RA_LINE_GAP : cls.realtime - ra.askTime < RA_TIMEOUT )
@@ -203,6 +225,39 @@ void CL_RpAdmin_Frame( void ) {
 // known to have an admin rank: asks nothing
 qboolean CL_RpAdmin_IsAdmin( void ) {
 	return (qboolean)( ra.state == RA_ADMIN );
+}
+
+// connected to Temple, by its name or its address (looked up once a connection)
+qboolean CL_RpAdmin_OnTemple( void ) {
+	netadr_t adr;
+	const char *port;
+
+	if ( cls.state < CA_CONNECTED || com_sv_running->integer || clc.demoplaying )
+		return qfalse;
+	if ( ra.templeKnown )
+		return ra.temple;
+	ra.templeKnown = qtrue;
+	port = cls.servername + strlen( RA_TEMPLE );
+	ra.temple = (qboolean)( !Q_stricmpn( cls.servername, RA_TEMPLE, strlen( RA_TEMPLE ) )
+		&& ( !*port || !strcmp( port, ":" RA_TEMPLE_PORT ) ) );
+	if ( !ra.temple && NET_StringToAdr( RA_TEMPLE ":" RA_TEMPLE_PORT, &adr ) )
+		ra.temple = NET_CompareAdr( &adr, &clc.serverAddress );
+	return ra.temple;
+}
+
+// on Temple, whether the rank may have experimental features on: RA_TEMPLE_NO only once the
+// server has said the rank isn't one of them, RA_TEMPLE_UNKNOWN while it's asked or unanswered
+raTemple_t CL_RpAdmin_TempleRank( void ) {
+	if ( ra.state == RA_ADMIN ) {
+		for ( size_t i = 0; i < ARRAY_LEN( raTempleRanks ); i++ ) {
+			if ( !Q_stricmp( ra.rank, raTempleRanks[i] ) )
+				return RA_TEMPLE_YES;
+		}
+		return RA_TEMPLE_NO;
+	}
+	if ( ra.state == RA_NOT_ADMIN && ra.lastLineTime )
+		return RA_TEMPLE_NO;
+	return RA_TEMPLE_UNKNOWN;
 }
 
 // the rank asked for, the answer kept and not shown, unless it's known or being asked already
@@ -237,6 +292,11 @@ static void RA_ToolAccess_f( void ) {
 		Com_Printf( "The last " RA_COMMAND " reply:\n" );
 		for ( int i = 0; i < ra.numLines; i++ )
 			Com_Printf( "  %s\n", ra.lines[i] );
+	}
+	if ( CL_RpAdmin_OnTemple() ) {
+		const raTemple_t rank = CL_RpAdmin_TempleRank();
+		Com_Printf( "Experimental features on Temple: %s\n", rank == RA_TEMPLE_YES ? "allowed for your rank"
+			: rank == RA_TEMPLE_NO ? "not allowed, only for Department Head, Council and God" : "waiting for your rank" );
 	}
 	Com_Printf( "toolaccess check : ask again\n" );
 }

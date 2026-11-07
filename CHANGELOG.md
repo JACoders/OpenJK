@@ -7,6 +7,7 @@ OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the c
 ## 0.8.3
 
 - [Added] `Hooks only for players with the client`. The hidden messages the tools share what they do with (NPC walks and talk, cinematics, objectives, map edits, the sky, emotes...) no longer go to everyone, where players without the client saw them as `cmd:` lines: they go only to the players with this client, one after the other, as the server's flood protection lets them through. Who has it is known from the project's feedback bot, which each game tells which server and client number it's on, kept in memory only. If the bot doesn't answer, a hook isn't sent. `/clientusers` lists who has the client.
+- [Changed] `Experimental features on Temple: Department Head, Council and God only`. On JEDI Temple, **TOGGLE EXPERIMENTAL** and `/rpexperimental on` work only for those admin ranks, asked quietly with `rpstatus` a few seconds after you join. Until the rank is in they stay off; for anyone else they're turned off, kept on with `/rpexperimental` too. `/toolaccess` shows whether your rank may have them there.
 
 ## 0.8.2 - Nov 7th 2026
 

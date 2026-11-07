@@ -539,6 +539,18 @@ static void ME_Message( const char *text ) {
 	me.messageTime = cls.realtime;
 }
 
+// the warning before experimental features go on, unless they can't be on here
+static void ME_AskExperimental( void ) {
+	const char *blocked = CL_RpHooks_ExperimentalBlocked();
+
+	if ( blocked ) {
+		ME_Message( va( S_COLOR_YELLOW "%s", blocked ) );
+		return;
+	}
+	me.experimentalBox = qtrue;
+	me.field = ME_FIELD_NONE;
+}
+
 static void ME_Changed( void ) {
 	me.dirty = qtrue;
 }
@@ -6545,8 +6557,7 @@ static void ME_DrawLayouts( float x, float y, float w ) {
 			CL_RpHooks_SetExperimental( qfalse );
 			ME_Message( "Experimental features off" );
 		} else {
-			me.experimentalBox = qtrue;
-			me.field = ME_FIELD_NONE;
+			ME_AskExperimental();
 		}
 	}
 	y += ME_CTRL_H + ME_GAP;
@@ -6555,13 +6566,13 @@ static void ME_DrawLayouts( float x, float y, float w ) {
 		if ( experimental )
 			ME_Share();
 		else
-			me.experimentalBox = qtrue;
+			ME_AskExperimental();
 	}
 	if ( ME_Button( x + half + 4, y, half, "Unshare", qfalse, qtrue ) ) {
 		if ( experimental )
 			ME_Unshare();
 		else
-			me.experimentalBox = qtrue;
+			ME_AskExperimental();
 	}
 	y += ME_CTRL_H + ME_GAP;
 	if ( me.shared ) {
@@ -6609,8 +6620,8 @@ static void ME_DrawExperimentalBox( void ) {
 		ly += ME_ROW_H;
 	}
 	if ( ME_Button( x + 8, y + h - 24, 80, "OK", qfalse, qtrue ) ) {
-		CL_RpHooks_SetExperimental( qtrue );
-		ME_Message( S_COLOR_YELLOW "Experimental features on, for this session" );
+		ME_Message( CL_RpHooks_SetExperimental( qtrue ) ? S_COLOR_YELLOW "Experimental features on, for this session"
+			: va( S_COLOR_YELLOW "%s", CL_RpHooks_ExperimentalBlocked() ) );
 		me.experimentalBox = qfalse;
 		return;
 	}

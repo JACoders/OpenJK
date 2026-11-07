@@ -4214,9 +4214,11 @@ static void SM_DrawExperimentalBox( void ) {
 	}
 	SM_TextClipped( x + 8, y + h - 40, w - 16, S_COLOR_GREY "Sharing your player shaders needs them. rpexperimental keeps them on.", smWhite );
 	if ( SM_Button( x + 8, y + h - 22, 80, "OK", qfalse, qtrue ) ) {
-		CL_RpHooks_SetExperimental( qtrue );
 		sm.experimentalBox = qfalse;
-		SM_StartSharing();
+		if ( CL_RpHooks_SetExperimental( qtrue ) )
+			SM_StartSharing();
+		else
+			SM_SetStatus( va( S_COLOR_YELLOW "%s", CL_RpHooks_ExperimentalBlocked() ) );
 	} else if ( SM_Button( x + w - 88, y + h - 22, 80, "Cancel", qfalse, qtrue ) ) {
 		sm.experimentalBox = qfalse;
 		SM_SetStatus( "Not shared" );
@@ -4292,6 +4294,8 @@ static void SM_DrawMineTab( float x, float y, float w ) {
 			Cvar_Set( "cl_shaderShareMine", "0" );
 			SM_QueueShare( va( "cmd:mine/%i/clear", clc.clientNum ) );
 			SM_SetStatus( "Not shared: the others see your standard ones again" );
+		} else if ( CL_RpHooks_ExperimentalBlocked() ) {
+			SM_SetStatus( va( S_COLOR_YELLOW "%s", CL_RpHooks_ExperimentalBlocked() ) );
 		} else if ( !CL_RpHooks_Experimental() ) {
 			// the warning first; its OK turns them on and shares
 			sm.experimentalBox = qtrue;

@@ -475,6 +475,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			CL_RadialMenu_Frame();
 			CL_SaberStyle_Frame();
 			CL_RpAdmin_Frame();
+			CL_RpHooks_ExperimentalFrame();
 			CL_NpcNames_Frame();
 			CL_EmotePreview_Frame();
 			CL_RpCinematic_Frame();

@@ -920,11 +920,14 @@ void CL_RpHooks_ChatSubtitle( void );
 // the features sent as cmd: hooks, which only players with this client see: off until turned on
 // in a tool's TOGGLE EXPERIMENTAL, for the session, or with rpexperimental, for good
 #define RP_EXPERIMENTAL_LABEL	"TOGGLE EXPERIMENTAL"
-#define RP_EXPERIMENTAL_WARNING	"These features are a work in progress. They should not be used on Temple, and can only be viewed by the people currently in-game with OpenJK-rpmod installed and up to date."
+// On Temple only Department Heads, Council and God may have them on (CL_RpAdmin_TempleRank)
+#define RP_EXPERIMENTAL_WARNING	"These features are a work in progress. On Temple only Department Heads, Council and God may turn them on. They can only be viewed by the people in-game with OpenJK-rpmod installed and up to date."
 #define RP_EXPERIMENTAL_OFF		"Experimental: turn it on with " RP_EXPERIMENTAL_LABEL
 qboolean CL_RpHooks_Experimental( void );
+const char *CL_RpHooks_ExperimentalBlocked( void );
+void CL_RpHooks_ExperimentalFrame( void );
 void CL_MapEditor_Hook( char **argv, int argc, const char *message );
-void CL_RpHooks_SetExperimental( qboolean on );
+qboolean CL_RpHooks_SetExperimental( qboolean on );
 void CL_RpHooks_Unescape( char *s );
 const char *CL_RpHooks_NpcTalkCommand( const char *npc, const char *name, const char *color, const char *emote, const char *text );
 
@@ -1137,6 +1140,13 @@ qboolean CL_RpAdmin_ServerPrint( const char *text );
 qboolean CL_RpAdmin_IsAdmin( void );
 void CL_RpAdmin_AskQuietly( void );
 void CL_RpAdmin_Frame( void );
+typedef enum {
+	RA_TEMPLE_UNKNOWN,	// being asked, or the server didn't answer
+	RA_TEMPLE_NO,
+	RA_TEMPLE_YES
+} raTemple_t;
+qboolean CL_RpAdmin_OnTemple( void );
+raTemple_t CL_RpAdmin_TempleRank( void );
 
 // cl_update.cpp
 void CL_Update_Init( void );
