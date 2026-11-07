@@ -4856,6 +4856,30 @@ void PM_SwimFloatAnim( void )
 
 /*
 ===============
+PM_BobCycleAdvance
+
+How far bobCycle moves in this pmove step: bobmove units per msec.
+
+bobCycle is an integer, so adding bobmove * msec directly drops the fraction every
+call (0.3 * 6 msec = 1.8 became 1), which slows the footstep and view bob cycle
+by an amount that depends on the frame rate (-6% running at 125 fps, -17% at
+144 fps, -44% walking at 144 fps, and no movement at all below ~3 msec per frame).
+No extra state is needed to keep the fraction: advancing by the difference of
+floor( bobmove * time ) at the end and at the start of the step makes the
+rounding errors of consecutive steps cancel out, so the cycle advances at the
+exact rate at any frame rate.
+===============
+*/
+static int PM_BobCycleAdvance( float bobmove )
+{
+	const double timeEnd = pm->ps->commandTime;	// already advanced to this command's time
+	const double timeStart = timeEnd - pml.msec;
+
+	return (int)( floor( bobmove * timeEnd ) - floor( bobmove * timeStart ) );
+}
+
+/*
+===============
 PM_Footsteps
 ===============
 */
@@ -4980,7 +5004,7 @@ static void PM_Footsteps( void )
 					{//moving
 						old = pm->ps->bobCycle;
 						bobmove = 0.15f;	// swim is a slow cycle
-						pm->ps->bobCycle = (int)( old + bobmove * pml.msec ) & 255;
+						pm->ps->bobCycle = ( old + PM_BobCycleAdvance( bobmove ) ) & 255;
 
 						// if we just crossed a cycle boundary, play an apropriate footstep event
 						if ( ( ( old + 64 ) ^ ( pm->ps->bobCycle + 64 ) ) & 128 )
@@ -5300,7 +5324,7 @@ DoFootSteps:
 
 	// check for footstep / splash sounds
 	old = pm->ps->bobCycle;
-	pm->ps->bobCycle = (int)( old + bobmove * pml.msec ) & 255;
+	pm->ps->bobCycle = ( old + PM_BobCycleAdvance( bobmove ) ) & 255;
 
 	// if we just crossed a cycle boundary, play an apropriate footstep event
 	if ( ( ( old + 64 ) ^ ( pm->ps->bobCycle + 64 ) ) & 128 )
