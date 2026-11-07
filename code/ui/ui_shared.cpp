@@ -1111,6 +1111,96 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 		}
 	}
 
+	if ( item->type == ITEM_TYPE_MULTI && item->window.name && !Q_stricmp( item->window.name, "video_mode") && item->cvar && !Q_stricmp( item->cvar, "ui_r_mode" ) ) {
+		// The stock menu only offers a fixed list of 4:3 modes (r_mode 3-10), which can't represent the desktop
+		// resolution or any widescreen mode. Replace it with the desktop resolution plus every mode the display
+		// reports, and select by value ("desktop" or "WIDTHxHEIGHT") through ui_r_resolution instead.
+		// UI_UpdateVideoSetup translates the selection back to r_mode/r_customwidth/r_customheight.
+		multiDef_t *multiPtr = (multiDef_t *)item->typeData;
+		char availableModes[1024];
+		int modeWidth[MAX_MULTI_CVARS], modeHeight[MAX_MULTI_CVARS];
+		int numModes = 0;
+		int i, j;
+
+		DC->getCVarString( "r_availableModes", availableModes, sizeof( availableModes ) );
+		for ( const char *p = availableModes; *p && numModes < MAX_MULTI_CVARS; )
+		{
+			int w, h, len = 0;
+			if ( sscanf( p, "%dx%d%n", &w, &h, &len ) >= 2 && len > 0 )
+			{
+				p += len;
+				if ( w < 640 || h < 480 )
+					continue;	// too small for the menus to be usable
+				for ( i = 0; i < numModes; i++ )
+				{
+					if ( modeWidth[i] == w && modeHeight[i] == h )
+						break;
+				}
+				if ( i == numModes )
+				{
+					modeWidth[numModes] = w;
+					modeHeight[numModes] = h;
+					numModes++;
+				}
+			}
+			else
+			{
+				// skip the unparseable token
+				while ( *p && *p != ' ' )
+					p++;
+			}
+			while ( *p == ' ' )
+				p++;
+		}
+
+		if ( !numModes )
+		{
+			// no mode list available, offer some common resolutions
+			static const int fallbackModes[][2] = {
+				{ 800, 600 }, { 1024, 768 }, { 1280, 720 }, { 1280, 1024 }, { 1366, 768 }, { 1600, 900 },
+				{ 1920, 1080 }, { 2560, 1080 }, { 2560, 1440 }, { 3440, 1440 }, { 3840, 2160 }
+			};
+			for ( i = 0; i < (int)ARRAY_LEN( fallbackModes ); i++ )
+			{
+				modeWidth[i] = fallbackModes[i][0];
+				modeHeight[i] = fallbackModes[i][1];
+			}
+			numModes = ARRAY_LEN( fallbackModes );
+		}
+
+		// sort by pixel count, then width
+		for ( i = 1; i < numModes; i++ )
+		{
+			int w = modeWidth[i], h = modeHeight[i];
+			for ( j = i - 1; j >= 0 && (modeWidth[j] * modeHeight[j] > w * h || (modeWidth[j] * modeHeight[j] == w * h && modeWidth[j] > w)); j-- )
+			{
+				modeWidth[j + 1] = modeWidth[j];
+				modeHeight[j + 1] = modeHeight[j];
+			}
+			modeWidth[j + 1] = w;
+			modeHeight[j + 1] = h;
+		}
+
+		// if there are too many to fit, drop the smallest ones
+		int first = 0;
+		if ( numModes > MAX_MULTI_CVARS - 1 )
+			first = numModes - ( MAX_MULTI_CVARS - 1 );
+
+		memset( multiPtr, 0, sizeof( *multiPtr ) );
+		multiPtr->strDef = qtrue;
+		multiPtr->cvarList[0] = String_Alloc( "Desktop resolution" );
+		multiPtr->cvarStr[0] = String_Alloc( "desktop" );
+		multiPtr->count = 1;
+		for ( i = first; i < numModes; i++ )
+		{
+			multiPtr->cvarList[multiPtr->count] = String_Alloc( va( "%d x %d", modeWidth[i], modeHeight[i] ) );
+			multiPtr->cvarStr[multiPtr->count] = String_Alloc( va( "%dx%d", modeWidth[i], modeHeight[i] ) );
+			multiPtr->count++;
+		}
+		item->cvar = String_Alloc( "ui_r_resolution" );
+		Com_Printf( "Replaced video mode field with %d display resolutions.\n", multiPtr->count );
+	}
+
 #ifdef JK2_MODE
 	if ( item->type == ITEM_TYPE_MULTI && item->window.name && !Q_stricmp( item->window.name, "video_mode") && item->cvar && !Q_stricmp( item->cvar, "r_ext_texture_filter_anisotropic" ) ) {
 		{
@@ -7152,7 +7242,7 @@ void Item_Model_Paint(itemDef_t *item)
 	w = item->window.rect.w-2;
 	h = item->window.rect.h-2;
 
-	refdef.x = x * DC->xscale;
+	refdef.x = x * DC->xscale + DC->bias;
 	refdef.y = y * DC->yscale;
 	refdef.width = w * DC->xscale;
 	refdef.height = h * DC->yscale;
@@ -7295,7 +7385,7 @@ void Item_Model_Paint(itemDef_t *item)
 	w = item->window.rect.w-2;
 	h = item->window.rect.h-2;
 
-	refdef.x = x * DC->xscale;
+	refdef.x = x * DC->xscale + DC->bias;
 	refdef.y = y * DC->yscale;
 	refdef.width = w * DC->xscale;
 	refdef.height = h * DC->yscale;
