@@ -99,8 +99,13 @@ template <class O> void PutInt(O &io, ctx::Row row, int bits, int64_t nv, int64_
 			const int64_t v = io.Symbol(row[fctx::kA]);
 			return (sgn && v >= m / 2) ? v - m : v;
 		}
+		// the class alphabet allows one bit more than the width (a valid message never uses it): wrap to the width, as
+		// the delta below, so that malformed input cannot give a value the field cannot hold
+		// (m is a power of two: masks instead of PyMod's division)
 		const uint64_t x = io.Class(row[fctx::kA]);
-		return sgn ? Unzz(x) : static_cast<int64_t>(x);
+		const auto mask = static_cast<uint64_t>(m - 1);
+		if (!sgn) return static_cast<int64_t>(x & mask);
+		return static_cast<int64_t>((static_cast<uint64_t>(Unzz(x)) + static_cast<uint64_t>(m / 2)) & mask) - (m / 2);
 	}
 	const int64_t v = ov + Unzz(io.Class(row[fctx::kD]));
 	return sgn ? PyMod(v + (m / 2), m) - (m / 2) : PyMod(v, m);

@@ -43,6 +43,15 @@
       "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "netcodec_ENABLE_SANITIZER_ADDRESS": "ON", "netcodec_ENABLE_SANITIZER_UNDEFINED": "ON" }
     },
     {
+      "name": "mingw-clang-fuzz",
+      "displayName": "clang (llvm-mingw) x64, libFuzzer target with ASan + UBSan",
+      "inherits": "mingw-clang",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo", "netcodec_ENABLE_SANITIZER_ADDRESS": "ON", "netcodec_ENABLE_SANITIZER_UNDEFINED": "ON",
+        "netcodec_ENABLE_FUZZING": "ON", "netcodec_BUILD_TESTS": "OFF", "netcodec_BUILD_BENCHMARKS": "OFF", "netcodec_BUILD_TOOLS": "OFF"
+      }
+    },
+    {
       "name": "mingw-clang-x86",
       "displayName": "clang (llvm-mingw) x86 Release",
       "inherits": "windows",
@@ -74,6 +83,7 @@
     { "name": "mingw-clang-release", "configurePreset": "mingw-clang-release" },
     { "name": "mingw-clang-debug", "configurePreset": "mingw-clang-debug" },
     { "name": "mingw-clang-asan", "configurePreset": "mingw-clang-asan" },
+    { "name": "mingw-clang-fuzz", "configurePreset": "mingw-clang-fuzz" },
     { "name": "mingw-clang-x86", "configurePreset": "mingw-clang-x86" },
     { "name": "mingw-clang-tidy", "configurePreset": "mingw-clang-tidy" },
     { "name": "gcc-release", "configurePreset": "gcc-release" },

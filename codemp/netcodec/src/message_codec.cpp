@@ -329,7 +329,9 @@ void PutCommand(O &io, const Op &op, std::span<const Op> before, int64_t known, 
 	const std::string_view verb = Verb(op.text);
 	const std::string *ref = nullptr;
 	int64_t dist = 0;
-	while (ref == nullptr && dist < kCommandWindow) {
+	const size_t nn = Tokens::Count(op.text);
+	// more tokens than the decoder accepts against a reference (never in the engine): sent as text
+	while (ref == nullptr && dist < kCommandWindow && nn <= static_cast<size_t>(kMaxTokens)) {
 		dist++;
 		const std::string *t = HeldCommand(op.seq - dist, before, known, history);
 		if (t != nullptr && Verb(*t) == verb) ref = t;
@@ -340,7 +342,7 @@ void PutCommand(O &io, const Op &op, std::span<const Op> before, int64_t known, 
 		return;
 	}
 	io.Class(Of(kCmdRef), static_cast<uint64_t>(dist));
-	const size_t nn = Tokens::Count(op.text), nr = Tokens::Count(*ref);
+	const size_t nr = Tokens::Count(*ref);
 	io.Class(Of(kCmdTokens), Zz(static_cast<int64_t>(nn) - static_cast<int64_t>(nr)));
 	Tokens nt(op.text), rt(*ref);
 	bool prevSame = true;
@@ -398,8 +400,10 @@ bool GetCommand(In &io, Op &op, std::span<const Op> before, int64_t known, const
 			                             : static_cast<uint64_t>(Unzz(io.Class(Of(kCmdNum))));
 			const auto res = std::to_chars(digits.data(), digits.data() + digits.size(), static_cast<int64_t>(x));
 			op.text.append(digits.data(), res.ptr);
-		} else if (!GetCommandText(io, op.text)) {
-			return false;
+		} else {
+			const size_t start = op.text.size();
+			// a token holds no space (the encoder splits on them): malformed otherwise
+			if (!GetCommandText(io, op.text) || op.text.find(' ', start) != std::string::npos) return false;
 		}
 		if (op.text.size() > In::kMaxString) return false;
 	}
