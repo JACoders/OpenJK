@@ -80,7 +80,7 @@ void RunStream(uint64_t seed, size_t nmsg, size_t nmut, Stats &st) {
 				}
 				uint32_t d2 = 0;
 				HeaderRecord r2;
-				const bool same = s.DecodeAsClient(again, dm2, d2, r2) && d2 == d1 && trace::SameMessage(dm2, dm1) &&
+				const bool same = s.DecodeAsClient(again, dm2, d2, r2, 1) && d2 == d1 && trace::SameMessage(dm2, dm1) &&
 				                  r2.ack == r1.ack && r2.time == r1.time && r2.cmdSeq == r1.cmdSeq;
 				if (!same && st.mismatches++ < 5) std::fprintf(stderr, "decode(encode(decode(x))) differs: seed %" PRIu64 " seq %u\n", seed, s.Seq());
 			}

@@ -3,8 +3,11 @@
 // seed 1) after 600 messages (the client then holds 2 x 255 decoded snapshots, commands and baselines). Each input
 // must decode without fault; when it decodes, it is coded again with the client's state in the server's place and
 // decoded again, and the result must equal the first decode (the decoder accepts nothing the encoder cannot code).
-// Seeds: netcodec_fuzz_decode --write-seeds=<dir> writes 256 valid messages coded against that state, then exits.
-// Run: netcodec_fuzz_decode -max_len=65536 -timeout=10 -rss_limit_mb=2048 -max_total_time=<s> <corpus dir>
+// Corpus: fuzz/corpus (committed, minimised with -merge=1; regression-* files found defects). It is tied to that client
+// state and to the format: after a change of either, rebuild it (--write-seeds=<dir> writes 256 valid messages coded
+// against the state, then exits; fuzz from them, then -merge=1 into an emptied fuzz/corpus).
+// Run: netcodec_fuzz_decode -max_len=65536 -timeout=10 -rss_limit_mb=2048 -max_total_time=<s> <work dir> fuzz/corpus
+// (new inputs go to the first directory, so keep the committed corpus second)
 #include "synthetic.h"
 
 #include <cstdio>
@@ -72,7 +75,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 		std::fprintf(stderr, "the encoder refuses a decoded message\n");
 		std::abort();
 	}
-	const bool same = g_stream->DecodeAsClient(again, dm2, d2, r2) && d2 == d1 && trace::SameMessage(dm2, dm1) &&
+	const bool same = g_stream->DecodeAsClient(again, dm2, d2, r2, 1) && d2 == d1 && trace::SameMessage(dm2, dm1) &&
 	                  r2.ack == r1.ack && r2.time == r1.time && r2.cmdSeq == r1.cmdSeq;
 	if (!same) {
 		std::fprintf(stderr, "decode(encode(decode(x))) differs from decode(x)\n");

@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 			const std::string type = set == "capture" ? s.Meta(1) : s.Meta(2);
 			char interval[32];
 			std::snprintf(interval, sizeof interval, " %.1f", set == "capture" ? 50.0 : std::strtod(s.Meta(5).c_str(), nullptr));
-			refused += trace::ServerLoop(s, [&](const trace::DemoMessage &m, const Base &base, const std::vector<Entity> &baselines,
+			refused += trace::ServerLoop(s, [&](const trace::DemoMessage &m, const Base &base, const BaselineTable &baselines,
 			                                    const CommandHistory &history, HeaderRecord &rec) {
 				const auto t0 = std::chrono::steady_clock::now();
 				const bool ok = enc.Encode(m.msg, base, baselines, history, 1 << 20, out, rec);

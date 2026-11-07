@@ -48,12 +48,12 @@ void RunStream(uint64_t seed, size_t nmsg, Stats &st) {
 			if (o.type == OpType::Download) st.downloads++;
 			if (o.type == OpType::Snapshot) {
 				st.snapshots++;
-				if (o.snap.hasVehicle) st.vehicle++;
-				if (o.snap.hasVehicle && (detail::Load(o.snap.ps, detail::kPlayerEFlagsOffset) & synth::kEfNodraw) != 0) st.pilot++;
+				if (!o.snap.vps.empty()) st.vehicle++;
+				if (!o.snap.vps.empty() && (detail::Load(o.snap.ps, detail::kPlayerEFlagsOffset) & synth::kEfNodraw) != 0) st.pilot++;
 				if (c.delta == 0) st.noBase++;
 				if (c.delta > 11) st.baseOld++;
 				st.maxDelta = std::max(st.maxDelta, c.delta);
-				st.entities += o.snap.entities.size();
+				st.entities += o.snap.entities.count;
 			}
 		}
 	}

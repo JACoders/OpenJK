@@ -20,6 +20,7 @@ struct DemoMessage {
 	uint32_t seq = 0;
 	uint32_t delta = 0;
 	Message msg;
+	MessageData data;              // the storage of msg's snapshot and baselines
 	uint32_t engineBytes = 0;   // size of the message the server sent, without svc_EOF
 };
 
@@ -65,9 +66,10 @@ public:
 			ok_ = ok_ && r_.U32(m.seq) && r_.U32(m.delta) && r_.I64(m.msg.ack) && r_.U32(nops) && nops < 4096;
 			if (!ok_) break;
 			m.msg.ops.resize(nops);
+			m.data = MessageData{};
 			for (Op &op : m.msg.ops) {
 				op = Op{};
-				ok_ = ok_ && r_.ReadOp(op);
+				ok_ = ok_ && r_.ReadOp(op, m.data);
 			}
 			ok_ = ok_ && r_.U32(m.engineBytes);
 		}
@@ -107,7 +109,8 @@ private:
 class ClientStore final : public BaseLookup {
 public:
 	struct Stored {
-		Snapshot snap;
+		SnapshotData data;
+		Snapshot snap;                 // a view of data
 		HeaderRecord header;
 	};
 	std::map<uint32_t, Stored> bySeq;
@@ -119,6 +122,14 @@ public:
 		snap = &it->second.snap;
 		header = &it->second.header;
 		return true;
+	}
+
+	// keeps a decoded snapshot (a view of the decoder's output) for message seq
+	void Keep(uint32_t s, const Snapshot &snap, const HeaderRecord &header) {
+		Stored &st = bySeq[s];
+		st.data.Assign(snap);
+		st.snap = st.data.View();
+		st.header = header;
 	}
 
 	// drops what no later message can use, after message last
@@ -138,7 +149,7 @@ template <class F> size_t ServerLoop(const DemoStream &s, F code) {
 		HeaderRecord header;
 	};
 	std::map<uint32_t, Stored> store;
-	std::vector<Entity> baselines;
+	BaselineTable baselines;               // a view of the stream's last gamestate
 	CommandLog history;
 	size_t refused = 0;
 	for (const DemoMessage &m : s.messages) {

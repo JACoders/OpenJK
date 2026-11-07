@@ -28,3 +28,6 @@
 # Line endings the platforms need: cmd scripts with CRLF, shell scripts with LF
 *.bat text eol=crlf
 *.sh  text eol=lf
+
+# libFuzzer corpus of netcodec: raw bytes, never normalised
+codemp/netcodec/fuzz/corpus/** binary

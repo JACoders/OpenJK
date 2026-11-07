@@ -13,6 +13,10 @@ mkdir -p "$B"
 LOG="$B/validate-linux.log"
 exec > >(tee "$LOG") 2>&1
 
+# the sources' contents at the start, compared at the end: a file changed during the run makes it a mix (FAIL)
+srchash() { find CMakeLists.txt CMakePresets.json include src test bench tools fuzz -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum; }
+START_HASH=$(srchash)
+
 JOBS=$(nproc 2>/dev/null || echo 2)
 summary=()
 failed=0
@@ -48,6 +52,10 @@ for f in codec1 codec2; do
 	echo "--- $f"
 	cat "$OUT/$f" 2>/dev/null
 done
+if [ "$(srchash)" != "$START_HASH" ]; then
+	summary+=("FAIL  sources unchanged during the run (a file of codemp/netcodec changed: run again)")
+	failed=1
+fi
 echo
 echo "=== summary"
 printf '%s\n' "${summary[@]}"

@@ -81,7 +81,7 @@ Depends on: steps 1 and 4. **Done** 5 November 2026: [progress/step-05-demo-meas
 
 ### Step 6: the codec library in C++ (M)
 
-Depends on: steps 2 and 5. **In progress** (6 November 2026): rANS and whole-message codec in `codemp/netcodec/`, identical to the Python reference, restructured, faster than OpenJK; next the format in C++ only ([progress/step-06-cpp-codec.md](progress/step-06-cpp-codec.md), "Part 2").
+Depends on: steps 2 and 5. **In progress** (7 November 2026): rANS and whole-message codec in `codemp/netcodec/`, the format now in C++ only (held-out ratio 0.381 of the engine's bytes), faster than OpenJK; robustness and completeness checks done (determinism hashes on every compiler, synthetic and malformed-input tests, libFuzzer, per-message escape); the codec reads the engine's arrays in place; next the engine header, then the precision inventory ([progress/step-06-cpp-codec.md](progress/step-06-cpp-codec.md), parts D, E, F).
 
 - New directory `codemp/netcodec/` (decided 5 November 2026; not `shared/`, which holds code common to the single-player, JK2 and multiplayer trees), C++20 inside the library (`std::span` for buffers, C++ Core Guidelines I.13) with a plain C++ interface (a few functions and plain structures, no STL or exceptions in the public header; no C interface, since the engine and the forks that would reuse it are C++), no dependency on server or client; CMake builds it with MSVC, GCC and Clang; the trained tables are compiled in:
 
@@ -115,7 +115,7 @@ Depends on: step 6.
 
 Depends on: step 7.
 
-- Escape path per entity, chosen when its coded size would exceed the raw size.
+- Escape path: done in step 6 per message (owner, 7 November 2026), not per entity: a message coded larger than 1 KB is also coded with its fields raw and the smaller is sent, which bounds the worst case to about the raw layout ([progress/step-06-cpp-codec.md](progress/step-06-cpp-codec.md), part D).
 - Size cap: on overflow, retry with fewer entities or a full-state message; never drop a snapshot silently (today the engine clears the message and prints a warning, `server/sv_snapshot.cpp:852`).
 - Fuzz corpus and sanitizer builds in CI.
 - Check: the synthetic worst case (every field random, 1,000 entities) stays within the raw layout plus a small constant and decodes.

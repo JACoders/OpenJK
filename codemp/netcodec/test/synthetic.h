@@ -16,11 +16,13 @@
 #include "message_compare.h"
 #include "numeric.h"
 #include "schema.h"
+#include "storage.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <map>
+#include <memory>
 #include <span>
 #include <string>
 #include <vector>
@@ -129,29 +131,30 @@ inline std::string RandCommand(Rng &r) {
 	return s;
 }
 
-inline std::vector<Entity> RandBaselines(Rng &r) {
-	// a map, not sort and unique: which duplicate an unstable sort keeps differs between standard libraries
-	std::map<uint16_t, EntityState> byNumber;
+// a baseline is present when its number field holds its number (number 0 has none, as in the engine)
+[[nodiscard]] inline bool HasBaseline(const BaselineTable &t, uint32_t num) noexcept { return num != 0 && EntityNumber(t[num]) == num; }
+
+inline trace::BaselineData RandBaselines(Rng &r) {
+	trace::BaselineData out;
 	const uint64_t n = r.Below(31);
 	for (uint64_t k = 0; k < n; k++) {
-		const auto num = static_cast<uint16_t>(r.Below(kMaxEntities));
+		const auto num = static_cast<uint32_t>(r.Below(kMaxEntities));
 		EntityState st{};
 		Mutate(r, st, kEntityFields, 1 + r.Below(8));
-		byNumber.emplace(num, st);   // the first one wins
+		if (num == 0 || HasBaseline(out.View(), num)) continue;   // the first one wins
+		SetEntityNumber(st, num);
+		out.table[num] = st;
 	}
-	std::vector<Entity> out;
-	for (const auto &[num, st] : byNumber) out.push_back(Entity{ .number = num, .state = st });
 	return out;
 }
 
-inline const Entity *Find(const std::vector<Entity> &list, uint32_t num) {
-	const auto it = std::ranges::lower_bound(list, num, {}, &Entity::number);
-	return it != list.end() && it->number == num ? &*it : nullptr;
+inline bool Holds(const std::vector<EntityState> &list, uint32_t num) {
+	return std::ranges::binary_search(list, num, {}, [](const EntityState &e) { return EntityNumber(e); });
 }
 
 // a snapshot derived from the base the client holds (nullptr: none)
-inline Snapshot NextSnapshot(Rng &r, const Snapshot *base, const std::vector<Entity> &baselines) {
-	Snapshot sn;
+inline trace::SnapshotData NextSnapshot(Rng &r, const trace::SnapshotData *base, const BaselineTable &baselines) {
+	trace::SnapshotData sn;
 	const bool veh = r.PerMille(250);
 	const bool pilot = veh && r.PerMille(600);
 	sn.ps = base != nullptr ? base->ps : PlayerState{};
@@ -168,25 +171,29 @@ inline Snapshot NextSnapshot(Rng &r, const Snapshot *base, const std::vector<Ent
 	}
 	std::map<uint16_t, EntityState> ents;
 	if (base != nullptr)
-		for (const Entity &e : base->entities) {
+		for (const EntityState &e : base->entities) {
 			const uint64_t p = r.Below(1000);
 			if (p < 100) continue;
-			EntityState st = e.state;
+			EntityState st = e;
 			if (p < 450) Mutate(r, st, kEntityFields, 1 + r.Below(10));
-			ents.emplace(e.number, st);
+			ents.emplace(static_cast<uint16_t>(EntityNumber(e)), st);
 		}
 	const uint64_t added = r.Below(26);
 	for (uint64_t k = 0; k < added; k++) {
 		const auto num = static_cast<uint16_t>(r.Below(kMaxEntities));
-		if (ents.contains(num) || (base != nullptr && Find(base->entities, num) != nullptr)) continue;
-		const Entity *b = Find(baselines, num);
-		EntityState st = b != nullptr ? b->state : EntityState{};
-		if (b == nullptr || !r.PerMille(150)) Mutate(r, st, kEntityFields, 1 + r.Below(20));
+		if (ents.contains(num) || (base != nullptr && Holds(base->entities, num))) continue;
+		const bool hasBaseline = HasBaseline(baselines, num);
+		EntityState st{};
+		if (hasBaseline) std::ranges::copy(baselines[num], st.begin());
+		if (!hasBaseline || !r.PerMille(150)) Mutate(r, st, kEntityFields, 1 + r.Below(20));
 		ents.emplace(num, st);
 	}
 	if (r.PerMille(3))   // rare: every entity entirely random, so that the escape is used
 		for (auto &[num, st] : ents) Randomize(r, st, kEntityFields);
-	for (const auto &[num, st] : ents) sn.entities.push_back(Entity{ .number = num, .state = st });
+	for (const auto &[num, st] : ents) {
+		sn.entities.push_back(st);
+		SetEntityNumber(sn.entities.back(), num);
+	}
 	return sn;
 }
 
@@ -194,6 +201,8 @@ inline Snapshot NextSnapshot(Rng &r, const Snapshot *base, const std::vector<Ent
 struct Candidate {
 	Message msg;
 	uint32_t delta = 0;
+	std::unique_ptr<trace::SnapshotData> snap;   // the storage of msg's snapshot and gamestate baselines
+	std::unique_ptr<trace::BaselineData> gs;
 };
 
 class Stream {
@@ -221,7 +230,8 @@ public:
 				cs.emplace(index, RandBytes(r, 40, 1, 255));
 			}
 			for (auto &[index, text] : cs) gs.configStrings.push_back(ConfigString{ .index = index, .text = std::move(text) });
-			gs.baselines = RandBaselines(r);
+			c.gs = std::make_unique<trace::BaselineData>(RandBaselines(r));
+			gs.baselines = c.gs->View();
 			gs.clientNum = r.Range(0, 31);
 			gs.checksum = r.Range(-(int64_t{ 1 } << 31), (int64_t{ 1 } << 31) - 1);
 			msg.ops.push_back(std::move(op));
@@ -248,17 +258,16 @@ public:
 			for (uint32_t d = 1; d <= maxAge && d < seq_; d++)
 				if (server_.contains(seq_ - d)) cand.push_back(d);
 			c.delta = !cand.empty() && !r.PerMille(80) ? cand[r.Index(cand.size())] : 0;
-			const Snapshot *base = c.delta != 0 ? &server_.at(seq_ - c.delta).snap : nullptr;
-			const std::vector<Entity> *bl = &serverBaselines_;
-			for (const Op &o : msg.ops)
-				if (o.type == OpType::GameState) bl = &o.gameState.baselines;
+			const trace::SnapshotData *base = c.delta != 0 ? &server_.at(seq_ - c.delta).data : nullptr;
+			const BaselineTable bl = c.gs ? c.gs->View() : serverBaselines_.View();
 			Op op;
 			op.type = OpType::Snapshot;
 			op.time = r.Range(0, 10000000);
 			op.flags = static_cast<uint32_t>(r.Below(256));
 			op.areas.resize(r.PerMille(10) ? r.Index(33) : r.Index(7));
 			for (uint8_t &a : op.areas) a = static_cast<uint8_t>(r.Below(256));
-			op.snap = NextSnapshot(r, base, *bl);
+			c.snap = std::make_unique<trace::SnapshotData>(NextSnapshot(r, base, bl));
+			op.snap = c.snap->View();
 			msg.ops.push_back(std::move(op));
 		}
 		if (r.PerMille(30)) {
@@ -283,14 +292,15 @@ public:
 			base.snap = &s.snap;
 			base.header = &s.header;
 		}
-		return enc_.Encode(c.msg, base, serverBaselines_, serverHistory_, size_t{ 1 } << 20U, out, rec);
+		return enc_.Encode(c.msg, base, serverBaselines_.View(), serverHistory_, size_t{ 1 } << 20U, out, rec);
 	}
 
-	// decodes bytes as the client would at this point (with a copy of its baselines); changes neither side
-	bool DecodeAsClient(std::span<const uint8_t> bytes, Message &dm, uint32_t &delta, HeaderRecord &rec) {
-		scratchBaselines_ = clientBaselines_;
+	// decodes bytes as the client would at this point, into scratch storage `slot` (0 or 1: dm's views stay valid until
+	// the next decode into the same slot); changes neither side
+	bool DecodeAsClient(std::span<const uint8_t> bytes, Message &dm, uint32_t &delta, HeaderRecord &rec, size_t slot = 0) {
 		client_.seq = seq_;
-		return DecodeMessage(bytes, client_, clientHistory_, scratchBaselines_, dm, delta, rec);
+		return DecodeMessage(bytes, client_, clientHistory_, clientBaselines_.View(), scratch_.at(slot).baselines.Out(),
+		                     scratch_.at(slot).target.Out(), dm, delta, rec);
 	}
 
 	// codes a message the client decoded at this point, with the client's snapshots, commands and baselines in the
@@ -305,7 +315,7 @@ public:
 			base.header = &it->second.header;
 		}
 		HeaderRecord rec;
-		return enc_.Encode(dm, base, clientBaselines_, clientHistory_, size_t{ 1 } << 20U, out, rec);
+		return enc_.Encode(dm, base, clientBaselines_.View(), clientHistory_, size_t{ 1 } << 20U, out, rec);
 	}
 
 	// the client decodes the coded message (bytes empty: the encoder refused it), then both sides move to the next
@@ -316,19 +326,26 @@ public:
 			uint32_t delta = 0;
 			HeaderRecord drec;
 			client_.seq = seq_;
-			equal = DecodeMessage(bytes, client_, clientHistory_, clientBaselines_, dm, delta, drec) && delta == c.delta &&
+			equal = DecodeMessage(bytes, client_, clientHistory_, clientBaselines_.View(), clientBaselines_.Out(), target_.Out(), dm,
+			                      delta, drec) &&
+			        delta == c.delta &&
 			        trace::SameMessage(dm, c.msg) && drec.ack == rec.ack && drec.time == rec.time && drec.cmdSeq == rec.cmdSeq;
 			if (equal) {
 				clientHistory_.Add(dm);
-				if (const Snapshot *sn = trace::SnapshotOf(dm)) client_.bySeq[seq_] = trace::ClientStore::Stored{ .snap = *sn, .header = drec };
+				if (const Snapshot *sn = trace::SnapshotOf(dm)) client_.Keep(seq_, *sn, drec);
 			}
 		}
 		for (const Op &o : c.msg.ops) {
-			if (o.type == OpType::GameState) serverBaselines_ = o.gameState.baselines;
+			if (o.type == OpType::GameState) serverBaselines_.Assign(o.gameState.baselines);
 			if (o.type == OpType::Command) cmdSeq_ = std::max(cmdSeq_, o.seq);
 		}
 		serverHistory_.Add(c.msg);
-		if (const Snapshot *sn = trace::SnapshotOf(c.msg)) server_[seq_] = ServerStored{ .snap = *sn, .header = rec };
+		if (const Snapshot *sn = trace::SnapshotOf(c.msg)) {
+			ServerStored &st = server_[seq_];
+			st.data.Assign(*sn);
+			st.snap = st.data.View();
+			st.header = rec;
+		}
 		if (seq_ > 2 * 255) server_.erase(server_.begin(), server_.lower_bound(seq_ - (2 * 255)));
 		client_.Trim(seq_);
 		seq_++;
@@ -338,8 +355,13 @@ public:
 private:
 	static constexpr uint32_t kFirstSeq = 100;
 	struct ServerStored {
-		Snapshot snap;
+		trace::SnapshotData data;
+		Snapshot snap;                 // a view of data
 		HeaderRecord header;
+	};
+	struct Scratch {
+		trace::BaselineData baselines;
+		trace::DecodeTarget target;
 	};
 	Rng rng_;
 	uint32_t seq_ = kFirstSeq;
@@ -348,7 +370,9 @@ private:
 	std::map<uint32_t, ServerStored> server_;
 	trace::ClientStore client_;
 	trace::CommandLog serverHistory_, clientHistory_;
-	std::vector<Entity> serverBaselines_, clientBaselines_, scratchBaselines_;
+	trace::BaselineData serverBaselines_, clientBaselines_;
+	trace::DecodeTarget target_;
+	std::array<Scratch, 2> scratch_;
 };
 
 } // namespace netcodec::synth

@@ -61,7 +61,7 @@ bool Count(const char *path, SymbolCounts &counts, size_t &messages) {
 	trace::DemoStream s;
 	size_t refused = 0, streams = 0;
 	while (in.Next(s)) {
-		refused += trace::ServerLoop(s, [&](const trace::DemoMessage &m, const Base &base, const std::vector<Entity> &baselines,
+		refused += trace::ServerLoop(s, [&](const trace::DemoMessage &m, const Base &base, const BaselineTable &baselines,
 		                                    const CommandHistory &history, HeaderRecord &rec) {
 			messages++;
 			return CountMessage(m.msg, base, baselines, history, rec, counts);

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "netcodec/codec.h"
+#include "storage.h"
 
 #include <cstdio>
 #include <cstring>
@@ -11,10 +12,17 @@
 namespace netcodec {
 namespace trace {
 
+// the storage of a message's views (its snapshot, its gamestate's baselines); one of each per message at most
+struct MessageData {
+	std::unique_ptr<SnapshotData> snap;
+	std::unique_ptr<BaselineData> gs;
+};
+
 struct CodecMessage {
 	uint32_t seq = 0;
 	uint32_t delta = 0;
 	Message msg;
+	MessageData data;
 	std::vector<uint8_t> bytes;    // the Python codec's output
 };
 
@@ -61,15 +69,20 @@ public:
 		}
 		return true;
 	}
-	bool Entities(std::vector<Entity> &out) {
+	// entity states, the number at offset 0 (the engine's layout), sorted by number
+	bool Entities(std::vector<EntityState> &out) {
 		uint32_t n = 0;
 		if (!U32(n) || n > kMaxEntities) return false;
-		out.resize(n);
-		for (Entity &e : out)
-			if (!U16(e.number) || !Image(e.state, EntityFieldOffsets())) return false;
+		out.assign(n, EntityState{});
+		for (EntityState &e : out) {
+			uint16_t num = 0;
+			if (!U16(num) || num >= kMaxEntities || !Image(e, EntityFieldOffsets())) return false;
+			SetEntityNumber(e, num);
+		}
 		return true;
 	}
-	bool ReadOp(Op &op) {
+	// reads op; its snapshot or baselines go to d (a message has one of each at most)
+	bool ReadOp(Op &op, MessageData &d) {
 		uint8_t t = 0;
 		if (!U8(t) || t < 1 || t > 7) return false;
 		op.type = static_cast<OpType>(t);
@@ -83,7 +96,12 @@ public:
 			gs.configStrings.resize(n);
 			for (ConfigString &cs : gs.configStrings)
 				if (!U16(cs.index) || !Bytes(cs.text)) return false;
-			return Entities(gs.baselines) && I64(gs.clientNum) && I64(gs.checksum);
+			std::vector<EntityState> list;
+			if (d.gs || !Entities(list)) return false;
+			d.gs = std::make_unique<BaselineData>();
+			for (const EntityState &e : list) d.gs->table[EntityNumber(e)] = e;
+			gs.baselines = d.gs->View();
+			return I64(gs.clientNum) && I64(gs.checksum);
 		}
 		case OpType::Download: return U32(op.block) && I64(op.fileSize) && Bytes(op.data);
 		case OpType::Snapshot: {
@@ -92,10 +110,15 @@ public:
 			if (!I64(op.time) || !U32(op.flags) || !U32(na) || na > 255) return false;
 			op.areas.resize(na);
 			if (na != 0 && fread(op.areas.data(), 1, na, f_) != na) return false;
-			if (!Image(op.snap.ps, PlayerFieldOffsets()) || !U8(hv)) return false;
-			op.snap.hasVehicle = hv != 0;
-			if (op.snap.hasVehicle && !Image(op.snap.vps, PlayerFieldOffsets())) return false;
-			return Entities(op.snap.entities);
+			if (d.snap) return false;
+			d.snap = std::make_unique<SnapshotData>();
+			SnapshotData &sn = *d.snap;
+			if (!Image(sn.ps, PlayerFieldOffsets()) || !U8(hv)) return false;
+			sn.hasVehicle = hv != 0;
+			if (sn.hasVehicle && !Image(sn.vps, PlayerFieldOffsets())) return false;
+			if (!Entities(sn.entities)) return false;
+			op.snap = sn.View();
+			return true;
 		}
 		default: return true;
 		}
@@ -130,7 +153,8 @@ inline bool LoadCodecTrace(const char *path, std::vector<CodecStream> &streams) 
 			ok = ok && r.U32(m.seq) && r.U32(m.delta) && r.I64(m.msg.ack) && r.U32(nops) && nops < 4096;
 			if (!ok) break;
 			m.msg.ops.resize(nops);
-			for (Op &op : m.msg.ops) ok = ok && r.ReadOp(op);
+			m.data = MessageData{};
+			for (Op &op : m.msg.ops) ok = ok && r.ReadOp(op, m.data);
 			ok = ok && r.Bytes(m.bytes);
 		}
 	}

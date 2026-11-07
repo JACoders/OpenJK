@@ -18,6 +18,8 @@ set FAILED=0
 set "SUMMARY=%OUT%\summary.txt"
 type nul > "%SUMMARY%"
 type nul > "%LOG%"
+rem the sources' contents at the start, compared at the end: a file changed during the run makes it a mix (FAIL)
+for /f %%h in ('powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0source_hash.ps1" "%CD%"') do set "START_HASH=%%h"
 
 call :step "msvc-x64: configure" cmake --preset msvc-x64
 call :buildstep "msvc-x64-release: build" msvc-x64-release
@@ -44,6 +46,12 @@ for %%f in (size size-asan codec1 codec2) do (
 	call :out "--- %%f"
 	type "%OUT%\%%f.txt" 2>nul
 	type "%OUT%\%%f.txt" >> "%LOG%" 2>nul
+)
+set "END_HASH="
+for /f %%h in ('powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0source_hash.ps1" "%CD%"') do set "END_HASH=%%h"
+if not "%END_HASH%"=="%START_HASH%" (
+	>> "%SUMMARY%" echo FAIL  sources unchanged during the run: a file of codemp\netcodec changed, run again
+	set FAILED=1
 )
 call :out ""
 call :out "=== summary"

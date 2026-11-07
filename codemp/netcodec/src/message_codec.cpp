@@ -35,7 +35,7 @@ const uint8_t *OlderPlayer(const PredCtx &c, bool vehicle) noexcept {
 	const Snapshot *o = c.olderSnap;
 	if (o == nullptr) return nullptr;
 	if (!vehicle) return o->ps.data();
-	if (VehicleNum(o->ps) != 0 && o->hasVehicle) return o->vps.data();
+	if (VehicleNum(o->ps) != 0 && !o->vps.empty()) return o->vps.data();
 	return ZeroPlayer().data();
 }
 
@@ -75,7 +75,7 @@ void PutPlayer(O &io, PredCtx &c, std::span<const FieldDesc> fields, uint32_t ga
 }
 
 bool GetPlayer(In &io, PredCtx &c, std::span<const FieldDesc> fields, uint32_t gap, ImageView old,
-               PlayerState &out, const uint8_t *older, const Model &m) noexcept {
+               ImageRef out, const uint8_t *older, const Model &m) noexcept {
 	std::ranges::copy(old, out.begin());
 	if (c.escaped) [[unlikely]] {
 		GetFieldsRaw(io, fields, out);
@@ -100,27 +100,100 @@ uint32_t ClassOf(ImageView st) noexcept {
 	return et < int64_t{ kEntityClassCap } ? static_cast<uint32_t>(et) : kEntityClassCap;
 }
 
-const Entity *FindEntity(std::span<const Entity> list, uint32_t num) noexcept {
-	const auto it = std::ranges::lower_bound(list, num, {}, &Entity::number);
-	return it != list.end() && it->number == num ? &*it : nullptr;
-}
-
-// entities of a sorted list looked up by increasing numbers: a forward cursor instead of a search per lookup
-class EntityCursor {
+// The entities of a list read one after the other, with the current one's number (kMaxEntities past the end): a
+// snapshot's ring (the offset wraps at the ring's end), or the baselines of a gamestate (the numbers whose state
+// holds its number, in increasing order).
+class RingReader {
 public:
-	explicit EntityCursor(const Snapshot *snap) noexcept {
-		if (snap != nullptr) list_ = snap->entities;
+	explicit RingReader(const EntityRing &r) noexcept
+		: begin_(r.ring.data()), end_(r.ring.data() + r.ring.size()), p_(r.ring.data() + (r.first * kEntityBytes)),
+		  left_(r.count) {
+		Load();
 	}
-
-	// num above the previous lookup's
-	[[nodiscard]] const Entity *Find(uint32_t num) noexcept {
-		while (k_ < list_.size() && list_[k_].number < num) k_++;
-		return k_ < list_.size() && list_[k_].number == num ? &list_[k_] : nullptr;
+	[[nodiscard]] uint32_t Number() const noexcept { return num_; }
+	[[nodiscard]] ImageView State() const noexcept { return { p_, kEntityBytes }; }
+	void Next() noexcept {
+		left_--;
+		p_ += kEntityBytes;
+		if (p_ == end_) p_ = begin_;
+		Load();
 	}
 
 private:
-	std::span<const Entity> list_;
-	size_t k_ = 0;
+	void Load() noexcept {
+		num_ = kMaxEntities;
+		if (left_ != 0) std::memcpy(&num_, p_, 4);
+	}
+
+	const uint8_t *begin_, *end_, *p_;
+	uint32_t left_;
+	uint32_t num_ = kMaxEntities;
+};
+
+class TableReader {
+public:
+	explicit TableReader(const BaselineTable &t) noexcept : t_(t) {
+		if (t.bytes.empty()) return;
+		for (uint32_t n = 1; n < kMaxEntities; n++)
+			if (EntityNumber(t[n]) == n) nums_[size_++] = static_cast<uint16_t>(n);
+	}
+	[[nodiscard]] uint32_t Number() const noexcept { return k_ < size_ ? nums_[k_] : kMaxEntities; }
+	[[nodiscard]] ImageView State() const noexcept { return t_[nums_[k_]]; }
+	void Next() noexcept { k_++; }
+
+private:
+	BaselineTable t_;
+	std::array<uint16_t, kMaxEntities> nums_{};
+	uint32_t size_ = 0;
+	uint32_t k_ = 0;
+};
+
+// entities of a snapshot looked up by increasing numbers: a forward cursor instead of a search per lookup
+class EntityCursor {
+public:
+	explicit EntityCursor(const Snapshot *snap) noexcept : r_(snap != nullptr ? snap->entities : EntityRing{}) {}
+
+	// num above the previous lookup's; empty if the snapshot has no such entity
+	[[nodiscard]] ImageView Find(uint32_t num) noexcept {
+		while (r_.Number() < num) r_.Next();
+		return r_.Number() == num ? r_.State() : ImageView{};
+	}
+
+private:
+	RingReader r_;
+};
+
+// where GetEntities writes: a snapshot's ring, in number order (at most maxEntities), or the baseline table (by
+// number). Slot returns an empty span when the snapshot is full.
+class RingSink {
+public:
+	explicit RingSink(const SnapshotOut &o) noexcept
+		: ring_(o.ring), size_(ToU32(o.ring.size() / kEntityBytes)), first_(o.first),
+		  max_(std::min(o.maxEntities, size_)) {}
+	[[nodiscard]] ImageRef Slot(uint32_t /*num*/) noexcept {
+		if (count_ == max_) return {};
+		const uint32_t k = first_ + count_ < size_ ? first_ + count_ : first_ + count_ - size_;
+		count_++;
+		return ring_.subspan(k * kEntityBytes, kEntityBytes);
+	}
+	[[nodiscard]] EntityRing View() const noexcept { return EntityRing{ .ring = ring_, .first = first_, .count = count_ }; }
+
+private:
+	std::span<uint8_t> ring_;
+	uint32_t size_, first_, max_;
+	uint32_t count_ = 0;
+};
+
+class TableSink {
+public:
+	explicit TableSink(const BaselineTableOut &t) noexcept : t_(t) {}
+	// number 0 has no baseline (its number field means none): malformed
+	[[nodiscard]] ImageRef Slot(uint32_t num) const noexcept {
+		return num == 0 ? ImageRef{} : t_.bytes.subspan(num * t_.stride, kEntityBytes);
+	}
+
+private:
+	BaselineTableOut t_;
 };
 
 // indices (codec order) of the fields that differ between two entity states; one pass, raw words first
@@ -173,32 +246,37 @@ void PutEntity(O &io, const PredCtx &c, ImageView nw, ImageView basest, std::spa
 }
 
 // entity operations: 0 changed, 1 new from its baseline, 2 removed, 3 new and equal to its baseline
-template <class O>
-void PutEntities(O &io, PredCtx &c, std::span<const Entity> nw, std::span<const Entity> old,
-                 std::span<const Entity> baselines, const Model &m) noexcept {
+// nw: a RingReader or a TableReader; entity numbers below kMaxEntities
+template <class O, class R>
+void PutEntities(O &io, PredCtx &c, R nw, RingReader old, const BaselineTable &baselines, const Model &m) noexcept {
 	ChangeList list{};
 	EntityCursor olderList(c.olderSnap);
-	size_t i = 0, j = 0;
 	int64_t prevnum = -1;
 	uint32_t prevop = 0;
-	while (i < nw.size() || j < old.size()) {
-		const uint32_t nn = i < nw.size() ? nw[i].number : kMaxEntities;
-		const uint32_t on = j < old.size() ? old[j].number : kMaxEntities;
+	for (;;) {
+		const uint32_t nn = nw.Number(), on = old.Number();
 		const uint32_t num = std::min(nn, on);
-		const Entity *ne = nn == num ? &nw[i++] : nullptr;
-		const Entity *oe = on == num ? &old[j++] : nullptr;
+		if (num == kMaxEntities) break;
+		ImageView ne, oe;
+		if (nn == num) {
+			ne = nw.State();
+			nw.Next();
+		}
+		if (on == num) {
+			oe = old.State();
+			old.Next();
+		}
 		uint32_t op = 2;
 		uint32_t nch = 0;
 		ImageView basest;
-		if (ne != nullptr && oe != nullptr) {
-			nch = Changes(ne->state, oe->state, list);
+		if (!ne.empty() && !oe.empty()) {
+			nch = Changes(ne, oe, list);
 			if (nch == 0) continue;
 			op = 0;
-			basest = oe->state;
-		} else if (ne != nullptr) {
-			const Entity *b = FindEntity(baselines, num);
-			basest = b != nullptr ? ImageView(b->state) : ImageView(ZeroEntity());
-			nch = Changes(ne->state, basest, list);
+			basest = oe;
+		} else if (!ne.empty()) {
+			basest = baselines[num];   // the zero state without a baseline
+			nch = Changes(ne, basest, list);
 			op = nch != 0 ? 1 : 3;
 		}
 		const int64_t gap = num - prevnum - 1;
@@ -212,18 +290,23 @@ void PutEntities(O &io, PredCtx &c, std::span<const Entity> nw, std::span<const 
 		io.Symbol(ctx::kEntityOp + prevop, op);
 		prevop = op;
 		if (op == 2 || op == 3) continue;
-		c.cur = ne->state; c.old = basest; c.pred = op == 0;
-		const Entity *older = op == 0 ? olderList.Find(num) : nullptr;
-		c.older = older != nullptr ? older->state.data() : nullptr;
-		PutEntity(io, c, ne->state, basest, std::span<const uint8_t>(list.data(), nch), m);
+		c.cur = ne; c.old = basest; c.pred = op == 0;
+		const ImageView older = op == 0 ? olderList.Find(num) : ImageView{};
+		c.older = older.empty() ? nullptr : older.data();
+		PutEntity(io, c, ne, basest, std::span<const uint8_t>(list.data(), nch), m);
 	}
 	io.Symbol(Of(kEntGap), kEntityListEnd);
 }
 
-bool GetEntities(In &io, PredCtx &c, std::span<const Entity> old, std::span<const Entity> baselines,
-                 std::vector<Entity> &out, const Model &m) {
-	out.clear();
-	size_t j = 0;
+// out: a RingSink or a TableSink
+template <class Sink>
+bool GetEntities(In &io, PredCtx &c, RingReader old, const BaselineTable &baselines, Sink &out, const Model &m) {
+	const auto keep = [&](ImageView src) {   // an unchanged entity of the base
+		const ImageRef d = out.Slot(EntityNumber(src));
+		if (d.empty()) return false;
+		std::ranges::copy(src, d.begin());
+		return true;
+	};
 	int64_t prevnum = -1;
 	uint32_t prevop = 0;
 	const FieldDesc &typeField = kEntityFields[kEntityTypeIndex];
@@ -235,43 +318,46 @@ bool GetEntities(In &io, PredCtx &c, std::span<const Entity> old, std::span<cons
 		const uint64_t num = static_cast<uint64_t>(prevnum + 1) + gap;
 		if (num >= kMaxEntities) return false;
 		prevnum = static_cast<int64_t>(num);
-		while (j < old.size() && old[j].number < num) out.push_back(old[j++]);
-		const Entity *oe = j < old.size() && old[j].number == num ? &old[j] : nullptr;
-		if (oe != nullptr) j++;
+		for (; old.Number() < num; old.Next())
+			if (!keep(old.State())) return false;
+		const ImageView oe = old.Number() == num ? old.State() : ImageView{};
+		if (!oe.empty()) old.Next();
 		const uint32_t op = io.Symbol(ctx::kEntityOp + prevop);
 		prevop = op;
 		if (op == 2) {
-			if (oe == nullptr) return false;
+			if (oe.empty()) return false;
 			continue;
 		}
-		if (op == 0 && oe == nullptr) return false;
-		// the base: the previous state, or the baseline (same number), or the zero state; copied in one go
-		const Entity *src = op == 0 ? oe : FindEntity(baselines, static_cast<uint32_t>(num));
-		Entity &st = src != nullptr ? out.emplace_back(*src) : out.emplace_back();
-		st.number = static_cast<uint16_t>(num);
-		const ImageView basest = src != nullptr ? ImageView(src->state) : ImageView(ZeroEntity());
+		if (op == 0 && oe.empty()) return false;
+		// the base: the previous state, or the baseline (the zero state without one); copied in one go
+		const ImageView basest = op == 0 ? oe : baselines[static_cast<uint32_t>(num)];
+		const ImageRef st = out.Slot(static_cast<uint32_t>(num));
+		if (st.empty()) return false;
+		std::ranges::copy(basest, st.begin());
+		SetEntityNumber(st, static_cast<uint32_t>(num));
 		if (op == 3) continue;
 		if (c.escaped) [[unlikely]] {
-			GetFieldsRaw(io, kEntityFields, st.state);
+			GetFieldsRaw(io, kEntityFields, st);
 			continue;
 		}
-		c.cur = st.state; c.old = basest; c.pred = op == 0;
-		const Entity *older = op == 0 ? olderList.Find(static_cast<uint32_t>(num)) : nullptr;
-		c.older = older != nullptr ? older->state.data() : nullptr;
+		c.cur = st; c.old = basest; c.pred = op == 0;
+		const ImageView older = op == 0 ? olderList.Find(static_cast<uint32_t>(num)) : ImageView{};
+		c.older = older.empty() ? nullptr : older.data();
 		const uint32_t bcls = ClassOf(basest);
-		if (io.Symbol(ctx::kTypeChanged + bcls) != 0) Store(st.state, typeField, io.Symbol(ctx::kTypeValue + bcls));
-		const uint32_t gapCtx = ctx::EntityGap(ClassOf(st.state));
+		if (io.Symbol(ctx::kTypeChanged + bcls) != 0) Store(st, typeField, io.Symbol(ctx::kTypeValue + bcls));
+		const uint32_t gapCtx = ctx::EntityGap(ClassOf(st));
 		uint32_t next = 0;
 		for (;;) {
 			const uint32_t i = io.Symbol(gapCtx + next);
 			if (i == kNumEntityFields) break;
 			if (i < next || i == kEntityTypeIndex) return false;
 			const FieldDesc &f = kEntityFields[i];
-			Store(st.state, f, GetField(io, c, f, ctx::EntityField(f.ctx), Value(basest, f), m.TrTypeBits()));
+			Store(st, f, GetField(io, c, f, ctx::EntityField(f.ctx), Value(basest, f), m.TrTypeBits()));
 			next = i + 1;
 		}
 	}
-	while (j < old.size()) out.push_back(old[j++]);
+	for (; old.Number() != kMaxEntities; old.Next())
+		if (!keep(old.State())) return false;
 	return true;
 }
 
@@ -443,7 +529,7 @@ bool GetCommand(In &io, Op &op, std::span<const Op> before, int64_t known, const
 
 // ------------------------------------------------------------------ messages
 template <class O>
-void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<Entity> &baselines,
+void PutMessage(O &io, const Message &msg, const Base &base, const BaselineTable &baselines,
                 const CommandHistory &history, HeaderRecord &rec, const Model &m, bool escaped) {
 	const HeaderRecord *bh = base.header;
 	io.Symbol(Of(kMDelta), base.delta + (escaped ? kEscapedDelta : 0U));   // one symbol for both
@@ -456,8 +542,7 @@ void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<E
 	const int64_t known = lastcmd;         // the client holds every command up to this one
 	std::optional<int64_t> time;
 	uint32_t prev = 0;
-	const std::vector<Entity> *bl = &baselines;
-	const std::span<const Entity> none;
+	const BaselineTable *bl = &baselines;
 	for (const Op &op : msg.ops) {
 		const auto t = static_cast<uint32_t>(op.type);
 		io.Symbol(ctx::kOp + prev, t);
@@ -481,7 +566,7 @@ void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<E
 				pi = cs.index;
 				io.String(Of(kStrCs), cs.text);
 			}
-			PutEntities(io, c, gs.baselines, none, none, m);
+			PutEntities(io, c, TableReader(gs.baselines), RingReader(EntityRing{}), BaselineTable{}, m);
 			io.Class(Of(kMClientNum), Zz(gs.clientNum));
 			io.Raw(static_cast<uint32_t>(gs.checksum), 32);
 			bl = &gs.baselines;
@@ -503,15 +588,15 @@ void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<E
 			const Snapshot &sn = op.snap;
 			const bool pilot = IsPilot(sn.ps);
 			io.Symbol(Of(kPsPilot), pilot ? 1 : 0);
-			const PlayerState &basePs = base.snap != nullptr ? base.snap->ps : ZeroPlayer();
+			const ImageView basePs = base.snap != nullptr ? base.snap->ps : ImageView(ZeroPlayer());
 			if (pilot) PutPlayer(io, c, kPilotFields, ctx::PlayerGap(1), sn.ps, basePs, OlderPlayer(c, false), m);
 			else PutPlayer(io, c, kPlayerFields, ctx::PlayerGap(0), sn.ps, basePs, OlderPlayer(c, false), m);
 			if (VehicleNum(sn.ps) != 0) {
-				const PlayerState &nv = sn.hasVehicle ? sn.vps : ZeroPlayer();
-				const PlayerState &ov = base.snap != nullptr && base.snap->hasVehicle ? base.snap->vps : ZeroPlayer();
+				const ImageView nv = !sn.vps.empty() ? sn.vps : ImageView(ZeroPlayer());
+				const ImageView ov = base.snap != nullptr && !base.snap->vps.empty() ? base.snap->vps : ImageView(ZeroPlayer());
 				PutPlayer(io, c, kVehicleFields, ctx::PlayerGap(2), nv, ov, OlderPlayer(c, true), m);
 			}
-			PutEntities(io, c, sn.entities, base.snap != nullptr ? std::span<const Entity>(base.snap->entities) : none, *bl, m);
+			PutEntities(io, c, RingReader(sn.entities), RingReader(base.snap != nullptr ? base.snap->entities : EntityRing{}), *bl, m);
 			break;
 		}
 		case OpType::Nop:
@@ -525,7 +610,7 @@ void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<E
 
 // codes a message into scratch: its size, 0 if a value is outside the model or it does not fit in maxBytes
 size_t CodeMessage(std::vector<rans::Encoder::Op> &ops, std::vector<uint8_t> &scratch, const Message &msg, const Base &base,
-                   const std::vector<Entity> &baselines, const CommandHistory &history, size_t maxBytes, HeaderRecord &record,
+                   const BaselineTable &baselines, const CommandHistory &history, size_t maxBytes, HeaderRecord &record,
                    const Model &m, bool escaped) {
 	for (;;) {
 		rans::Encoder e(ops);
@@ -546,21 +631,20 @@ Op &NextOp(Message &msg, size_t &used) {
 	op.seq = 0;
 	op.text.clear();
 	op.gameState.configStrings.clear();
-	op.gameState.baselines.clear();
+	op.gameState.baselines = {};
 	op.block = 0;
 	op.fileSize = 0;
 	op.data.clear();
 	op.time = 0;
 	op.flags = 0;
 	op.areas.clear();
-	op.snap.hasVehicle = false;
-	op.snap.entities.clear();
+	op.snap = {};
 	return op;
 }
 
-bool GetMessage(In &io, const BaseLookup &lookup, const CommandHistory &history, std::vector<Entity> &baselines,
-                Message &msg, uint32_t &delta,
-                HeaderRecord &rec, const Model &m) {
+bool GetMessage(In &io, const BaseLookup &lookup, const CommandHistory &history, const BaselineTable &baselines,
+                const BaselineTableOut &gamestate, const SnapshotOut &out, Message &msg, uint32_t &delta, HeaderRecord &rec,
+                const Model &m) {
 	delta = io.Symbol(Of(kMDelta));
 	const bool escaped = delta >= kEscapedDelta;
 	if (escaped) delta -= kEscapedDelta;
@@ -577,8 +661,8 @@ bool GetMessage(In &io, const BaseLookup &lookup, const CommandHistory &history,
 	std::optional<int64_t> time;
 	uint32_t prev = 0;
 	size_t used = 0;
-	std::optional<size_t> gsOp;            // index of a gamestate op of this message: its baselines apply after it
-	const std::span<const Entity> none;
+	bool hadSnapshot = false;
+	BaselineTable table = baselines;   // after a gamestate op, its baselines
 	for (;;) {
 		const uint32_t t = io.Symbol(ctx::kOp + prev);
 		prev = t;
@@ -608,10 +692,13 @@ bool GetMessage(In &io, const BaseLookup &lookup, const CommandHistory &history,
 				cs.index = static_cast<uint16_t>(idx);
 				if (!io.String(Of(kStrCs), cs.text)) return false;
 			}
-			if (!GetEntities(io, c, none, none, gs.baselines, m)) return false;
+			TableSink sink(gamestate);
+			for (uint32_t e = 0; e < kMaxEntities; e++) std::ranges::fill(gamestate.bytes.subspan(e * gamestate.stride, kEntityBytes), uint8_t{ 0 });
+			if (!GetEntities(io, c, RingReader(EntityRing{}), BaselineTable{}, sink, m)) return false;
+			table = BaselineTable{ .bytes = gamestate.bytes, .stride = gamestate.stride };
+			gs.baselines = table;
 			gs.clientNum = Unzz(io.Class(Of(kMClientNum)));
 			gs.checksum = S32(static_cast<uint32_t>(io.Raw(32)));
-			gsOp = used - 1;
 			break;
 		}
 		case OpType::Download: {
@@ -622,6 +709,8 @@ bool GetMessage(In &io, const BaseLookup &lookup, const CommandHistory &history,
 			break;
 		}
 		case OpType::Snapshot: {
+			if (hadSnapshot) return false;   // one snapshot per message: it is written to the caller's storage
+			hadSnapshot = true;
 			op.time = (bh != nullptr && bh->time ? *bh->time : 0) + Unzz(io.Class(Of(kHTime)));
 			time = op.time;
 			c.time = op.time;
@@ -630,17 +719,21 @@ bool GetMessage(In &io, const BaseLookup &lookup, const CommandHistory &history,
 			for (uint8_t &a : op.areas) a = static_cast<uint8_t>(io.Symbol(Of(kHArea)));
 			Snapshot &sn = op.snap;
 			const bool pilot = io.Symbol(Of(kPsPilot)) != 0;
-			const PlayerState &basePs = base != nullptr ? base->ps : ZeroPlayer();
-			const bool okPs = pilot ? GetPlayer(io, c, kPilotFields, ctx::PlayerGap(1), basePs, sn.ps, OlderPlayer(c, false), m)
-			                        : GetPlayer(io, c, kPlayerFields, ctx::PlayerGap(0), basePs, sn.ps, OlderPlayer(c, false), m);
+			const ImageView basePs = base != nullptr ? base->ps : ImageView(ZeroPlayer());
+			const ImageRef ps = out.ps.first(kPlayerBytes);
+			const bool okPs = pilot ? GetPlayer(io, c, kPilotFields, ctx::PlayerGap(1), basePs, ps, OlderPlayer(c, false), m)
+			                        : GetPlayer(io, c, kPlayerFields, ctx::PlayerGap(0), basePs, ps, OlderPlayer(c, false), m);
 			if (!okPs) return false;
-			sn.hasVehicle = VehicleNum(sn.ps) != 0;
-			if (sn.hasVehicle) {
-				const PlayerState &ov = base != nullptr && base->hasVehicle ? base->vps : ZeroPlayer();
-				if (!GetPlayer(io, c, kVehicleFields, ctx::PlayerGap(2), ov, sn.vps, OlderPlayer(c, true), m)) return false;
+			sn.ps = ps;
+			if (VehicleNum(ps) != 0) {
+				const ImageView ov = base != nullptr && !base->vps.empty() ? base->vps : ImageView(ZeroPlayer());
+				const ImageRef vps = out.vps.first(kPlayerBytes);
+				if (!GetPlayer(io, c, kVehicleFields, ctx::PlayerGap(2), ov, vps, OlderPlayer(c, true), m)) return false;
+				sn.vps = vps;
 			}
-			const std::vector<Entity> &bl = gsOp ? msg.ops[*gsOp].gameState.baselines : baselines;
-			if (!GetEntities(io, c, base != nullptr ? std::span<const Entity>(base->entities) : none, bl, sn.entities, m)) return false;
+			RingSink sink(out);
+			if (!GetEntities(io, c, RingReader(base != nullptr ? base->entities : EntityRing{}), table, sink, m)) return false;
+			sn.entities = sink.View();
 			break;
 		}
 		case OpType::Nop:
@@ -649,7 +742,6 @@ bool GetMessage(In &io, const BaseLookup &lookup, const CommandHistory &history,
 		}
 	}
 	msg.ops.resize(used);
-	if (gsOp) baselines = msg.ops[*gsOp].gameState.baselines;
 	rec = HeaderRecord{ .ack = msg.ack, .time = time, .cmdSeq = lastcmd, .older = base };
 	return true;
 }
@@ -666,7 +758,7 @@ constexpr auto kEntityOffsets = [] {
 std::span<const uint16_t> EntityFieldOffsets() noexcept { return detail::kEntityOffsets; }
 std::span<const uint16_t> PlayerFieldOffsets() noexcept { return detail::kPlayerAllOffsets; }
 
-bool MessageEncoder::Encode(const Message &msg, const Base &base, const std::vector<Entity> &baselines,
+bool MessageEncoder::Encode(const Message &msg, const Base &base, const BaselineTable &baselines,
                             const CommandHistory &history, size_t maxBytes,
                             std::vector<uint8_t> &out, HeaderRecord &record) {
 	const detail::Model &m = detail::Model::Get();
@@ -694,7 +786,7 @@ SymbolCounts NewSymbolCounts() {
 	return counts;
 }
 
-bool CountMessage(const Message &msg, const Base &base, const std::vector<Entity> &baselines,
+bool CountMessage(const Message &msg, const Base &base, const BaselineTable &baselines,
                   const CommandHistory &history, HeaderRecord &record, SymbolCounts &counts) {
 	if (base.delta > 255 || (base.delta != 0) != (base.snap != nullptr) || counts.symbols.size() != detail::ctx::kCount ||
 	    counts.rawBits.size() != detail::ctx::kCount)
@@ -705,11 +797,12 @@ bool CountMessage(const Message &msg, const Base &base, const std::vector<Entity
 }
 
 bool DecodeMessage(std::span<const uint8_t> bytes, const BaseLookup &lookup, const CommandHistory &history,
-                   std::vector<Entity> &baselines, Message &msg,
-                   uint32_t &delta, HeaderRecord &record) {
+                   const BaselineTable &baselines, const BaselineTableOut &gamestate, const SnapshotOut &snapshot,
+                   Message &msg, uint32_t &delta, HeaderRecord &record) {
 	const detail::Model &m = detail::Model::Get();
 	detail::In io(bytes, m);
-	return io.Ok() && detail::GetMessage(io, lookup, history, baselines, msg, delta, record, m);
+	return io.Ok() && detail::GetMessage(io, lookup, history, baselines, gamestate, snapshot, msg, delta, record, m);
 }
+
 
 } // namespace netcodec

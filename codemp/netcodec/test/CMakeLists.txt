@@ -18,7 +18,7 @@ add_test(NAME netcodec.determinism COMMAND netcodec_test_determinism)
 # messages; needs no trace. The hash of the coded bytes changes with the format, the tables or the generator.
 netcodec_add_program(netcodec_test_synthetic test_synthetic.cpp synthetic.h demo_trace.h message_compare.h fnv.h)
 target_include_directories(netcodec_test_synthetic PRIVATE "${PROJECT_SOURCE_DIR}/src")
-set(netcodec_SYNTHETIC_HASH "0xC8D49A5825279D9A")
+set(netcodec_SYNTHETIC_HASH "0x0C3939AD115606ED")
 add_test(NAME netcodec.synthetic COMMAND netcodec_test_synthetic "--hash=${netcodec_SYNTHETIC_HASH}" 100 1000)
 
 # Malformed input: mutated copies of synthetic messages decoded with the client's state (20 streams of 500 messages,

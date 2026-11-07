@@ -62,12 +62,6 @@ const Op *SnapshotOp(const Message &m) {
 	return nullptr;
 }
 
-// entityState_t::number (offset 0) is not a networked field: netcodec ignores it, the legacy code reads it
-void SetNumber(EntityState &st, uint16_t number) {
-	const int32_t n = number;
-	std::memcpy(st.data(), &n, 4);
-}
-
 bool SameFields(const uint8_t *a, const uint8_t *b, std::span<const uint16_t> offsets) {
 	return std::all_of(offsets.begin(), offsets.end(), [&](uint16_t off) { return std::memcmp(a + off, b + off, 4) == 0; });
 }
@@ -100,7 +94,7 @@ struct Item {
 	const trace::CodecMessage *cm = nullptr;
 	Base base;                                          // netcodec, server side
 	std::vector<uint8_t> bytes;                         // netcodec
-	std::vector<Entity> *baselines = nullptr;           // not changed by the benchmarked messages (no gamestate)
+	BaselineTable baselines;                            // not changed by the benchmarked messages (no gamestate)
 	const LegacyInput *legacyIn = nullptr;
 	const legacy::SnapshotView *legacyBase = nullptr;
 	const uint8_t *const *legacyBaselines = nullptr;
@@ -111,7 +105,7 @@ struct StreamRun {
 	std::vector<Item> items;                            // benchmarked messages
 	Store server, client;
 	trace::CommandLog serverHistory, clientHistory;
-	std::vector<std::unique_ptr<std::vector<Entity>>> baselineSets;
+	std::vector<std::unique_ptr<trace::BaselineData>> baselineSets;
 	std::vector<std::unique_ptr<std::vector<EntityState>>> legacyBaselineImages;
 	std::vector<std::unique_ptr<std::vector<const uint8_t *>>> legacyBaselinePtrs;
 	std::vector<std::unique_ptr<LegacyInput>> legacyInputs;
@@ -123,14 +117,14 @@ void FillLegacyInput(const Message &m, int delta, LegacyInput &in) {
 	for (const Op &op : m.ops) {
 		if (op.type == OpType::Command) in.commands.push_back(legacy::Command{ static_cast<int32_t>(op.seq), op.text.c_str() });
 		if (op.type != OpType::Snapshot) continue;
-		for (const Entity &e : op.snap.entities) in.entityPtrs.push_back(e.state.data());
+		for (uint32_t i = 0; i < op.snap.entities.count; i++) in.entityPtrs.push_back(op.snap.entities[i].data());
 		in.view.hasSnapshot = true;
 		in.view.serverTime = static_cast<int32_t>(op.time);
 		in.view.delta = delta;
 		in.view.flags = static_cast<int>(op.flags);
 		in.view.areas = op.areas.data();
 		in.view.numAreas = static_cast<int>(op.areas.size());
-		in.view.snap = legacy::SnapshotView{ op.snap.ps.data(), op.snap.hasVehicle ? op.snap.vps.data() : nullptr,
+		in.view.snap = legacy::SnapshotView{ op.snap.ps.data(), op.snap.vps.empty() ? nullptr : op.snap.vps.data(),
 		                                     in.entityPtrs.data(), static_cast<int>(in.entityPtrs.size()) };
 	}
 	in.view.commands = in.commands.data();
@@ -138,14 +132,15 @@ void FillLegacyInput(const Message &m, int delta, LegacyInput &in) {
 }
 
 bool LegacyMatches(const legacy::SnapshotOut &o, const Snapshot &sn) {
-	if (!SameFields(o.ps, sn.ps.data(), PlayerFieldOffsets()) || o.numEntities != static_cast<int>(sn.entities.size()) ||
-	    (sn.hasVehicle && !SameFields(o.vps, sn.vps.data(), PlayerFieldOffsets())))
+	if (!SameFields(o.ps, sn.ps.data(), PlayerFieldOffsets()) || o.numEntities != static_cast<int>(sn.entities.count) ||
+	    (!sn.vps.empty() && !SameFields(o.vps, sn.vps.data(), PlayerFieldOffsets())))
 		return false;
-	for (size_t e = 0; e < sn.entities.size(); e++) {
-		const uint8_t *img = o.entities + e * legacy::kEntityBytes;
+	for (uint32_t e = 0; e < sn.entities.count; e++) {
+		const uint8_t *img = o.entities + (e * legacy::kEntityBytes);
 		int32_t num = 0;
 		std::memcpy(&num, img, 4);
-		if (num != sn.entities[e].number || !SameFields(img, sn.entities[e].state.data(), EntityFieldOffsets())) return false;
+		if (std::cmp_not_equal(num, EntityNumber(sn.entities[e])) || !SameFields(img, sn.entities[e].data(), EntityFieldOffsets()))
+			return false;
 	}
 	return true;
 }
@@ -156,13 +151,7 @@ int main(int argc, char **argv) {
 	if (argc < 2) { fprintf(stderr, "usage: %s codec_trace.bin [passes]\n", argv[0]); return 2; }
 	const int passes = argc > 2 ? atoi(argv[2]) : 10;
 	std::vector<trace::CodecStream> streams;
-	if (!trace::LoadCodecTrace(argv[1], streams)) return 2;
-	for (trace::CodecStream &s : streams)
-		for (trace::CodecMessage &cm : s)
-			for (Op &op : cm.msg.ops) {
-				for (Entity &e : op.snap.entities) SetNumber(e.state, e.number);
-				for (Entity &e : op.gameState.baselines) SetNumber(e.state, e.number);
-			}
+	if (!trace::LoadCodecTrace(argv[1], streams)) return 2;   // entity numbers at offset 0, as the legacy code reads them
 
 	MessageEncoder enc;
 	std::vector<uint8_t> out;
@@ -170,16 +159,19 @@ int main(int argc, char **argv) {
 	PlayerState sps{}, svps{};
 	std::vector<uint8_t> sents(static_cast<size_t>(legacy::kMaxEntities) * legacy::kEntityBytes);
 	legacy::SnapshotOut scratch{ sps.data(), svps.data(), sents.data(), 0 };
+	trace::DecodeTarget target;            // netcodec's decoded snapshot
+	trace::BaselineData gsScratch;         // netcodec's decoded gamestate baselines
 
 	std::vector<std::unique_ptr<StreamRun>> runs;
 	size_t nBench = 0, bytesNew = 0, bytesLegacy = 0, legacyBad = 0, newBad = 0;
 	for (const trace::CodecStream &s : streams) {
 		auto run = std::make_unique<StreamRun>();
-		const auto addBaselines = [&](const std::vector<Entity> &bl) {
-			run->baselineSets.push_back(std::make_unique<std::vector<Entity>>(bl));
-			auto imgs = std::make_unique<std::vector<EntityState>>(legacy::kMaxEntities);
-			for (size_t n = 0; n < imgs->size(); n++) SetNumber((*imgs)[n], static_cast<uint16_t>(n));
-			for (const Entity &e : bl) (*imgs)[e.number] = e.state;
+		const auto addBaselines = [&](const BaselineTable &bl) {
+			auto copy = std::make_unique<trace::BaselineData>();
+			copy->Assign(bl);
+			auto imgs = std::make_unique<std::vector<EntityState>>(copy->table);
+			for (uint32_t n = 0; n < imgs->size(); n++) SetEntityNumber((*imgs)[n], n);   // the legacy code reads every number
+			run->baselineSets.push_back(std::move(copy));
 			auto ptrs = std::make_unique<std::vector<const uint8_t *>>();
 			for (const EntityState &e : *imgs) ptrs->push_back(e.data());
 			run->legacyBaselineImages.push_back(std::move(imgs));
@@ -189,7 +181,7 @@ int main(int argc, char **argv) {
 		for (const trace::CodecMessage &cm : s) {
 			Item it;
 			it.cm = &cm;
-			it.baselines = run->baselineSets.back().get();
+			it.baselines = run->baselineSets.back()->View();
 			it.legacyBaselines = run->legacyBaselinePtrs.back()->data();
 			it.base.delta = cm.delta;
 			bool bench = Benchable(cm.msg);
@@ -203,18 +195,14 @@ int main(int argc, char **argv) {
 			}
 			// netcodec once: encodes, decodes to the same message
 			HeaderRecord rec, drec;
-			if (!enc.Encode(cm.msg, it.base, *it.baselines, run->serverHistory, 1 << 20, out, rec)) newBad++;
+			if (!enc.Encode(cm.msg, it.base, it.baselines, run->serverHistory, 1 << 20, out, rec)) newBad++;
 			it.bytes = out;
 			run->serverHistory.Add(cm.msg);
 			Message dm;
 			uint32_t delta = 0;
 			run->client.seq = cm.seq;
-			std::vector<Entity> clientBaselines = *it.baselines;
-			const bool decoded = DecodeMessage(it.bytes, run->client, run->clientHistory, clientBaselines, dm, delta, drec);
-			for (Op &op : dm.ops) {   // the number is not networked: set it as the engine glue will (and as the trace has it)
-				for (Entity &e : op.snap.entities) SetNumber(e.state, e.number);
-				for (Entity &e : op.gameState.baselines) SetNumber(e.state, e.number);
-			}
+			const bool decoded = DecodeMessage(it.bytes, run->client, run->clientHistory, it.baselines, gsScratch.Out(), target.Out(), dm,
+			                                   delta, drec);
 			if (!decoded || delta != cm.delta || !trace::SameMessage(dm, cm.msg)) newBad++;
 			run->clientHistory.Add(dm);
 			// legacy once: encode, decode, compare with the recording
@@ -251,7 +239,7 @@ int main(int argc, char **argv) {
 		for (auto &r : runs)
 			for (const Item &it : r->items) {
 				HeaderRecord rec;
-				if (enc.Encode(it.cm->msg, it.base, *it.baselines, r->serverHistory, 1 << 20, out, rec)) acc += out.size();
+				if (enc.Encode(it.cm->msg, it.base, it.baselines, r->serverHistory, 1 << 20, out, rec)) acc += out.size();
 			}
 		sink = sink + acc;
 	});
@@ -271,7 +259,8 @@ int main(int argc, char **argv) {
 				uint32_t delta = 0;
 				HeaderRecord drec;
 				r->client.seq = it.cm->seq;
-				if (DecodeMessage(it.bytes, r->client, r->clientHistory, *it.baselines, dm, delta, drec)) acc += dm.ops.size();
+				if (DecodeMessage(it.bytes, r->client, r->clientHistory, it.baselines, gsScratch.Out(), target.Out(), dm, delta, drec))
+					acc += dm.ops.size();
 			}
 		sink = sink + acc;
 	});
@@ -308,7 +297,7 @@ int main(int argc, char **argv) {
 	};
 	const double wEncNew = warm([&](StreamRun &r, const Item &it) {
 		HeaderRecord rec;
-		if (enc.Encode(it.cm->msg, it.base, *it.baselines, r.serverHistory, 1 << 20, out, rec)) sink = sink + out.size();
+		if (enc.Encode(it.cm->msg, it.base, it.baselines, r.serverHistory, 1 << 20, out, rec)) sink = sink + out.size();
 	});
 	const double wEncLegacy = warm([&](StreamRun &, const Item &it) {
 		sink = sink + static_cast<size_t>(legacy::Encode(it.legacyIn->view, it.legacyBase, it.legacyBaselines, legacyOut.data(),
@@ -319,7 +308,8 @@ int main(int argc, char **argv) {
 		uint32_t delta = 0;
 		HeaderRecord drec;
 		r.client.seq = it.cm->seq;
-		if (DecodeMessage(it.bytes, r.client, r.clientHistory, *it.baselines, wdm, delta, drec)) sink = sink + wdm.ops.size();
+		if (DecodeMessage(it.bytes, r.client, r.clientHistory, it.baselines, gsScratch.Out(), target.Out(), wdm, delta, drec))
+			sink = sink + wdm.ops.size();
 	});
 	const double wDecLegacy = warm([&](StreamRun &, const Item &it) {
 		if (legacy::Decode(it.legacyBytes.data(), static_cast<int>(it.legacyBytes.size()), it.legacyBase, it.legacyBaselines, scratch))
