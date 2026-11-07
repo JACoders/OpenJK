@@ -17,7 +17,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <optional>
-#include <map>
 #include <span>
 #include <utility>
 
@@ -25,23 +24,7 @@ using namespace netcodec;
 
 namespace {
 
-class ClientStore final : public BaseLookup {
-public:
-	struct Stored {
-		Snapshot snap;
-		HeaderRecord header;
-	};
-	std::map<uint32_t, Stored> bySeq;
-	uint32_t seq = 0;              // sequence of the message being decoded
-
-	bool Find(uint32_t delta, const Snapshot *&snap, const HeaderRecord *&header) const override {
-		const auto it = bySeq.find(seq - delta);
-		if (it == bySeq.end()) return false;
-		snap = &it->second.snap;
-		header = &it->second.header;
-		return true;
-	}
-};
+using trace::ClientStore;
 
 constexpr uint32_t kNegativeZero = 0x80000000U;
 
@@ -106,7 +89,7 @@ void RoundTrip(const trace::DemoStream &s, const char *label, Totals &t) {
 			clientHistory.Add(dm);
 			if (const Snapshot *sn = trace::SnapshotOf(dm)) client.bySeq[m.seq] = ClientStore::Stored{ .snap = *sn, .header = drec };
 		}
-		if (m.seq > 255) client.bySeq.erase(client.bySeq.begin(), client.bySeq.lower_bound(m.seq - 255));
+		client.Trim(m.seq);
 		return true;
 	});
 }

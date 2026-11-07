@@ -101,6 +101,32 @@ private:
 	std::unordered_map<int64_t, std::string> texts_;
 };
 
+// The snapshots a client holds, by message sequence, with their header records. A record's `older` points to the
+// snapshot its message was coded against, at most 255 messages earlier: keep 2 * 255 messages so that the older
+// snapshot of every possible base is still held.
+class ClientStore final : public BaseLookup {
+public:
+	struct Stored {
+		Snapshot snap;
+		HeaderRecord header;
+	};
+	std::map<uint32_t, Stored> bySeq;
+	uint32_t seq = 0;              // sequence of the message being decoded
+
+	bool Find(uint32_t delta, const Snapshot *&snap, const HeaderRecord *&header) const override {
+		const auto it = bySeq.find(seq - delta);
+		if (it == bySeq.end()) return false;
+		snap = &it->second.snap;
+		header = &it->second.header;
+		return true;
+	}
+
+	// drops what no later message can use, after message last
+	void Trim(uint32_t last) {
+		if (last > 2 * 255) bySeq.erase(bySeq.begin(), bySeq.lower_bound(last - (2 * 255)));
+	}
+};
+
 // The server side of a stream: for every message whose base the server still holds (a message whose base is
 // missing is skipped, as the server would not have sent it against that base), calls
 // code(message, base, baselines, history, record), which codes it and fills its header record; history holds the
