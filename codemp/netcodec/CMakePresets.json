@@ -32,7 +32,7 @@
       "hidden": true,
       "inherits": "windows",
       "generator": "Ninja",
-      "cacheVariables": { "CMAKE_CXX_COMPILER": "clang++" }
+      "cacheVariables": { "CMAKE_CXX_COMPILER": "clang++", "CMAKE_C_COMPILER": "clang" }
     },
     { "name": "mingw-clang-release", "displayName": "clang (llvm-mingw) x64 Release", "inherits": "mingw-clang", "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" } },
     { "name": "mingw-clang-debug", "displayName": "clang (llvm-mingw) x64 Debug", "inherits": "mingw-clang", "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" } },
@@ -56,7 +56,7 @@
       "displayName": "clang (llvm-mingw) x86 Release",
       "inherits": "windows",
       "generator": "Ninja",
-      "cacheVariables": { "CMAKE_CXX_COMPILER": "i686-w64-mingw32-clang++", "CMAKE_BUILD_TYPE": "Release" }
+      "cacheVariables": { "CMAKE_CXX_COMPILER": "i686-w64-mingw32-clang++", "CMAKE_C_COMPILER": "i686-w64-mingw32-clang", "CMAKE_BUILD_TYPE": "Release" }
     },
     {
       "name": "mingw-clang-tidy",
@@ -64,16 +64,16 @@
       "inherits": "mingw-clang",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "netcodec_ENABLE_CLANG_TIDY": "ON" }
     },
-    { "name": "gcc-release", "displayName": "GCC x64 Release", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_BUILD_TYPE": "Release" } },
-    { "name": "gcc-debug", "displayName": "GCC x64 Debug", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_BUILD_TYPE": "Debug" } },
+    { "name": "gcc-release", "displayName": "GCC x64 Release", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_C_COMPILER": "gcc", "CMAKE_BUILD_TYPE": "Release" } },
+    { "name": "gcc-debug", "displayName": "GCC x64 Debug", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_C_COMPILER": "gcc", "CMAKE_BUILD_TYPE": "Debug" } },
     {
       "name": "gcc-asan",
       "displayName": "GCC x64 with ASan + UBSan",
       "inherits": "linux",
-      "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_BUILD_TYPE": "RelWithDebInfo", "netcodec_ENABLE_SANITIZER_ADDRESS": "ON", "netcodec_ENABLE_SANITIZER_UNDEFINED": "ON" }
+      "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_C_COMPILER": "gcc", "CMAKE_BUILD_TYPE": "RelWithDebInfo", "netcodec_ENABLE_SANITIZER_ADDRESS": "ON", "netcodec_ENABLE_SANITIZER_UNDEFINED": "ON" }
     },
-    { "name": "gcc-x86", "displayName": "GCC x86 Release", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_CXX_FLAGS": "-m32", "CMAKE_BUILD_TYPE": "Release" } },
-    { "name": "clang-release", "displayName": "Clang x64 Release", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "clang++", "CMAKE_BUILD_TYPE": "Release" } }
+    { "name": "gcc-x86", "displayName": "GCC x86 Release", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "g++", "CMAKE_C_COMPILER": "gcc", "CMAKE_CXX_FLAGS": "-m32", "CMAKE_C_FLAGS": "-m32", "CMAKE_BUILD_TYPE": "Release" } },
+    { "name": "clang-release", "displayName": "Clang x64 Release", "inherits": "linux", "cacheVariables": { "CMAKE_CXX_COMPILER": "clang++", "CMAKE_C_COMPILER": "clang", "CMAKE_BUILD_TYPE": "Release" } }
   ],
   "buildPresets": [
     { "name": "msvc-x64-release", "configurePreset": "msvc-x64", "configuration": "Release" },

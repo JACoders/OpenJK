@@ -55,3 +55,6 @@ add_library(netcodec_engine_cxx11 OBJECT engine_cxx11.cpp)
 target_include_directories(netcodec_engine_cxx11 PRIVATE "${PROJECT_SOURCE_DIR}/include")
 target_link_libraries(netcodec_engine_cxx11 PRIVATE netcodec_warnings)
 set_target_properties(netcodec_engine_cxx11 PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+
+# Determinism of the game's player movement (bg_pmove.c) as the game module and as cgame, with OpenJK's own settings.
+add_subdirectory(pmove)

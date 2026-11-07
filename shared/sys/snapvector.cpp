@@ -29,13 +29,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 # include <fenv.h>
 #endif
 
-#if _MSC_VER
-static inline float roundfloat(float n)
-{
-	return (n < 0.0f) ? ceilf(n - 0.5f) : floorf(n + 0.5f);
-}
-#endif
-
+// To nearest with ties to even, through an integer (so -0.5 gives +0), on every platform and compiler: what 1.01's
+// fld / fistp did. MSVC used to round ties away from zero while the others rounded them to even, so a Windows client
+// and a Linux server could round the same velocity (pmove) differently.
 extern "C"
 void Sys_SnapVector(float *v)
 {
@@ -46,9 +42,9 @@ void Sys_SnapVector(float *v)
 	_controlfp_s(&oldcontrol, 0, 0);
 	_controlfp_s(&newcontrol, _RC_NEAR, _MCW_RC);
 
-	v[0] = roundfloat(v[0]);
-	v[1] = roundfloat(v[1]);
-	v[2] = roundfloat(v[2]);
+	v[0] = (float)lrintf(v[0]);
+	v[1] = (float)lrintf(v[1]);
+	v[2] = (float)lrintf(v[2]);
 
 	_controlfp_s(&newcontrol, oldcontrol, _MCW_RC);
 #else
@@ -56,9 +52,9 @@ void Sys_SnapVector(float *v)
 	int oldround = fegetround();
 	fesetround(FE_TONEAREST);
 
-	v[0] = nearbyintf(v[0]);
-	v[1] = nearbyintf(v[1]);
-	v[2] = nearbyintf(v[2]);
+	v[0] = (float)lrintf(v[0]);
+	v[1] = (float)lrintf(v[1]);
+	v[2] = (float)lrintf(v[2]);
 
 	fesetround(oldround);
 #endif

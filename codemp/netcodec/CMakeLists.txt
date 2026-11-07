@@ -115,6 +115,7 @@ function(netcodec_add_program name)
 endfunction()
 
 if(netcodec_BUILD_TESTS)
+	enable_language(C)   # the pmove determinism test builds the game's C code (test/pmove)
 	enable_testing()
 	add_subdirectory(test)
 endif()

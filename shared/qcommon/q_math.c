@@ -1237,32 +1237,13 @@ qboolean VectorCompare2( const vec3_t v1, const vec3_t v2 )
 	return qtrue;
 }
 
+// To nearest with ties to even, through an integer, on every platform (as Sys_SnapVector): it used to round to nearest
+// only with MSVC on 32-bit x86 (fistp) and to truncate toward zero everywhere else.
 void SnapVector( float *v )
 {
-#if defined(_MSC_VER) && !defined(idx64)
-	// pitiful attempt to reduce _ftol2 calls -rww
-	static int i;
-	static float f;
-
-	f = *v;
-	__asm fld f
-	__asm fistp	i
-	*v = (float)i;
-	v++;
-	f = *v;
-	__asm fld f
-	__asm fistp i
-	*v = (float)i;
-	v++;
-	f = *v;
-	__asm fld f
-	__asm fistp i
-	*v = (float)i;
-#else // mac, linux, mingw
-	v[0] = (int)v[0];
-	v[1] = (int)v[1];
-	v[2] = (int)v[2];
-#endif
+	v[0] = (float)lrintf(v[0]);
+	v[1] = (float)lrintf(v[1]);
+	v[2] = (float)lrintf(v[2]);
 }
 
 float DistanceHorizontal( const vec3_t p1, const vec3_t p2 )
