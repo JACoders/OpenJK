@@ -21,7 +21,7 @@ private:
 
 	std::vector<uint16_t> cum_;
 	std::vector<rans::EncSymbol> enc_;
-	std::vector<std::array<uint16_t, rans::kCoarseSize>> coarse_;   // one per distinct table, plus one for empty contexts
+	std::vector<std::array<rans::CoarseEntry, rans::kCoarseSize>> coarse_;   // one per distinct table, plus one for empty contexts
 	std::vector<rans::Table> tables_;                               // per context
 	int8_t trTypeBits_ = 8;
 };

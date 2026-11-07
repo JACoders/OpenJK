@@ -27,7 +27,7 @@ struct Message {
 struct RansTrace {
 	std::vector<std::vector<uint16_t>> cum;
 	std::vector<std::vector<rans::EncSymbol>> enc;
-	std::vector<std::vector<uint16_t>> coarse;
+	std::vector<std::vector<rans::CoarseEntry>> coarse;
 	std::vector<rans::Table> tables;
 	std::vector<Message> messages;
 };
@@ -62,14 +62,14 @@ inline bool LoadRansTrace(const char *path, RansTrace &t) {
 		ok = ok && cum[K] == rans::kProbScale;
 		std::vector<rans::EncSymbol> enc(K);
 		for (uint32_t s = 0; ok && s < K; s++) enc[s] = rans::MakeEncSymbol(cum[s], freq[s]);
-		std::vector<uint16_t> coarse(rans::kCoarseSize);
-		if (ok) rans::BuildCoarse(cum, std::span<uint16_t, rans::kCoarseSize>(coarse.data(), rans::kCoarseSize));
+		std::vector<rans::CoarseEntry> coarse(rans::kCoarseSize);
+		if (ok) rans::BuildCoarse(cum, std::span<rans::CoarseEntry, rans::kCoarseSize>(coarse.data(), rans::kCoarseSize));
 		t.coarse.push_back(std::move(coarse));
 		t.cum.push_back(std::move(cum));
 		t.enc.push_back(std::move(enc));
 	}
 	for (size_t i = 0; ok && i < t.cum.size(); i++)
-		t.tables.push_back(rans::Table{ t.cum[i], t.enc[i], std::span<const uint16_t, rans::kCoarseSize>(t.coarse[i].data(), rans::kCoarseSize) });
+		t.tables.push_back(rans::Table{ t.cum[i], t.enc[i], std::span<const rans::CoarseEntry, rans::kCoarseSize>(t.coarse[i].data(), rans::kCoarseSize) });
 	ok = ok && ReadU32(f, nmsg);
 	t.messages.resize(ok ? nmsg : 0);
 	for (uint32_t m = 0; ok && m < nmsg; m++) {

@@ -3,6 +3,12 @@
 // baselines. Measured: bytes, and the best time of several passes over all messages, encoding and decoding.
 // Messages with operations the legacy glue does not drive (gamestate, download, ...) only update the stores.
 //
+// Two timings. Cold: whole passes over the trace; every state comes from main memory, so about half of this time is
+// memory latency, and it varies by 5 to 10 % between runs. Warm: each message coded 5 times in a row and the fastest
+// kept (time-stamp counter, converted to ns with the pass's own duration), summed over the messages; the states are in
+// cache as in the engine, which has just written them, and two runs agree within a fraction of a percent. Compare
+// two versions with the warm timing, alternately (step-06-cpp-codec.md, part C).
+//
 // Memory: the stores point into the loaded trace instead of copying snapshots. Every message is first coded and
 // decoded once by both codecs and checked (decoded fields equal to the recording), so the recorded snapshots are
 // what each side holds as bases. The trace's own coded bytes (an earlier format) are not used.
@@ -18,6 +24,12 @@
 #include <map>
 #include <memory>
 
+#if defined(_MSC_VER)
+#include <intrin.h>
+#else
+#include <x86intrin.h>
+#endif
+
 using namespace netcodec;
 
 namespace {
@@ -26,6 +38,9 @@ double NowNs() {
 	return static_cast<double>(
 	    std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
 }
+
+// time-stamp counter as uint64_t (__rdtsc returns unsigned long long, which is not uint64_t on Linux)
+uint64_t Ticks() noexcept { return __rdtsc(); }
 
 template <class F> double Best(int passes, F f) {
 	double best = 1e300;
@@ -269,12 +284,56 @@ int main(int argc, char **argv) {
 		sink = sink + acc;
 	});
 
+	// warm: the fastest of 5 codings of each message, summed; best of 3 passes; ns per message
+	const auto warm = [&](auto code) {
+		double best = 1e300;
+		for (int rep = 0; rep < 3; rep++) {
+			uint64_t sum = 0;
+			const double t0 = NowNs();
+			const uint64_t c0 = Ticks();
+			for (auto &r : runs)
+				for (const Item &it : r->items) {
+					uint64_t fastest = ~uint64_t{ 0 };
+					for (int k = 0; k < 5; k++) {
+						const uint64_t s = Ticks();
+						code(*r, it);
+						fastest = std::min(fastest, Ticks() - s);
+					}
+					sum += fastest;
+				}
+			const double nsPerTick = (NowNs() - t0) / static_cast<double>(Ticks() - c0);
+			best = std::min(best, static_cast<double>(sum) * nsPerTick);
+		}
+		return best;
+	};
+	const double wEncNew = warm([&](StreamRun &r, const Item &it) {
+		HeaderRecord rec;
+		if (enc.Encode(it.cm->msg, it.base, *it.baselines, r.serverHistory, 1 << 20, out, rec)) sink = sink + out.size();
+	});
+	const double wEncLegacy = warm([&](StreamRun &, const Item &it) {
+		sink = sink + static_cast<size_t>(legacy::Encode(it.legacyIn->view, it.legacyBase, it.legacyBaselines, legacyOut.data(),
+		                                                 static_cast<int>(legacyOut.size())));
+	});
+	Message wdm;
+	const double wDecNew = warm([&](StreamRun &r, const Item &it) {
+		uint32_t delta = 0;
+		HeaderRecord drec;
+		r.client.seq = it.cm->seq;
+		if (DecodeMessage(it.bytes, r.client, r.clientHistory, *it.baselines, wdm, delta, drec)) sink = sink + wdm.ops.size();
+	});
+	const double wDecLegacy = warm([&](StreamRun &, const Item &it) {
+		if (legacy::Decode(it.legacyBytes.data(), static_cast<int>(it.legacyBytes.size()), it.legacyBase, it.legacyBaselines, scratch))
+			sink = sink + static_cast<size_t>(scratch.numEntities);
+	});
+
 	const double n = static_cast<double>(nBench);
 	printf("bytes per message: netcodec %.1f, legacy %.1f (ratio %.3f)\n", static_cast<double>(bytesNew) / n,
 	       static_cast<double>(bytesLegacy) / n, static_cast<double>(bytesNew) / static_cast<double>(bytesLegacy));
-	printf("  %-22s %9.1f ns/message\n", "encode netcodec", tEncNew / n);
-	printf("  %-22s %9.1f ns/message\n", "encode legacy", tEncLegacy / n);
-	printf("  %-22s %9.1f ns/message\n", "decode netcodec", tDecNew / n);
-	printf("  %-22s %9.1f ns/message\n", "decode legacy", tDecLegacy / n);
+	printf("  %-22s %9.1f ns/message  warm %9.1f\n", "encode netcodec", tEncNew / n, wEncNew / n);
+	printf("  %-22s %9.1f ns/message  warm %9.1f\n", "encode legacy", tEncLegacy / n, wEncLegacy / n);
+	printf("  %-22s %9.1f ns/message  warm %9.1f\n", "decode netcodec", tDecNew / n, wDecNew / n);
+	printf("  %-22s %9.1f ns/message  warm %9.1f\n", "decode legacy", tDecLegacy / n, wDecLegacy / n);
+	printf("  netcodec / legacy: encode cold %.3f warm %.3f, decode cold %.3f warm %.3f\n", tEncNew / tEncLegacy,
+	       wEncNew / wEncLegacy, tDecNew / tDecLegacy, wDecNew / wDecLegacy);
 	return newBad != 0 || legacyBad != 0 ? 1 : 0;
 }

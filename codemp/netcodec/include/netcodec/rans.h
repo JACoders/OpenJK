@@ -187,24 +187,34 @@ private:
 constexpr uint32_t kCoarseBits = 6;           // decoder search table: 2^6 buckets of the slot (measured, bench_rans)
 constexpr uint32_t kCoarseSize = 1u << kCoarseBits;
 
+// Decoder search entry of one bucket of the slot: the symbol that holds the bucket's first slot, with its slot range
+// [start, end), so that a slot inside it is decoded without reading cum (most slots: a bucket is usually inside one
+// symbol).
+struct CoarseEntry {
+	uint16_t sym = 0;
+	uint16_t start = 0;   // cum[sym]
+	uint16_t end = 0;     // cum[sym + 1], at most kProbScale
+	uint16_t unused = 0;  // 8-byte entries: the index is a shift
+};
+
 // One context: K symbols, cumulative frequencies cum[0..K] (cum[0] = 0, cum[K] = kProbScale), encoder symbols,
-// and for each bucket of the slot's top kCoarseBits bits the symbol that holds the bucket's first slot.
+// and the search entry of each bucket of the slot's top kCoarseBits bits.
 // Non-owning views: the storage belongs to the caller.
 struct Table {
 	std::span<const uint16_t> cum;                  // K + 1 entries
 	std::span<const EncSymbol> enc;                 // K entries
-	std::span<const uint16_t, kCoarseSize> coarse;
+	std::span<const CoarseEntry, kCoarseSize> coarse;
 
 	[[nodiscard]] uint32_t K() const noexcept { return ToU32(enc.size()); }
 };
 
 // cum: K + 1 entries ending with kProbScale
-inline void BuildCoarse(std::span<const uint16_t> cum, std::span<uint16_t, kCoarseSize> coarse) noexcept {
+inline void BuildCoarse(std::span<const uint16_t> cum, std::span<CoarseEntry, kCoarseSize> coarse) noexcept {
 	uint32_t s = 0;
 	for (uint32_t b = 0; b < kCoarseSize; b++) {
 		const uint32_t slot = b << (kProbBits - kCoarseBits);
 		while (cum[s + 1] <= slot) s++;
-		coarse[b] = static_cast<uint16_t>(s);
+		coarse[b] = CoarseEntry{ .sym = static_cast<uint16_t>(s), .start = cum[s], .end = cum[s + 1], .unused = 0 };
 	}
 }
 
@@ -212,14 +222,22 @@ inline void Put(Encoder &e, const Table &t, uint32_t sym) noexcept { e.Put(t.enc
 
 // symbol whose slot range holds slot: cum[s] <= slot < cum[s + 1]; forward search from the bucket's first symbol
 [[nodiscard]] inline uint32_t FindSymbol(const Table &t, uint32_t slot) noexcept {
-	uint32_t s = t.coarse[slot >> (kProbBits - kCoarseBits)];
+	uint32_t s = t.coarse[slot >> (kProbBits - kCoarseBits)].sym;
 	while (t.cum[s + 1] <= slot) s++;
 	return s;
 }
 
 [[nodiscard]] inline uint32_t Get(Decoder &d, const Table &t) noexcept {
-	const uint32_t s = FindSymbol(t, d.Slot());
-	d.Advance(t.cum[s], static_cast<uint32_t>(t.cum[s + 1]) - t.cum[s]);
+	const uint32_t slot = d.Slot();
+	const CoarseEntry &e = t.coarse[slot >> (kProbBits - kCoarseBits)];
+	uint32_t s = e.sym, start = e.start, end = e.end;
+	if (slot >= end) {   // past the bucket's first symbol: search on
+		s++;
+		while (t.cum[s + 1] <= slot) s++;
+		start = t.cum[s];
+		end = t.cum[s + 1];
+	}
+	d.Advance(start, end - start);
 	return s;
 }
 

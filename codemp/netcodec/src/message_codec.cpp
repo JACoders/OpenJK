@@ -82,12 +82,45 @@ const Entity *FindEntity(std::span<const Entity> list, uint32_t num) noexcept {
 	return it != list.end() && it->number == num ? &*it : nullptr;
 }
 
+// entities of a sorted list looked up by increasing numbers: a forward cursor instead of a search per lookup
+class EntityCursor {
+public:
+	explicit EntityCursor(const Snapshot *snap) noexcept {
+		if (snap != nullptr) list_ = snap->entities;
+	}
+
+	// num above the previous lookup's
+	[[nodiscard]] const Entity *Find(uint32_t num) noexcept {
+		while (k_ < list_.size() && list_[k_].number < num) k_++;
+		return k_ < list_.size() && list_[k_].number == num ? &list_[k_] : nullptr;
+	}
+
+private:
+	std::span<const Entity> list_;
+	size_t k_ = 0;
+};
+
 // indices (codec order) of the fields that differ between two entity states; one pass, raw words first
 using ChangeList = std::array<uint8_t, kNumEntityFields>;
 static_assert(kNumEntityFields <= 256, "change list indices are bytes");
 
+// two entity images are equal: compared inline 8 bytes at a time (most compared entities are unchanged, and a
+// library memcmp call costs more than the comparison)
+bool SameEntity(ImageView a, ImageView b) noexcept {
+	static_assert(kEntityBytes % 8 == 4, "the last word is compared apart");
+	uint64_t acc = 0;
+	for (size_t k = 0; k + 8 <= kEntityBytes; k += 8) {
+		uint64_t wa = 0, wb = 0;
+		std::memcpy(&wa, a.subspan(k, 8).data(), 8);
+		std::memcpy(&wb, b.subspan(k, 8).data(), 8);
+		acc |= wa ^ wb;
+	}
+	acc |= Load(a, kEntityBytes - 4) ^ Load(b, kEntityBytes - 4);
+	return acc == 0;
+}
+
 uint32_t Changes(ImageView a, ImageView b, ChangeList &list) noexcept {
-	if (std::ranges::equal(a, b)) return 0;
+	if (SameEntity(a, b)) return 0;
 	uint32_t n = 0;
 	for (uint32_t i = 0; i < kNumEntityFields; i++)
 		if (FieldDiffers(a, b, kEntityFields[i])) list[n++] = static_cast<uint8_t>(i);
@@ -117,6 +150,7 @@ template <class O>
 void PutEntities(O &io, PredCtx &c, std::span<const Entity> nw, std::span<const Entity> old,
                  std::span<const Entity> baselines, const Model &m) noexcept {
 	ChangeList list{};
+	EntityCursor olderList(c.olderSnap);
 	size_t i = 0, j = 0;
 	int64_t prevnum = -1;
 	uint32_t prevop = 0;
@@ -152,7 +186,7 @@ void PutEntities(O &io, PredCtx &c, std::span<const Entity> nw, std::span<const 
 		prevop = op;
 		if (op == 2 || op == 3) continue;
 		c.cur = ne->state; c.old = basest; c.pred = op == 0;
-		const Entity *older = op == 0 && c.olderSnap != nullptr ? FindEntity(c.olderSnap->entities, num) : nullptr;
+		const Entity *older = op == 0 ? olderList.Find(num) : nullptr;
 		c.older = older != nullptr ? older->state.data() : nullptr;
 		PutEntity(io, c, ne->state, basest, std::span<const uint8_t>(list.data(), nch), m);
 	}
@@ -166,6 +200,7 @@ bool GetEntities(In &io, PredCtx &c, std::span<const Entity> old, std::span<cons
 	int64_t prevnum = -1;
 	uint32_t prevop = 0;
 	const FieldDesc &typeField = kEntityFields[kEntityTypeIndex];
+	EntityCursor olderList(c.olderSnap);
 	for (;;) {
 		const uint32_t g = io.Symbol(Of(kEntGap));
 		if (g == kEntityListEnd) break;
@@ -183,19 +218,14 @@ bool GetEntities(In &io, PredCtx &c, std::span<const Entity> old, std::span<cons
 			continue;
 		}
 		if (op == 0 && oe == nullptr) return false;
-		ImageView basest;
-		if (op == 0) {
-			basest = oe->state;
-		} else {
-			const Entity *b = FindEntity(baselines, static_cast<uint32_t>(num));
-			basest = b != nullptr ? ImageView(b->state) : ImageView(ZeroEntity());
-		}
-		Entity &st = out.emplace_back();
+		// the base: the previous state, or the baseline (same number), or the zero state; copied in one go
+		const Entity *src = op == 0 ? oe : FindEntity(baselines, static_cast<uint32_t>(num));
+		Entity &st = src != nullptr ? out.emplace_back(*src) : out.emplace_back();
 		st.number = static_cast<uint16_t>(num);
-		std::ranges::copy(basest, st.state.begin());
+		const ImageView basest = src != nullptr ? ImageView(src->state) : ImageView(ZeroEntity());
 		if (op == 3) continue;
 		c.cur = st.state; c.old = basest; c.pred = op == 0;
-		const Entity *older = op == 0 && c.olderSnap != nullptr ? FindEntity(c.olderSnap->entities, static_cast<uint32_t>(num)) : nullptr;
+		const Entity *older = op == 0 ? olderList.Find(static_cast<uint32_t>(num)) : nullptr;
 		c.older = older != nullptr ? older->state.data() : nullptr;
 		const uint32_t bcls = ClassOf(basest);
 		if (io.Symbol(ctx::kTypeChanged + bcls) != 0) Store(st.state, typeField, io.Symbol(ctx::kTypeValue + bcls));

@@ -38,7 +38,12 @@ inline constexpr double kAngleStep = 360.0 / 65536;   // a 16-bit angle index st
 }
 // a double rounded to float32, as its bit pattern
 [[nodiscard]] constexpr uint32_t Pack(double x) noexcept { return std::bit_cast<uint32_t>(static_cast<float>(x)); }
-[[nodiscard]] inline int64_t Rnd(double x) noexcept { return static_cast<int64_t>(std::floor(x + 0.5)); }
+// floor of x, for |x| < 2^62 (not NaN): exact, without the library call std::floor is on SSE2 targets
+[[nodiscard]] constexpr int64_t FloorI(double x) noexcept {
+	const auto t = static_cast<int64_t>(x);   // rounds toward zero
+	return static_cast<double>(t) > x ? t - 1 : t;
+}
+[[nodiscard]] constexpr int64_t Rnd(double x) noexcept { return FloorI(x + 0.5); }
 
 // float kind: 0 zero, 1 integral in [-4096, 4096), 2 other (3, angle index, is decided by the caller). -0.0 is
 // "other": the integral kind would decode it as +0.0.
@@ -47,14 +52,17 @@ inline constexpr double kAngleStep = 360.0 / 65536;   // a 16-bit angle index st
 	if (pattern == 0) return 0;
 	if (pattern == kNegativeZero) return 2;
 	const double f = F32(pattern);
-	return (f == f && f >= -4096 && f < 4096 && std::trunc(f) == f) ? 1 : 2;
+	return (f == f && f >= -4096 && f < 4096 && static_cast<double>(static_cast<int64_t>(f)) == f) ? 1 : 2;
 }
 
 // the float is exactly a 16-bit angle index times kAngleStep, |f| <= 720
 [[nodiscard]] inline bool IsAngleIndex(int64_t pattern) noexcept {
 	const double f = F32(pattern);
 	if (f != f || std::fabs(f) > 720) return false;
-	return Pack(static_cast<double>(Rnd(f / kAngleStep)) * kAngleStep) == static_cast<uint32_t>(pattern);
+	// a multiply instead of the division: for an angle index f / kAngleStep is within 2^-7 of the index, so both
+	// round the same; otherwise the exactness test fails either way (checked on all 2^32 patterns)
+	constexpr double kInvAngleStep = 65536 / 360.0;
+	return Pack(static_cast<double>(Rnd(f * kInvAngleStep)) * kAngleStep) == static_cast<uint32_t>(pattern);
 }
 
 // angle index of a base value (0 when the base is not an angle)

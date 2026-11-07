@@ -48,7 +48,7 @@ constexpr int64_t kTwo31 = 2147483648LL, kTwo32 = 4294967296LL;
 	const double o = F32(Load(c.old, f.offset)), vo = F32(Load(c.old, f.relVel)), vn = F32(Load(c.cur, f.relVel));
 	const auto finite = [](double x) { return x == x && std::fabs(x) < 16777216.0; };
 	if (!finite(o) || !finite(vo) || !finite(vn) || (dt < 0 ? -dt : dt) >= 65536) return std::nullopt;
-	const auto units = [](double x) { return static_cast<int64_t>(std::floor((x * 65536.0) + 0.5)); };
+	const auto units = [](double x) { return FloorI((x * 65536.0) + 0.5); };
 	const int64_t p = units(o) + FloorDiv((units(vo) + units(vn)) * dt, 2000);
 	return Pack(static_cast<double>(p) / 65536.0);
 }
