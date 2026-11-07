@@ -178,6 +178,7 @@ cvar_t *s_debugdynamic;
 cvar_t *s_dynamix;
 cvar_t *s_initsound;
 cvar_t *s_khz;
+cvar_t *s_quality;
 cvar_t *s_language;	// note that this is distinct from "g_language"
 cvar_t *s_lip_threshold_1;
 cvar_t *s_lip_threshold_2;
@@ -185,6 +186,7 @@ cvar_t *s_lip_threshold_3;
 cvar_t *s_lip_threshold_4;
 cvar_t *s_mixahead;
 cvar_t *s_mixPreStep;
+cvar_t *s_mixPreStepAuto;
 cvar_t *s_musicVolume;
 cvar_t *s_separation;
 cvar_t *s_show;
@@ -452,6 +454,7 @@ void S_Init( void ) {
 	s_debugdynamic      = Cvar_Get( "s_debugdynamic",      "0",       0 );
 	s_initsound         = Cvar_Get( "s_initsound",         "1",       CVAR_ARCHIVE | CVAR_LATCH );
 	s_khz               = Cvar_Get( "s_khz",               "44",      CVAR_ARCHIVE | CVAR_LATCH );
+	s_quality           = Cvar_Get( "s_quality",           "2",       CVAR_ARCHIVE );	// 0 = fast, 1 = good, 2 = best
 	s_language          = Cvar_Get( "s_language",          "english", CVAR_ARCHIVE | CVAR_NORESTART );
 	s_lip_threshold_1   = Cvar_Get( "s_threshold1",        "0.3",     0 );
 	s_lip_threshold_2   = Cvar_Get( "s_threshold2",        "4",       0 );
@@ -459,6 +462,7 @@ void S_Init( void ) {
 	s_lip_threshold_4   = Cvar_Get( "s_threshold4",        "8",       0 );
 	s_mixahead          = Cvar_Get( "s_mixahead",          "0.2",     CVAR_ARCHIVE );
 	s_mixPreStep        = Cvar_Get( "s_mixPreStep",        "0.05",    CVAR_ARCHIVE );
+	s_mixPreStepAuto    = Cvar_Get( "s_mixPreStepAuto",    "1",       CVAR_ARCHIVE );	// 1 = shorten s_mixPreStep when the frame rate allows
 	s_musicVolume       = Cvar_Get( "s_musicvolume",       "0.25",    CVAR_ARCHIVE );
 	s_separation        = Cvar_Get( "s_separation",        "0.5",     CVAR_ARCHIVE );
 	s_show              = Cvar_Get( "s_show",              "0",       CVAR_CHEAT );
@@ -2057,6 +2061,15 @@ portable_samplepair_t *S_GetRawSamplePointer() {
 	return s_rawsamples;
 }
 
+// Linearly interpolated 16 bit sample, used when streamed audio (cinematics) has to be converted to the output rate
+static inline int S_RawLerp16( const short *data, int src, float frac, int samples, int channels, int ch )
+{
+	const int next = ( src + 1 < samples ) ? src + 1 : src;
+	const int a = data[src * channels + ch];
+	const int b = data[next * channels + ch];
+	return a + (int)( (b - a) * frac );
+}
+
 /*
 ============
 S_RawSamples
@@ -2127,8 +2140,8 @@ void S_RawSamples( int samples, int rate, int width, int channels, const byte *d
 					//Don't overflow if resampling.
 					if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
 						break;
-					s_rawsamples[dst].left = ((short *)data)[src*2] * intVolume;
-					s_rawsamples[dst].right = ((short *)data)[src*2+1] * intVolume;
+					s_rawsamples[dst].left = S_RawLerp16( (short *)data, src, i*scale - src, samples, 2, 0 ) * intVolume;
+					s_rawsamples[dst].right = S_RawLerp16( (short *)data, src, i*scale - src, samples, 2, 1 ) * intVolume;
 				}
 			}
 			else
@@ -2143,8 +2156,8 @@ void S_RawSamples( int samples, int rate, int width, int channels, const byte *d
 					//Don't overflow if resampling.
 					if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
 						break;
-					s_rawsamples[dst].left  += ((short *)data)[src*2] * intVolume;
-					s_rawsamples[dst].right += ((short *)data)[src*2+1] * intVolume;
+					s_rawsamples[dst].left  += S_RawLerp16( (short *)data, src, i*scale - src, samples, 2, 0 ) * intVolume;
+					s_rawsamples[dst].right += S_RawLerp16( (short *)data, src, i*scale - src, samples, 2, 1 ) * intVolume;
 				}
 			}
 		}
@@ -2163,8 +2176,8 @@ void S_RawSamples( int samples, int rate, int width, int channels, const byte *d
 				//Don't overflow if resampling.
 				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
 					break;
-				s_rawsamples[dst].left = ((short *)data)[src] * intVolume;
-				s_rawsamples[dst].right = ((short *)data)[src] * intVolume;
+				s_rawsamples[dst].left = S_RawLerp16( (short *)data, src, i*scale - src, samples, 1, 0 ) * intVolume;
+				s_rawsamples[dst].right = S_RawLerp16( (short *)data, src, i*scale - src, samples, 1, 0 ) * intVolume;
 			}
 		}
 		else
@@ -2179,8 +2192,8 @@ void S_RawSamples( int samples, int rate, int width, int channels, const byte *d
 				//Don't overflow if resampling.
 				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
 					break;
-				s_rawsamples[dst].left  += ((short *)data)[src] * intVolume;
-				s_rawsamples[dst].right += ((short *)data)[src] * intVolume;
+				s_rawsamples[dst].left  += S_RawLerp16( (short *)data, src, i*scale - src, samples, 1, 0 ) * intVolume;
+				s_rawsamples[dst].right += S_RawLerp16( (short *)data, src, i*scale - src, samples, 1, 0 ) * intVolume;
 			}
 		}
 	}
@@ -2736,6 +2749,65 @@ void S_Update( void ) {
 	S_Update_();
 }
 
+/*
+===============
+S_UpdateMixPreStep
+
+New sounds can only start s_mixPreStep seconds after the play position: that part of the buffer has already been
+handed to the device, and the play position itself only advances in device-callback sized steps. The old fixed 50ms is
+the safe choice for slow or stuttery frame rates, but costs latency when the game runs fast.
+
+With s_mixPreStepAuto the pre-step follows what's needed instead: one device buffer, plus the longest gap seen
+between sound updates over the last second or two (with some margin), never more than s_mixPreStep and never less
+than 20ms. A long frame (loading, a hitch) immediately brings it back up.
+===============
+*/
+static float	s_mixPreStepSeconds = 0.05f;
+
+static void S_UpdateMixPreStep( void )
+{
+	static int iLastMs = 0, iBucketStartMs = 0, iMaxGapCur = 50, iMaxGapPrev = 50;
+	const int iNow = Sys_Milliseconds();
+	const float fMax = s_mixPreStep->value;
+
+	if ( iLastMs && iNow - iLastMs > iMaxGapCur )
+	{
+		iMaxGapCur = iNow - iLastMs;
+	}
+	iLastMs = iNow;
+
+	if ( iNow - iBucketStartMs >= 1000 )
+	{
+		iMaxGapPrev = iMaxGapCur;
+		iMaxGapCur = 0;
+		iBucketStartMs = iNow;
+	}
+
+	if ( !s_mixPreStepAuto->integer )
+	{
+		s_mixPreStepSeconds = fMax;
+		return;
+	}
+
+	const int iMaxGap = ( iMaxGapCur > iMaxGapPrev ) ? iMaxGapCur : iMaxGapPrev;
+	const float fChunk = SNDDMA_GetDeviceChunkSamples() / (float)dma.speed;
+	float fWanted = fChunk + iMaxGap * 0.001f * 1.25f + 0.008f;
+
+	if ( fWanted < 0.02f )	fWanted = 0.02f;
+	if ( fWanted > fMax )	fWanted = fMax;
+
+	if ( fWanted >= s_mixPreStepSeconds )
+	{
+		s_mixPreStepSeconds = fWanted;
+	}
+	else
+	{
+		s_mixPreStepSeconds -= 0.001f;	// come down slowly
+		if ( s_mixPreStepSeconds < fWanted )
+			s_mixPreStepSeconds = fWanted;
+	}
+}
+
 void S_GetSoundtime(void)
 {
 	int		samplepos;
@@ -2773,12 +2845,14 @@ void S_GetSoundtime(void)
 #endif
 
 	if ( dma.submission_chunk < 256 ) {
-		s_paintedtime = (int)(s_soundtime + s_mixPreStep->value * dma.speed);
+		s_paintedtime = (int)(s_soundtime + s_mixPreStepSeconds * dma.speed);
 	} else {
 		s_paintedtime = s_soundtime + dma.submission_chunk;
 	}
 }
 
+
+extern int s_clippedSamples, s_clipPeak;	// from snd_mix.cpp
 
 void S_Update_(void) {
 	unsigned        endtime;
@@ -2786,6 +2860,29 @@ void S_Update_(void) {
 
 	if ( !s_soundStarted || s_soundMuted ) {
 		return;
+	}
+
+	// developer diagnostic: how loud did the mix get? (only prints when the mix exceeded full scale)
+	{
+		static int iNextClipReport = 0;
+		const int iNow = Sys_Milliseconds();
+		if ( iNow >= iNextClipReport )
+		{
+			if ( s_clippedSamples )
+			{
+				Com_DPrintf( "Sound: mix exceeded full scale on %d samples (peak %d of 32767) in the last 5 seconds; softened by the limiter\n", s_clippedSamples, s_clipPeak );
+			}
+			s_clippedSamples = 0;
+			s_clipPeak = 0;
+			iNextClipReport = iNow + 5000;
+
+			static int iLastReportedPreStepMs = -1000;
+			if ( abs( (int)( s_mixPreStepSeconds * 1000 ) - iLastReportedPreStepMs ) >= 5 )
+			{
+				iLastReportedPreStepMs = (int)( s_mixPreStepSeconds * 1000 );
+				Com_DPrintf( "Sound: mix pre-step is now %d ms (device buffer %d samples at %d Hz)\n", iLastReportedPreStepMs, SNDDMA_GetDeviceChunkSamples(), dma.speed );
+			}
+		}
 	}
 
 #ifdef USE_OPENAL
@@ -3042,6 +3139,7 @@ void S_Update_(void) {
 	{
 #endif
 		// Updates s_soundtime
+		S_UpdateMixPreStep();
 		S_GetSoundtime();
 
 		const int s_oldpaintedtime = s_paintedtime;
@@ -4716,9 +4814,9 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 		s_rawend = s_soundtime;
 	}
 
-	while ( s_rawend < s_soundtime + MAX_RAW_SAMPLES )
+	while ( s_rawend < s_soundtime + MUSIC_RAW_LOOKAHEAD )
 	{
-		bufferSamples = MAX_RAW_SAMPLES - (s_rawend - s_soundtime);
+		bufferSamples = MUSIC_RAW_LOOKAHEAD - (s_rawend - s_soundtime);
 
 		// decide how much data needs to be read from the file
 		fileSamples = bufferSamples * pMusicInfo->s_backgroundInfo.rate / dma.speed;
@@ -4916,8 +5014,17 @@ static void S_CheckDynamicMusicState(void)
 	S_HandleDynamicMusicStateChange();
 }
 
+extern qboolean CIN_IsPlayingAudio( void );
+
 static void S_UpdateBackgroundTrack( void )
 {
+	// A cinematic's soundtrack and streamed music share the raw sample ring, each appending at s_rawend. Streaming
+	// both at once interleaves their samples (heard as clipping/crackling), so music waits until the cinematic is over.
+	if ( CIN_IsPlayingAudio() )
+	{
+		return;
+	}
+
 	if (bMusic_IsDynamic)
 	{
 		if (s_debugdynamic->integer == 2)
@@ -5258,6 +5365,14 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 	qboolean bAtLeastOneSoundDropped = qfalse;
 
 	Com_DPrintf( "SND_RegisterAudio_LevelLoadEnd():\n");
+	{
+		extern int s_resampleMsTotal, s_resampleCount;
+		if ( s_resampleCount )
+		{
+			Com_DPrintf( "Sound: resampled %d sounds in %d ms (s_quality %d)\n", s_resampleCount, s_resampleMsTotal, s_quality->integer );
+			s_resampleMsTotal = s_resampleCount = 0;
+		}
+	}
 
 	if (gbInsideLoadSound)
 	{

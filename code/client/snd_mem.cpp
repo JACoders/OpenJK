@@ -25,6 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../server/exe_headers.h"
 
 #include "snd_local.h"
+#include <math.h>
 #include "cl_mp3.h"
 
 #include <string>
@@ -200,43 +201,162 @@ wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength)
 }
 
 
+// Windowed-sinc low pass kernel used for high quality sample rate conversion (s_quality 2).
+// Stored as a table of sinc(u) * Blackman-Harris window for u in [0, SINC_HALF_TAPS], SINC_TABLE_RES entries per unit.
+#define SINC_HALF_TAPS	16
+#define SINC_TABLE_RES	256
+static float	sSincTable[SINC_HALF_TAPS * SINC_TABLE_RES + 2];
+static qboolean	sSincTableBuilt = qfalse;
+
+static void S_BuildSincTable( void )
+{
+	for ( int n = 0; n < SINC_HALF_TAPS * SINC_TABLE_RES + 2; n++ )
+	{
+		const double u = (double)n / SINC_TABLE_RES;
+		if ( u >= SINC_HALF_TAPS )
+		{
+			sSincTable[n] = 0.0f;
+			continue;
+		}
+		const double sinc = ( n == 0 ) ? 1.0 : sin( M_PI * u ) / ( M_PI * u );
+		const double t = u / SINC_HALF_TAPS;	// 0..1 across the half window
+		const double window = 0.35875 + 0.48829 * cos( M_PI * t ) + 0.14128 * cos( 2.0 * M_PI * t ) + 0.01168 * cos( 3.0 * M_PI * t );
+		sSincTable[n] = (float)( sinc * window );
+	}
+	sSincTableBuilt = qtrue;
+}
+
+static inline float S_SincKernel( float u )
+{
+	if ( u < 0.0f )
+		u = -u;
+	if ( u >= SINC_HALF_TAPS )
+		return 0.0f;
+	const float f = u * SINC_TABLE_RES;
+	const int i = (int)f;
+	const float t = f - i;
+	return sSincTable[i] + ( sSincTable[i + 1] - sSincTable[i] ) * t;
+}
+
+// one source sample as 16 bit, with the ends of the sound repeated outwards
+static inline int S_ResampleFetch( const byte *pData, int iInWidth, int iInCount, int idx )
+{
+	if ( idx < 0 )
+		idx = 0;
+	else if ( idx >= iInCount )
+		idx = iInCount - 1;
+
+	if ( iInWidth == 2 )
+		return (int)LittleShort( ((const short *)pData)[idx] );
+
+	return ( (int)(unsigned char)pData[idx] - 128 ) << 8;
+}
+
+// for the developer report in SND_RegisterAudio_LevelLoadEnd
+int s_resampleMsTotal;
+int s_resampleCount;
+
 /*
 ================
 ResampleSfx
 
 resample / decimate to the current source rate
+
+How well this is done is controlled by s_quality:
+  0 = fast:  linear interpolation when upsampling, averaging when downsampling
+  1 = good:  cubic interpolation when upsampling, averaging when downsampling
+  2 = best:  windowed-sinc filtering both ways (default). Sounds are only converted once, as they are loaded,
+             so this costs a little load time but nothing while playing.
+Plain sample repeating (what this used to do) mirrors the sound's high frequencies back into the audible range,
+which is what makes old 11/22kHz sounds harsh and gritty on a 44.1kHz output.
 ================
 */
 void ResampleSfx (sfx_t *sfx, int iInRate, int iInWidth, byte *pData)
 {
+	const int	iInCount = sfx->iSoundLengthInSamples;
+	const int	iQuality = s_quality ? s_quality->integer : 2;
+	const int	iStartMs = Sys_Milliseconds();
 	int		iOutCount;
-	int		iSrcSample;
-	float	fStepScale;
+	double	dStepScale;
 	int		i;
-	int		iSample;
-	unsigned int uiSampleFrac, uiFracStep;	// uiSampleFrac MUST be unsigned, or large samples (eg music tracks) crash
 
-	fStepScale = (float)iInRate / dma.speed;	// this is usually 0.5, 1, or 2
+	dStepScale = (double)iInRate / dma.speed;	// this is usually 0.5, 1, or 2
 
-	// When stepscale is > 1 (we're downsampling), we really ought to run a low pass filter on the samples
-
-	iOutCount = (int)(sfx->iSoundLengthInSamples / fStepScale);
+	iOutCount = (int)(iInCount / dStepScale);
 	sfx->iSoundLengthInSamples = iOutCount;
 
 	sfx->pSoundData = (short *) SND_malloc( sfx->iSoundLengthInSamples*2 ,sfx );
 
 	sfx->fVolRange	= 0;
-	uiSampleFrac	= 0;
-	uiFracStep		= (int)(fStepScale*256);
 
-	for (i=0 ; i<sfx->iSoundLengthInSamples ; i++)
+	if ( iQuality >= 2 && dStepScale != 1.0 && !sSincTableBuilt )
 	{
-		iSrcSample = uiSampleFrac >> 8;
-		uiSampleFrac += uiFracStep;
-		if (iInWidth == 2) {
-			iSample = LittleShort ( ((short *)pData)[iSrcSample] );
-		} else {
-			iSample = (unsigned int)( (unsigned char)(pData[iSrcSample]) - 128) << 8;
+		S_BuildSincTable();
+	}
+
+	// sinc cutoff, as a fraction of the source's Nyquist frequency: everything is kept when upsampling, and
+	// when downsampling only what the new, lower rate can represent
+	const float	fCutoff = ( dStepScale > 1.0 ) ? (float)( 1.0 / dStepScale ) : 1.0f;
+	const float	fSupport = SINC_HALF_TAPS / fCutoff;	// how many source samples either side of a position are used
+
+	for (i=0 ; i<iOutCount ; i++)
+	{
+		int iSample;
+		const double dSrcPos = i * dStepScale;
+		const int iSrcSample = (int)dSrcPos;
+
+		if ( dStepScale == 1.0 )
+		{
+			iSample = S_ResampleFetch( pData, iInWidth, iInCount, iSrcSample );
+		}
+		else if ( iQuality >= 2 )
+		{
+			const int iFirst = (int)ceil( dSrcPos - fSupport );
+			const int iLast = (int)floor( dSrcPos + fSupport );
+			float fSum = 0.0f, fWeightSum = 0.0f;
+			for ( int k = iFirst; k <= iLast; k++ )
+			{
+				const float fWeight = S_SincKernel( (float)( dSrcPos - k ) * fCutoff );
+				fSum += fWeight * S_ResampleFetch( pData, iInWidth, iInCount, k );
+				fWeightSum += fWeight;
+			}
+			float f = ( fWeightSum > 0.0f ) ? fSum / fWeightSum : 0.0f;
+			if ( f > 32767.0f )			f = 32767.0f;
+			else if ( f < -32768.0f )	f = -32768.0f;
+			iSample = (int)f;
+		}
+		else if ( dStepScale < 1.0 )
+		{
+			const float t  = (float)(dSrcPos - iSrcSample);
+			const float p1 = (float)S_ResampleFetch( pData, iInWidth, iInCount, iSrcSample );
+			const float p2 = (float)S_ResampleFetch( pData, iInWidth, iInCount, iSrcSample + 1 );
+			float f;
+			if ( iQuality == 1 )
+			{
+				// cubic (Catmull-Rom) spline
+				const float p0 = (float)S_ResampleFetch( pData, iInWidth, iInCount, iSrcSample - 1 );
+				const float p3 = (float)S_ResampleFetch( pData, iInWidth, iInCount, iSrcSample + 2 );
+				f = p1 + 0.5f * t * ( (p2 - p0) + t * ( (2.0f*p0 - 5.0f*p1 + 4.0f*p2 - p3) + t * (3.0f*(p1 - p2) + p3 - p0) ) );
+			}
+			else
+			{
+				f = p1 + ( p2 - p1 ) * t;
+			}
+			if ( f > 32767.0f )			f = 32767.0f;
+			else if ( f < -32768.0f )	f = -32768.0f;
+			iSample = (int)f;
+		}
+		else
+		{
+			// downsampling, average the source samples this output sample covers
+			const int iEnd = (int)((i + 1) * dStepScale);
+			const int iLast = ( iEnd > iSrcSample ) ? iEnd - 1 : iSrcSample;
+			int iSum = 0;
+			for ( int j = iSrcSample; j <= iLast; j++ )
+			{
+				iSum += S_ResampleFetch( pData, iInWidth, iInCount, j );
+			}
+			iSample = iSum / ( iLast - iSrcSample + 1 );
 		}
 
 		sfx->pSoundData[i] = (short)iSample;
@@ -250,6 +370,9 @@ void ResampleSfx (sfx_t *sfx, int iInRate, int iInWidth, byte *pData)
 			sfx->fVolRange =  iSample >> 8;
 		}
 	}
+
+	s_resampleMsTotal += Sys_Milliseconds() - iStartMs;
+	s_resampleCount++;
 }
 
 

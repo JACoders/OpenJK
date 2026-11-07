@@ -1682,6 +1682,20 @@ static void CIN_AddTextCrawl()
 
 /*
 ==================
+CIN_IsPlayingAudio
+
+True while a cinematic with a soundtrack is being played back (its audio goes through the raw sample buffer)
+==================
+*/
+qboolean CIN_IsPlayingAudio( void )
+{
+	return (qboolean)( currentHandle >= 0 && currentHandle < MAX_VIDEO_HANDLES
+		&& cinTable[currentHandle].status == FMV_PLAY
+		&& !cinTable[currentHandle].silent );
+}
+
+/*
+==================
 CIN_ResampleCinematic
 
 Resample cinematic to 256x256 and store in buf2
