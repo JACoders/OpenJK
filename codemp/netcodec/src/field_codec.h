@@ -15,9 +15,9 @@
 
 #include <optional>
 
-// Forces the inlining of a small function of the field loops. GCC 12 on Linux took PredictAngle out of the encoder's
-// field loop after an unrelated change in PutField, and encoding became 9 % slower; the decision must not depend on
-// the inliner's size estimates.
+// Forces the inlining of a small function of the field loops. GCC 12 on Linux takes PredictAngle out of the field
+// loops depending on unrelated changes; with aligned code, decoding was then about 4 % slower (encoding unchanged).
+// The decision must not depend on the inliner's size estimates.
 #if defined(_MSC_VER) && !defined(__clang__)
 #define NETCODEC_ALWAYS_INLINE __forceinline   // NOLINT(cppcoreguidelines-macro-usage): no portable attribute
 #else

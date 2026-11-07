@@ -11,6 +11,7 @@
 // Buffers are passed as std::span (Core Guidelines I.13); the standard library checks the indices in debug builds.
 #pragma once
 
+#include <bit>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -38,29 +39,34 @@ constexpr uint32_t kRawChunk = 15;             // raw bits are coded in chunks o
 constexpr size_t kStateBytes = 4;
 
 // Encoder view of one symbol: the reciprocal of its frequency, so that encoding needs no division (Alverson).
+// 8 bytes: the bound and the shift follow from the frequency (half the memory of storing them).
 struct EncSymbol {
-	uint32_t xMax = 0;      // exclusive bound of the state before renormalisation
 	uint32_t rcpFreq = 0;
-	uint32_t bias = 0;
+	uint16_t bias = 0;      // start, or start + kProbScale - 1 when freq is 1: below 2^16
 	uint16_t cmplFreq = 0;  // kProbScale - freq
-	uint16_t rcpShift = 0;  // includes the 32 of the multiply-high
+
+	[[nodiscard]] constexpr uint32_t Freq() const noexcept { return kProbScale - cmplFreq; }
+	// exclusive bound of the state before renormalisation
+	[[nodiscard]] constexpr uint32_t XMax() const noexcept { return ((kLow >> kProbBits) << 8U) * Freq(); }
+	// shift of the multiply-high: 31 + ceil(log2(freq)), and 32 when freq is 1
+	[[nodiscard]] constexpr uint32_t RcpShift() const noexcept {
+		return static_cast<uint32_t>(63 - std::countl_zero((Freq() - 1) | 1U));   // 31 + bit width
+	}
 };
+static_assert(sizeof(EncSymbol) == 8, "encoder symbols are 8 bytes");
 
 // start + freq <= kProbScale, freq >= 1
 [[nodiscard]] constexpr EncSymbol MakeEncSymbol(uint32_t start, uint32_t freq) noexcept {
 	EncSymbol s{};
-	s.xMax = ((kLow >> kProbBits) << 8U) * freq;
 	s.cmplFreq = static_cast<uint16_t>(kProbScale - freq);
 	if (freq < 2) {             // freq 1: q = x - 1 (state is never 0), see rans_byte.h
 		s.rcpFreq = ~0u;
-		s.rcpShift = 32;
-		s.bias = start + kProbScale - 1;
+		s.bias = static_cast<uint16_t>(start + kProbScale - 1);
 	} else {
 		uint32_t shift = 0;
 		while (freq > (1u << shift)) shift++;
 		s.rcpFreq = static_cast<uint32_t>(((uint64_t{ 1 } << (shift + 31)) + freq - 1) / freq);
-		s.rcpShift = static_cast<uint16_t>(shift - 1 + 32);
-		s.bias = start;
+		s.bias = static_cast<uint16_t>(start);
 	}
 	return s;
 }
@@ -103,11 +109,12 @@ public:
 			const Op &op = ops_[i];
 			if (op.sym != nullptr) {
 				const EncSymbol &s = *op.sym;
-				while (x >= s.xMax) {
+				const uint32_t xMax = s.XMax();
+				while (x >= xMax) {
 					if (pos == kStateBytes) return 0;
 					out[--pos] = static_cast<uint8_t>(x); x >>= 8U;
 				}
-				const auto q = static_cast<uint32_t>((uint64_t{ x } * s.rcpFreq) >> s.rcpShift);
+				const auto q = static_cast<uint32_t>((uint64_t{ x } * s.rcpFreq) >> s.RcpShift());
 				x = x + s.bias + (q * s.cmplFreq);
 			} else {
 				const uint32_t sh = kProbBits - op.bits;           // freq = 2^sh, start = value << sh
