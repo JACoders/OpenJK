@@ -2946,6 +2946,7 @@ void CL_Init( void ) {
 	CL_EmotePreview_Init ();
 	CL_AnimManager_Init ();
 	CL_Presets_Init ();
+	CL_SpecialMoves_Init ();
 	CL_AssetManager_Init ();
 	CL_AdminFlags_Init ();
 	CL_QuickConnect_Init ();

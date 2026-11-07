@@ -2409,6 +2409,7 @@ static qboolean MM_Open( void ) {
 	CL_SoundManager_Close();
 	CL_AnimManager_Close();
 	CL_Presets_Close();
+	CL_SpecialMoves_Close();
 
 	mm.font = re->RegisterFont( "arialnb" );
 	if ( !mm.font )

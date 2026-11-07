@@ -3541,6 +3541,7 @@ static void EM_Open( void ) {
 	CL_SoundManager_Close();
 	CL_AnimManager_Close();
 	CL_Presets_Close();
+	CL_SpecialMoves_Close();
 	EM_CheckMap();
 	EM_ListConstructs();
 	if ( !em.indexed ) {

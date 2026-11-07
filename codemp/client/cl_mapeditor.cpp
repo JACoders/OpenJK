@@ -3519,6 +3519,7 @@ void CL_MapEditor_Open( void ) {
 	CL_SoundManager_Close();
 	CL_AnimManager_Close();
 	CL_Presets_Close();
+	CL_SpecialMoves_Close();
 	ME_CheckMap();
 	if ( !me.indexed )
 		ME_IndexModels();

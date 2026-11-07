@@ -18,6 +18,7 @@ The console commands, keys and settings this client adds. What each feature does
 - [Languages](#languages)
 - [Radial Menus](#radial-menus)
 - [Saber Styles](#saber-styles)
+- [Special Moves](#special-moves)
 - [Other tools](#other-tools)
 - [Console and scripts](#console-and-scripts)
 - [Settings](#settings)
@@ -229,6 +230,12 @@ The console commands, keys and settings this client adds. What each feature does
 - `/saberstyles <style> <style> ...` sets the styles saberAttackCycle goes through: fast, medium, strong, desann, tavion
 - `/saberstyles all` goes back to the server's own cycle; `/saberstyles` alone shows the list
 - `/saberstyle <style>` switches straight to that style
+
+## Special Moves
+
+- `/specialmoves` opens or closes the special moves menu; `/specialmoves list` lists them in the console with how they're done
+- `/specialmove <name>` plays a move: its keys pressed for you for a moment. Bind keys to it, e.g. `bind k "specialmove kata"`. Names: `kata`, `lunge`, `spinattack`, `dfa`, `flipslash`, `staffleap`, `dualleap`, `stabdown`, `backattack`, `backattackcrouch`, `backflipattack`, `cartwheelleft`, `cartwheelright`, `butterflyleft`, `butterflyright`, `kickfront`, `kickback`, `kickleft`, `kickright`, `rollstab`, `rollforward`, `rollback`, `rollleft`, `rollright`, `backflip`, `flipforward`, `flipleft`, `flipright`, `wallrunleft`, `wallrunright`, `wallflipleft`, `wallflipright`, `wallrunup`, `wallgrab`
+- `cl_specialMovesDebug 1` prints each step of a move played and what the game shows
 
 ## Other tools
 

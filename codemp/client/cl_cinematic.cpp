@@ -3066,6 +3066,7 @@ void CL_RpCinematic_Edit( const char *name, qboolean fromStoryteller ) {
 	CL_SoundManager_Close();
 	CL_AnimManager_Close();
 	CL_Presets_Close();
+	CL_SpecialMoves_Close();
 	CL_MapEditor_Close();
 
 	cm.font = re->RegisterFont( "arialnb" );
@@ -5605,6 +5606,7 @@ static void CM_PickSndFrame( void ) {
 	CL_SoundManager_Close();
 	CL_AnimManager_Close();
 	CL_Presets_Close();
+	CL_SpecialMoves_Close();
 	cm.keepCam = qtrue;
 	CL_RpCinematic_Edit( NULL, cm.fromStoryteller );
 	cm.tab = CM_TAB_SOUNDS;

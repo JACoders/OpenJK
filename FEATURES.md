@@ -16,6 +16,7 @@ Some features reach other players through workarounds only this client understan
 - [HD Video Cinematics](#hd-video-cinematics)
 - [Radial Menus](#radial-menus)
 - [Saber Styles](#saber-styles)
+- [Special Moves](#special-moves)
 - [Emote Preview](#emote-preview)
 - [Animation Manager](#animation-manager-custom-emotes-are-experimental)
 - [Presets](#presets)
@@ -453,6 +454,21 @@ Choose which styles your style key cycles through, or jump straight to one.
 - `/saberstyle tavion` switches straight to that style, and the **styles** radial menu does the same
 - The server only knows "next style", so the client cycles for you until you're there; the styles in between show for a moment
 - Dual sabers and the staff are left as they are
+
+## Special Moves
+
+Every special move the saber has, what it does and how it's done, and a key to play it for you. `/specialmoves` opens it, or **TOOLS** in the in-game menu.
+
+- Moves in groups: **Katas**, **Forward**, **Back**, **Side**, **Kicks**, **Acrobatics**, **Automatic** (mirror attacks, saber throw, getting up, saber locks) and **.sab only**
+- Each one says how it's done by hand, the styles it's for, the force points and Force Jump level it takes, and whether you can do it now with the saber, style and force points you have (the ones you can't are grey)
+- **Bind a key** gives it a key; **Try it** plays it straight away. A bound key plays the move's keys for you for a moment (Attack and Alt Attack, the directions, jump and crouch), waiting for the swing before it to end, then gives the keys back; the mouse still turns you. The server sees an ordinary player doing the move
+  - Katas: Attack a moment before Alt Attack (Alt alone throws the saber), standing still
+  - Lunge (Fast), spin attack (Dual, Staff), death from above (Strong), flip-over slash (Medium), the staff's twirling leap, the dual double hop, stab down, back attacks, the staff's backflip attack, cartwheels and the staff's butterflies, the staff's kicks
+  - Rolls (forward, back, left, right), roll stab, back flip, flips, wall runs, wall flips, running up a wall and grabbing one
+- Moves that need someone there (back attack, stab down) or a wall (wall runs, flips and grabs) are played anyway: without them they're an ordinary swing or jump
+- A roll backwards needs Force Speed or Rage on: running backwards is a quarter slower, too slow to roll
+- **.sab only**: the moves a saber's `.sab` can put in place of the kata, the lunge or a jump attack (`kataMove`, `lungeAtkMove`, `jumpAtk...Move`), and those the game has but never starts in multiplayer. They're listed, not played: the server's copy of the `.sab` decides them
+- The moves are base Jedi Academy's, which RPMod keeps
 
 ## Animation Manager *(custom emotes are experimental)*
 

@@ -707,6 +707,7 @@ static qboolean PR_Open( int mode ) {
 		CL_MapEditor_Close();
 		CL_SoundManager_Close();
 		CL_AnimManager_Close();
+		CL_SpecialMoves_Close();
 
 		pr.font = re->RegisterFont( "arialnb" );
 		if ( !pr.font )

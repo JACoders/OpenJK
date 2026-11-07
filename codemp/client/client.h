@@ -690,7 +690,8 @@ void CL_ModelManager_Draw( void );
 #define KEYCATCH_PRESETS		0x10000	// engine only, the presets own keyboard and mouse
 #define KEYCATCH_FEEDBACK		0x20000	// engine only, the feedback window owns keyboard and mouse
 #define KEYCATCH_ASSETMANAGER	0x40000	// engine only, the asset manager owns keyboard and mouse
-#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER | KEYCATCH_PRESETS | KEYCATCH_FEEDBACK | KEYCATCH_ASSETMANAGER )	// mods never see or clear these
+#define KEYCATCH_SPECIALMOVES	0x80000	// engine only, the special moves menu owns keyboard and mouse
+#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER | KEYCATCH_PRESETS | KEYCATCH_FEEDBACK | KEYCATCH_ASSETMANAGER | KEYCATCH_SPECIALMOVES )	// mods never see or clear these
 
 void CL_NpcManager_Init( void );
 void CL_NpcManager_Shutdown( void );
@@ -993,6 +994,16 @@ void CL_Presets_MouseEvent( int dx, int dy );
 void CL_Presets_CharEvent( int ch );
 void CL_Presets_Escape( void );
 void CL_Presets_Draw( void );
+
+// cl_specialmoves.cpp
+void CL_SpecialMoves_Init( void );
+void CL_SpecialMoves_Shutdown( void );
+void CL_SpecialMoves_Close( void );
+void CL_SpecialMoves_KeyEvent( int key, qboolean down );
+void CL_SpecialMoves_MouseEvent( int dx, int dy );
+void CL_SpecialMoves_Escape( void );
+void CL_SpecialMoves_Draw( void );
+void CL_SpecialMoves_FilterCmd( usercmd_t *cmd );
 void CL_RpCinematic_Draw( void );
 void CL_RpCinematic_Frame( void );
 qboolean CL_RpCinematic_ShotHook( const char *name, char *hook, int size, int *ms );

@@ -1675,6 +1675,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 			CL_Presets_Escape();
 			return;
 		}
+		if ( ( Key_GetCatcher() & KEYCATCH_SPECIALMOVES ) && !( Key_GetCatcher() & KEYCATCH_UI ) ) {
+			CL_SpecialMoves_Escape();
+			return;
+		}
 		if ( ( Key_GetCatcher() & KEYCATCH_CINEDITOR ) && !( Key_GetCatcher() & KEYCATCH_UI ) ) {
 			CL_RpCinematic_EditorEscape();
 			return;
@@ -1781,6 +1785,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 	// presets
 	else if ( Key_GetCatcher() & KEYCATCH_PRESETS ) {
 		CL_Presets_KeyEvent( key, qtrue );
+	}
+	// special moves
+	else if ( Key_GetCatcher() & KEYCATCH_SPECIALMOVES ) {
+		CL_SpecialMoves_KeyEvent( key, qtrue );
 	}
 	// asset manager
 	else if ( Key_GetCatcher() & KEYCATCH_ASSETMANAGER ) {

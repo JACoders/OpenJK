@@ -1104,6 +1104,8 @@ void CL_MouseEvent( int dx, int dy, int time ) {
 		CL_AnimManager_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_PRESETS ) {
 		CL_Presets_MouseEvent( dx, dy );
+	} else if ( Key_GetCatcher( ) & KEYCATCH_SPECIALMOVES ) {
+		CL_SpecialMoves_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_ASSETMANAGER ) {
 		CL_AssetManager_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CINEDITOR ) {
@@ -1529,6 +1531,9 @@ usercmd_t CL_CreateCmd( void ) {
 
 	// get basic movement from joystick
 	CL_JoystickMove( &cmd );
+
+	// a special move playing: its keys in place of the player's
+	CL_SpecialMoves_FilterCmd( &cmd );
 
 	// fighters share jump between takeoff and boost
 	CL_FighterAssist_FilterCmd( &cmd, in_vehboost.active );
