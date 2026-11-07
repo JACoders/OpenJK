@@ -6,8 +6,13 @@ netcodec_add_program(netcodec_test_rans test_rans.cpp rans_trace.h)
 
 # Round-trip test of the format on the corpus traces (export_demo_traces.py): white-box (it reads the schema to
 # make -0.0 values), so it sees the library's internal headers.
-netcodec_add_program(netcodec_test_roundtrip test_roundtrip.cpp demo_trace.h message_compare.h)
+netcodec_add_program(netcodec_test_roundtrip test_roundtrip.cpp demo_trace.h message_compare.h fnv.h)
 target_include_directories(netcodec_test_roundtrip PRIVATE "${PROJECT_SOURCE_DIR}/src")
+
+# Determinism of the float steps (angle indices) against the Python reference (angle_hash.py); needs no trace.
+netcodec_add_program(netcodec_test_determinism test_determinism.cpp fnv.h)
+target_include_directories(netcodec_test_determinism PRIVATE "${PROJECT_SOURCE_DIR}/src")
+add_test(NAME netcodec.determinism COMMAND netcodec_test_determinism)
 
 foreach(trace rans)
 	if(NOT EXISTS "${netcodec_TRACE_DIR}/${trace}_trace.bin")
@@ -20,4 +25,8 @@ foreach(trace captures holdout)
 		message(STATUS "netcodec: ${netcodec_TRACE_DIR}/${trace}.bin not found, test netcodec.roundtrip will fail")
 	endif()
 endforeach()
-add_test(NAME netcodec.roundtrip COMMAND netcodec_test_roundtrip "${netcodec_TRACE_DIR}/captures.bin" "${netcodec_TRACE_DIR}/holdout.bin")
+# The hash of the coded bytes of the corpus: the same on every compiler, architecture and build type. Changes with the
+# format, the tables or the traces: update it from the test's output (clang Release), then check the other presets.
+set(netcodec_ROUNDTRIP_HASH "0x9BF9E6AAADCBC9EE")
+add_test(NAME netcodec.roundtrip COMMAND netcodec_test_roundtrip "--hash=${netcodec_ROUNDTRIP_HASH}"
+	"${netcodec_TRACE_DIR}/captures.bin" "${netcodec_TRACE_DIR}/holdout.bin")
