@@ -6,7 +6,7 @@ netcodec_add_program(netcodec_test_rans test_rans.cpp rans_trace.h)
 
 # Round-trip test of the format on the corpus traces (export_demo_traces.py): white-box (it reads the schema to
 # make -0.0 values), so it sees the library's internal headers.
-netcodec_add_program(netcodec_test_roundtrip test_roundtrip.cpp demo_trace.h message_compare.h fnv.h)
+netcodec_add_program(netcodec_test_roundtrip test_roundtrip.cpp demo_trace.h message_compare.h negate_zeros.h fnv.h)
 target_include_directories(netcodec_test_roundtrip PRIVATE "${PROJECT_SOURCE_DIR}/src")
 
 # Determinism of the float steps (angle indices) against the Python reference (angle_hash.py); needs no trace.
@@ -43,3 +43,15 @@ endforeach()
 set(netcodec_ROUNDTRIP_HASH "0x7E66AC625CE9148E")
 add_test(NAME netcodec.roundtrip COMMAND netcodec_test_roundtrip "--hash=${netcodec_ROUNDTRIP_HASH}"
 	"${netcodec_TRACE_DIR}/captures.bin" "${netcodec_TRACE_DIR}/holdout.bin")
+
+# The engine's interface (engine.h) on the corpus, with engine-like storage: the same coded bytes as netcodec.roundtrip.
+netcodec_add_program(netcodec_test_engine test_engine.cpp demo_trace.h message_compare.h negate_zeros.h fnv.h)
+target_include_directories(netcodec_test_engine PRIVATE "${PROJECT_SOURCE_DIR}/src")
+add_test(NAME netcodec.engine COMMAND netcodec_test_engine "--hash=${netcodec_ROUNDTRIP_HASH}"
+	"${netcodec_TRACE_DIR}/captures.bin" "${netcodec_TRACE_DIR}/holdout.bin")
+
+# engine.h compiles as C++11, the engine's standard (an object library, linked into nothing).
+add_library(netcodec_engine_cxx11 OBJECT engine_cxx11.cpp)
+target_include_directories(netcodec_engine_cxx11 PRIVATE "${PROJECT_SOURCE_DIR}/include")
+target_link_libraries(netcodec_engine_cxx11 PRIVATE netcodec_warnings)
+set_target_properties(netcodec_engine_cxx11 PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)

@@ -1,7 +1,8 @@
 #!/bin/bash
 # A/B (owner, Debian VM): bench_codec of a reference commit (REF, default HEAD) against the working tree, GCC Release,
 # run alternately on core 1; prints the warm timings per run, then the best of each build and the difference.
-# Usage, from anywhere: [REF=<commit>] [NOINL=1] [CXXFLAGS=...] bash codemp/netcodec/scripts/ab_gcc.sh [rounds]
+# Usage, from anywhere: [REF=<commit>] [CUR_DIR=<copy>] [NOINL=1] [CXXFLAGS=...] bash codemp/netcodec/scripts/ab_gcc.sh [rounds]
+# CUR_DIR: a directory holding codemp/netcodec (a variant prepared on the host) timed instead of the working tree.
 # Functions, loops and jumps are aligned to 64 bytes in both builds: without it, where the code falls in memory moves
 # the timings by 10 to 20 % under GCC (the unchanged legacy coder included). NOINL=1: the working-tree copy without
 # the forced inlining of PredictAngle. CXXFLAGS: extra compiler flags for both builds.
@@ -16,8 +17,9 @@ W=/tmp/netcodec-ab
 G() { git -c safe.directory='*' -C "$R" "$@"; }
 rm -rf "$W" && mkdir -p "$W/ref" "$W/cur/codemp"
 G archive "$REF" codemp/netcodec | tar -x -C "$W/ref"
-cp -r "$R/codemp/netcodec" "$W/cur/codemp/"
-echo "ref = $REF ($(G log -1 --format='%h %s' "$REF" | cut -c1-100)); cur = the working tree"
+cp -r "${CUR_DIR:-$R}/codemp/netcodec" "$W/cur/codemp/"
+rm -rf "$W/cur/codemp/netcodec/build-netcodec"
+echo "ref = $REF ($(G log -1 --format='%h %s' "$REF" | cut -c1-100)); cur = ${CUR_DIR:-the working tree}"
 if [ "${NOINL:-0}" = 1 ]; then
 	F="$W/cur/codemp/netcodec/src/field_codec.h"
 	sed -i 's/\[\[nodiscard\]\] NETCODEC_ALWAYS_INLINE std::optional<int64_t> PredictAngle(/[[nodiscard]] inline std::optional<int64_t> PredictAngle(/' "$F"

@@ -94,9 +94,9 @@ public:
 			if (op.type == OpType::Command) texts_[op.seq] = op.text;
 	}
 
-	[[nodiscard]] const std::string *Find(int64_t seq) const override {
+	[[nodiscard]] std::string_view Find(int64_t seq) const override {
 		const auto it = texts_.find(seq);
-		return it != texts_.end() ? &it->second : nullptr;
+		return it != texts_.end() ? std::string_view(it->second) : std::string_view();
 	}
 
 private:

@@ -23,6 +23,10 @@ endif(NOT InOpenJK)
 
 set(MPSharedDefines ${SharedDefines})
 
+# Message codec of the new netcode: the static library netcodec::netcodec (C++20 inside; the engine includes
+# netcodec/engine.h, which is C++11). Not linked by any target yet (plan step 7).
+add_subdirectory("${MPDir}/netcodec")
+
 #    Add Game Project
 if(BuildMPGame)
 	add_subdirectory("${MPDir}/game")

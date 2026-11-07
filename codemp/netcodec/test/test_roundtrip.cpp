@@ -10,7 +10,7 @@
 #include "demo_trace.h"
 #include "fnv.h"
 #include "message_compare.h"
-#include "schema.h"
+#include "negate_zeros.h"
 
 #include <cinttypes>
 #include <cstdio>
@@ -25,37 +25,6 @@ using namespace netcodec;
 namespace {
 
 using trace::ClientStore;
-
-constexpr uint32_t kNegativeZero = 0x80000000U;
-
-template <size_t N> void NegateZeros(std::array<uint8_t, N> &img, std::span<const detail::FieldDesc> fields) {
-	for (const detail::FieldDesc &f : fields)
-		if (f.bits == 0 && detail::Load(img, f.offset) == 0) detail::StoreWord(img, f.offset, kNegativeZero);
-}
-
-// the player-state table the codec sends: the pilot table for a player in a vehicle with EF_NODRAW
-bool IsPilot(const PlayerState &ps) noexcept {
-	constexpr uint32_t kEfNodraw = 1U << 8U;
-	return detail::ValueBits(detail::Load(ps, detail::kVehicleNumOffset), 10) != 0 &&
-	       (detail::Load(ps, detail::kPlayerEFlagsOffset) & kEfNodraw) != 0;
-}
-
-void NegateZeros(trace::SnapshotData &sn) {
-	if (IsPilot(sn.ps)) NegateZeros(sn.ps, detail::kPilotFields);
-	else NegateZeros(sn.ps, detail::kPlayerFields);
-	if (sn.hasVehicle) NegateZeros(sn.vps, detail::kVehicleFields);
-	for (EntityState &e : sn.entities) NegateZeros(e, detail::kEntityFields);
-}
-
-// in the messages' storage (the ops are views of it)
-void NegateZeros(trace::DemoStream &s) {
-	for (trace::DemoMessage &m : s.messages) {
-		if (m.data.snap) NegateZeros(*m.data.snap);
-		if (m.data.gs)
-			for (EntityState &e : m.data.gs->table)
-				if (EntityNumber(e) != 0) NegateZeros(e, detail::kEntityFields);   // the baselines present only
-	}
-}
 
 struct Totals {
 	size_t messages = 0, encodeFailures = 0, decodeFailures = 0, bytes = 0;

@@ -409,11 +409,11 @@ bool ParseNumber(std::string_view t, int64_t &v) noexcept {
 }
 
 // the text of command seq if the client holds it: earlier in this message, or in the history up to the base's last
-// command
-const std::string *HeldCommand(int64_t seq, std::span<const Op> before, int64_t known, const CommandHistory &history) {
+// command; a null data() if not
+std::string_view HeldCommand(int64_t seq, std::span<const Op> before, int64_t known, const CommandHistory &history) {
 	for (const Op &op : before)
-		if (op.type == OpType::Command && op.seq == seq) return &op.text;
-	return seq <= known ? history.Find(seq) : nullptr;
+		if (op.type == OpType::Command && op.seq == seq) return op.text;
+	return seq <= known ? history.Find(seq) : std::string_view();
 }
 
 // command text: bytes then a 0 terminator, each byte coded given the previous one
@@ -444,24 +444,24 @@ uint32_t SameCtx(bool prevSame, bool refNumber) noexcept {
 template <class O>
 void PutCommand(O &io, const Op &op, std::span<const Op> before, int64_t known, const CommandHistory &history) {
 	const std::string_view verb = Verb(op.text);
-	const std::string *ref = nullptr;
+	std::string_view ref;   // null data(): none yet
 	int64_t dist = 0;
 	const size_t nn = Tokens::Count(op.text);
 	// more tokens than the decoder accepts against a reference (never in the engine): sent as text
-	while (ref == nullptr && dist < kCommandWindow && nn <= static_cast<size_t>(kMaxTokens)) {
+	while (ref.data() == nullptr && dist < kCommandWindow && nn <= static_cast<size_t>(kMaxTokens)) {
 		dist++;
-		const std::string *t = HeldCommand(op.seq - dist, before, known, history);
-		if (t != nullptr && Verb(*t) == verb) ref = t;
+		const std::string_view t = HeldCommand(op.seq - dist, before, known, history);
+		if (t.data() != nullptr && Verb(t) == verb) ref = t;
 	}
-	if (ref == nullptr) {
+	if (ref.data() == nullptr) {
 		io.Class(Of(kCmdRef), 0);
 		PutCommandText(io, op.text);
 		return;
 	}
 	io.Class(Of(kCmdRef), static_cast<uint64_t>(dist));
-	const size_t nr = Tokens::Count(*ref);
+	const size_t nr = Tokens::Count(ref);
 	io.Class(Of(kCmdTokens), Zz(static_cast<int64_t>(nn) - static_cast<int64_t>(nr)));
-	Tokens nt(op.text), rt(*ref);
+	Tokens nt(op.text), rt(ref);
 	bool prevSame = true;
 	for (size_t i = 0; i < nn; i++) {
 		const std::string_view tok = nt.Next();
@@ -489,12 +489,12 @@ bool GetCommand(In &io, Op &op, std::span<const Op> before, int64_t known, const
 	const uint64_t dist = io.Class(Of(kCmdRef));
 	if (dist == 0) return GetCommandText(io, op.text);
 	if (dist > static_cast<uint64_t>(kCommandWindow)) return false;
-	const std::string *ref = HeldCommand(op.seq - static_cast<int64_t>(dist), before, known, history);
-	if (ref == nullptr) return false;
-	const size_t nr = Tokens::Count(*ref);
+	const std::string_view ref = HeldCommand(op.seq - static_cast<int64_t>(dist), before, known, history);
+	if (ref.data() == nullptr) return false;
+	const size_t nr = Tokens::Count(ref);
 	const int64_t n = static_cast<int64_t>(nr) + Unzz(io.Class(Of(kCmdTokens)));
 	if (n < 1 || n > kMaxTokens) return false;
-	Tokens rt(*ref);
+	Tokens rt(ref);
 	bool prevSame = true;
 	std::array<char, 24> digits{};
 	for (int64_t i = 0; i < n; i++) {

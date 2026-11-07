@@ -16,6 +16,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "rans.h"
@@ -142,7 +143,8 @@ struct CommandHistory {
 	CommandHistory(CommandHistory &&) = delete;
 	CommandHistory &operator=(CommandHistory &&) = delete;
 	virtual ~CommandHistory() = default;
-	[[nodiscard]] virtual const std::string *Find(int64_t seq) const = 0;   // nullptr if not held
+	// the text, valid until the history changes; a null data() if not held (16 bytes: returned in registers)
+	[[nodiscard]] virtual std::string_view Find(int64_t seq) const = 0;
 };
 
 class MessageEncoder {

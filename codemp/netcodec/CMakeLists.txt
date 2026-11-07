@@ -65,9 +65,11 @@ netcodec_set_warnings(netcodec_warnings ${netcodec_WARNINGS_AS_ERRORS})
 
 add_library(netcodec STATIC
 	include/netcodec/codec.h
+	include/netcodec/engine.h
 	include/netcodec/rans.h
 	src/coder.h
 	src/contexts.h
+	src/engine.cpp
 	src/field_codec.h
 	src/message_codec.cpp
 	src/model.cpp
@@ -78,7 +80,7 @@ add_library(netcodec STATIC
 	src/generated/jka_tables.inc)
 add_library(netcodec::netcodec ALIAS netcodec)
 target_include_directories(netcodec PUBLIC "${PROJECT_SOURCE_DIR}/include")
-target_compile_features(netcodec PUBLIC cxx_std_20)
+target_compile_features(netcodec PRIVATE cxx_std_20)   # C++20 inside only: the engine includes engine.h in C++11
 set_target_properties(netcodec PROPERTIES CXX_EXTENSIONS OFF)
 target_link_libraries(netcodec PRIVATE netcodec_options netcodec_warnings)
 if(netcodec_ENABLE_CLANG_TIDY)
