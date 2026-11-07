@@ -3,7 +3,8 @@
 //
 // Integers: absolute (small alphabets directly, else by class) or delta modulo the width. Floats: a kind (zero,
 // integral, 16-bit angle index, other) then the value in the kind's coding. Booleans: one "flip" symbol when old and
-// new are 0 / 1, else the value as a 32-bit integer. Predictions: a time field against the snapshot time, a
+// new are 0 / 1, else the value as a 32-bit integer. Predictions: a time field against its base value advanced by
+// the time between the two snapshots (the snapshot time when the base is not the same object's previous state), a
 // position from the old position and the mean of the old and new velocities (integer arithmetic in 1/65536 units),
 // an angle index to second order from the base and the base's own base.
 #pragma once
@@ -13,6 +14,15 @@
 #include "schema.h"
 
 #include <optional>
+
+// Forces the inlining of a small function of the field loops. GCC 12 on Linux took PredictAngle out of the encoder's
+// field loop after an unrelated change in PutField, and encoding became 9 % slower; the decision must not depend on
+// the inliner's size estimates.
+#if defined(_MSC_VER) && !defined(__clang__)
+#define NETCODEC_ALWAYS_INLINE __forceinline   // NOLINT(cppcoreguidelines-macro-usage): no portable attribute
+#else
+#define NETCODEC_ALWAYS_INLINE [[gnu::always_inline]] inline   // NOLINT(cppcoreguidelines-macro-usage): same
+#endif
 
 namespace netcodec::detail {
 
@@ -53,7 +63,15 @@ constexpr int64_t kTwo31 = 2147483648LL, kTwo32 = 4294967296LL;
 	return Pack(static_cast<double>(p) / 65536.0);
 }
 
-[[nodiscard]] inline std::optional<int64_t> PredictAngle(const PredCtx &c, const FieldDesc &f, int64_t ov) noexcept {
+// reference of a time field (time prediction mode; time: the snapshot time): when the base state is the same object's previous
+// state, its value advanced by the time between the two snapshots (a client's command time lags the server time by a
+// steady amount); otherwise the snapshot time. A 32-bit pattern.
+[[nodiscard]] inline int64_t TimeReference(const PredCtx &c, const FieldDesc &f, int64_t time) noexcept {
+	if (c.pred && c.btime) return Low32(Load(c.old, f.offset) + (time - *c.btime));
+	return Low32(time);
+}
+
+[[nodiscard]] NETCODEC_ALWAYS_INLINE std::optional<int64_t> PredictAngle(const PredCtx &c, const FieldDesc &f, int64_t ov) noexcept {
 	if (!c.pred || c.older == nullptr) return std::nullopt;
 	uint32_t o2 = 0;
 	std::memcpy(&o2, c.older + f.offset, 4);
@@ -131,7 +149,7 @@ template <class O> void PutField(O &io, const PredCtx &c, const FieldDesc &f, ct
 		if (flip) return;
 	}
 	if (f.pmode == PredMode::kTime && f.bits == 32 && c.time) {
-		io.Class(row[fctx::kT], Zz(PyMod(nv - Low32(*c.time) + kTwo31, kTwo32) - kTwo31));
+		io.Class(row[fctx::kT], Zz(PyMod(nv - TimeReference(c, f, *c.time) + kTwo31, kTwo32) - kTwo31));
 		return;
 	}
 	if (f.pmode != PredMode::kNone && f.bits == 0) {
@@ -159,7 +177,7 @@ template <class O> void PutField(O &io, const PredCtx &c, const FieldDesc &f, ct
                                       int trTypeBits) noexcept {
 	if (f.ctype == CType::kBool && io.Symbol(row[fctx::kB]) == 0) return ov == 0 ? 1 : 0;   // a flip
 	if (f.pmode == PredMode::kTime && f.bits == 32 && c.time)
-		return PyMod(Low32(*c.time) + Unzz(io.Class(row[fctx::kT])), kTwo32);
+		return PyMod(TimeReference(c, f, *c.time) + Unzz(io.Class(row[fctx::kT])), kTwo32);
 	if ((f.pmode == PredMode::kPos || f.pmode == PredMode::kAngle) && f.bits == 0) {
 		const uint32_t k = io.Symbol(row[fctx::kK]);
 		if (k == 2 && f.pmode == PredMode::kPos) {

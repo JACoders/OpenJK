@@ -97,6 +97,7 @@ Depends on: steps 2 and 5. **In progress** (6 November 2026): rANS and whole-mes
 
 - Interfaces (shape only): `bytes = Encode(base*, header, ops, baselines, tables)`; `ops = Decode(bytes, lookupBase(delta) -> base*, baselines, tables)`, where `lookupBase` is called after the delta has been decoded (as `msg_get` in `codec2.py`). All bounds are checked while decoding (entity numbers below `MAX_GENTITIES`, field indices below the table length, string and download lengths, end of input); a failure drops the message.
 - Check: with the same tables, the C++ encoder produces byte-identical output to the Python codec on all recordings; 0 mismatches on at least 100,000 synthetic messages; random and mutated bytes never crash under ASAN / UBSAN; angle decode and P2 prediction bit-identical on MSVC, GCC and Clang, x86 and x64, optimised and not, for all 65,536 indices and for the recorded positions; encode about 2 microseconds per snapshot on an optimised build (study: 1 to 2 µs for 300 symbols).
+- Then (owner, 7 November 2026): an inventory of the places where the game code rounds networked values before the codec (`SnapVector`, `ANGLE2SHORT`, ...), each with what the client loses and what its removal would cost in bytes; the owner decides case by case ([progress/step-06-cpp-codec.md](progress/step-06-cpp-codec.md), part F).
 
 ### Step 7: integration in the engine (M)
 
