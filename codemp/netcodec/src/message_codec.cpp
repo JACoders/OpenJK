@@ -20,6 +20,7 @@ constexpr uint32_t kEfNodraw = 1U << 8U;
 constexpr uint32_t kEntityClassCap = 18;       // entity types 18 and above share a context class
 constexpr uint32_t kEntityGapRaw = 40;         // entity number gaps from 40 on are sent raw (10 bits)
 constexpr uint32_t kEntityListEnd = 41;
+constexpr uint32_t kEscapedDelta = 256;         // added to the base delta symbol of an escaped message
 
 // ------------------------------------------------------------------ player states
 // the base player state has some non-zero networked field: then it is the same player's previous state
@@ -38,10 +39,28 @@ const uint8_t *OlderPlayer(const PredCtx &c, bool vehicle) noexcept {
 	return ZeroPlayer().data();
 }
 
+// escaped message: every field of the table raw (RawWidth); out of the hot loops
+template <class O> void PutFieldsRaw(O &io, std::span<const FieldDesc> fields, ImageView nw, ImageView old) noexcept {
+	for (const FieldDesc &f : fields) {
+		const bool changed = FieldDiffers(nw, old, f);
+		io.Raw(changed ? 1 : 0, 1);
+		if (changed) PutRawField(io, f, Value(nw, f));
+	}
+}
+
+void GetFieldsRaw(In &io, std::span<const FieldDesc> fields, ImageRef out) noexcept {
+	for (const FieldDesc &f : fields)
+		if (io.Raw(1) != 0) Store(out, f, GetRawField(io, f));
+}
+
 // the fields are sent as "index of the next changed field, given the previous one", then the field's value
 template <class O>
 void PutPlayer(O &io, PredCtx &c, std::span<const FieldDesc> fields, uint32_t gap, ImageView nw,
                ImageView old, const uint8_t *older, const Model &m) noexcept {
+	if (c.escaped) [[unlikely]] {
+		PutFieldsRaw(io, fields, nw, old);
+		return;
+	}
 	c.cur = nw; c.old = old; c.older = older; c.pred = AnyNonZero(old);
 	const uint32_t n = ToU32(fields.size());
 	uint32_t next = 0;                         // context index: previous changed field + 1
@@ -58,6 +77,10 @@ void PutPlayer(O &io, PredCtx &c, std::span<const FieldDesc> fields, uint32_t ga
 bool GetPlayer(In &io, PredCtx &c, std::span<const FieldDesc> fields, uint32_t gap, ImageView old,
                PlayerState &out, const uint8_t *older, const Model &m) noexcept {
 	std::ranges::copy(old, out.begin());
+	if (c.escaped) [[unlikely]] {
+		GetFieldsRaw(io, fields, out);
+		return true;
+	}
 	c.cur = out; c.old = old; c.older = older; c.pred = AnyNonZero(old);
 	const uint32_t n = ToU32(fields.size());
 	uint32_t next = 0;
@@ -129,6 +152,10 @@ uint32_t Changes(ImageView a, ImageView b, ChangeList &list) noexcept {
 
 template <class O>
 void PutEntity(O &io, const PredCtx &c, ImageView nw, ImageView basest, std::span<const uint8_t> changes, const Model &m) noexcept {
+	if (c.escaped) [[unlikely]] {   // every field, the type included
+		PutFieldsRaw(io, kEntityFields, nw, basest);
+		return;
+	}
 	const uint32_t bcls = ClassOf(basest), ncls = ClassOf(nw);
 	const bool typeChanged = std::ranges::find(changes, kEntityTypeIndex) != changes.end();
 	io.Symbol(ctx::kTypeChanged + bcls, typeChanged ? 1 : 0);
@@ -224,6 +251,10 @@ bool GetEntities(In &io, PredCtx &c, std::span<const Entity> old, std::span<cons
 		st.number = static_cast<uint16_t>(num);
 		const ImageView basest = src != nullptr ? ImageView(src->state) : ImageView(ZeroEntity());
 		if (op == 3) continue;
+		if (c.escaped) [[unlikely]] {
+			GetFieldsRaw(io, kEntityFields, st.state);
+			continue;
+		}
 		c.cur = st.state; c.old = basest; c.pred = op == 0;
 		const Entity *older = op == 0 ? olderList.Find(static_cast<uint32_t>(num)) : nullptr;
 		c.older = older != nullptr ? older->state.data() : nullptr;
@@ -413,10 +444,11 @@ bool GetCommand(In &io, Op &op, std::span<const Op> before, int64_t known, const
 // ------------------------------------------------------------------ messages
 template <class O>
 void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<Entity> &baselines,
-                const CommandHistory &history, HeaderRecord &rec, const Model &m) {
+                const CommandHistory &history, HeaderRecord &rec, const Model &m, bool escaped) {
 	const HeaderRecord *bh = base.header;
-	io.Symbol(Of(kMDelta), base.delta);
+	io.Symbol(Of(kMDelta), base.delta + (escaped ? kEscapedDelta : 0U));   // one symbol for both
 	PredCtx c;
+	c.escaped = escaped;
 	c.btime = bh != nullptr ? bh->time : std::nullopt;
 	c.olderSnap = bh != nullptr ? bh->older : nullptr;
 	io.Class(Of(kMAck), Zz(msg.ack - (bh != nullptr ? bh->ack : 0)));
@@ -491,6 +523,22 @@ void PutMessage(O &io, const Message &msg, const Base &base, const std::vector<E
 	rec = HeaderRecord{ .ack = msg.ack, .time = time, .cmdSeq = lastcmd, .older = base.snap };
 }
 
+// codes a message into scratch: its size, 0 if a value is outside the model or it does not fit in maxBytes
+size_t CodeMessage(std::vector<rans::Encoder::Op> &ops, std::vector<uint8_t> &scratch, const Message &msg, const Base &base,
+                   const std::vector<Entity> &baselines, const CommandHistory &history, size_t maxBytes, HeaderRecord &record,
+                   const Model &m, bool escaped) {
+	for (;;) {
+		rans::Encoder e(ops);
+		Out io(e, m);
+		PutMessage(io, msg, base, baselines, history, record, m, escaped);
+		if (e.Overflow()) {
+			ops.resize(ops.size() * 2);
+			continue;
+		}
+		return io.Bad() ? 0 : e.Finish(std::span<uint8_t>(scratch.data(), maxBytes));
+	}
+}
+
 // next operation of a decoded message: reuses the storage of a previous decode (no allocation once warm)
 Op &NextOp(Message &msg, size_t &used) {
 	if (used == msg.ops.size()) msg.ops.emplace_back();
@@ -514,10 +562,13 @@ bool GetMessage(In &io, const BaseLookup &lookup, const CommandHistory &history,
                 Message &msg, uint32_t &delta,
                 HeaderRecord &rec, const Model &m) {
 	delta = io.Symbol(Of(kMDelta));
+	const bool escaped = delta >= kEscapedDelta;
+	if (escaped) delta -= kEscapedDelta;
 	const Snapshot *base = nullptr;
 	const HeaderRecord *bh = nullptr;
 	if (delta != 0 && !lookup.Find(delta, base, bh)) return false;
 	PredCtx c;
+	c.escaped = escaped;
 	c.btime = bh != nullptr ? bh->time : std::nullopt;
 	c.olderSnap = bh != nullptr ? bh->older : nullptr;
 	msg.ack = (bh != nullptr ? bh->ack : 0) + Unzz(io.Class(Of(kMAck)));
@@ -621,20 +672,18 @@ bool MessageEncoder::Encode(const Message &msg, const Base &base, const std::vec
 	const detail::Model &m = detail::Model::Get();
 	if (base.delta > 255 || (base.delta != 0) != (base.snap != nullptr)) return false;
 	if (ops_.empty()) ops_.resize(4096);
-	for (;;) {
-		rans::Encoder e(ops_);
-		detail::Out io(e, m);
-		detail::PutMessage(io, msg, base, baselines, history, record, m);
-		if (e.Overflow()) {
-			ops_.resize(ops_.size() * 2);
-			continue;
+	if (scratch_.size() < maxBytes) scratch_.resize(maxBytes);   // grown once: no clearing per message
+	size_t n = detail::CodeMessage(ops_, scratch_, msg, base, baselines, history, maxBytes, record, m, false);
+	if (n != 0) out.assign(scratch_.begin(), scratch_.begin() + static_cast<std::ptrdiff_t>(n));
+	// worst case: a large message (none in the recordings comes close) is also coded raw, and the smaller one is sent
+	if (n == 0 || n > kEscapeTrial) [[unlikely]] {
+		const size_t r = detail::CodeMessage(ops_, scratch_, msg, base, baselines, history, maxBytes, record, m, true);
+		if (r != 0 && (n == 0 || r < n)) {
+			out.assign(scratch_.begin(), scratch_.begin() + static_cast<std::ptrdiff_t>(r));
+			n = r;
 		}
-		if (io.Bad()) return false;
-		if (scratch_.size() < maxBytes) scratch_.resize(maxBytes);   // grown once: no clearing per message
-		const size_t n = e.Finish(std::span<uint8_t>(scratch_.data(), maxBytes));
-		out.assign(scratch_.begin(), scratch_.begin() + static_cast<std::ptrdiff_t>(n));
-		return n != 0;
 	}
+	return n != 0;
 }
 
 SymbolCounts NewSymbolCounts() {
@@ -651,7 +700,7 @@ bool CountMessage(const Message &msg, const Base &base, const std::vector<Entity
 	    counts.rawBits.size() != detail::ctx::kCount)
 		return false;
 	detail::CountOut io(counts);
-	detail::PutMessage(io, msg, base, baselines, history, record, detail::Model::Get());
+	detail::PutMessage(io, msg, base, baselines, history, record, detail::Model::Get(), false);
 	return !io.Bad();
 }
 

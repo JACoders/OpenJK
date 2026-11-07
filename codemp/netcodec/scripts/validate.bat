@@ -20,15 +20,15 @@ type nul > "%SUMMARY%"
 type nul > "%LOG%"
 
 call :step "msvc-x64: configure" cmake --preset msvc-x64
-call :step "msvc-x64-release: build" cmake --build --preset msvc-x64-release --parallel
+call :buildstep "msvc-x64-release: build" msvc-x64-release
 call :step "msvc-x64-release: tests" ctest --preset msvc-x64-release
-call :step "msvc-x64-debug: build" cmake --build --preset msvc-x64-debug --parallel
+call :buildstep "msvc-x64-debug: build" msvc-x64-debug
 call :step "msvc-x64-debug: tests" ctest --preset msvc-x64-debug
 call :step "msvc-x86: configure" cmake --preset msvc-x86
-call :step "msvc-x86-release: build" cmake --build --preset msvc-x86-release --parallel
+call :buildstep "msvc-x86-release: build" msvc-x86-release
 call :step "msvc-x86-release: tests" ctest --preset msvc-x86-release
 call :step "msvc-asan: configure" cmake --preset msvc-asan
-call :step "msvc-asan: build" cmake --build --preset msvc-asan --parallel
+call :buildstep "msvc-asan: build" msvc-asan
 call :step "msvc-asan: tests" ctest --preset msvc-asan
 
 call :bench "size benchmark, msvc-x64" size "%B%\msvc-x64\bench\Release\netcodec_bench_size.exe" "%T%\holdout.bin"
@@ -92,6 +92,26 @@ call :out "=== %NAME%"
 call %CMD% > "%OUT%\%FILE%.txt" 2>&1
 set RC=!ERRORLEVEL!
 type "%OUT%\%FILE%.txt" >> "%LOG%"
+if !RC!==0 (>> "%SUMMARY%" echo ok    !NAME!) else (>> "%SUMMARY%" echo FAIL  !NAME!& set FAILED=1)
+exit /b 0
+
+rem ---- one build: label, then the build preset. A failed build is retried once from clean: on the virtual
+rem machine's shared folder MSVC sometimes leaves a corrupt object or PDB (LNK1103); a real error fails twice.
+:buildstep
+set "NAME=%~1"
+call :out ""
+call :out "=== %NAME%"
+cmake --build --preset %~2 --parallel > "%OUT%\step.txt" 2>&1
+set RC=!ERRORLEVEL!
+type "%OUT%\step.txt"
+type "%OUT%\step.txt" >> "%LOG%"
+if not !RC!==0 (
+	call :out "=== %NAME%: failed, built again from clean"
+	cmake --build --preset %~2 --parallel --clean-first > "%OUT%\step.txt" 2>&1
+	set RC=!ERRORLEVEL!
+	type "%OUT%\step.txt"
+	type "%OUT%\step.txt" >> "%LOG%"
+)
 if !RC!==0 (>> "%SUMMARY%" echo ok    !NAME!) else (>> "%SUMMARY%" echo FAIL  !NAME!& set FAILED=1)
 exit /b 0
 

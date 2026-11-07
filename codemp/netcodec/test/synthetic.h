@@ -3,7 +3,8 @@
 // commands and baselines) and the client (the snapshots it decoded, its commands and baselines).
 // Messages are structurally valid: every operation (gamestates, commands, setgame, downloads, snapshots, map changes,
 // nops), vehicles and pilot player states, extreme field values (any width, NaNs, infinities, -0.0, denormals),
-// structured and random command texts, base ages from 1 to 255 and messages without a base. A state is derived from
+// structured and random command texts, base ages from 1 to 255, messages without a base, and rare snapshots whose
+// entities are entirely random (escaped messages). A state is derived from
 // the state the codec codes it against (the previous state, the baseline or the zero state), with only fields of the
 // table the codec sends changed, each to a value of its codec width, as the engine's states are (the decoder copies
 // the rest from the same base).
@@ -82,6 +83,15 @@ template <size_t N> void Mutate(Rng &r, std::array<uint8_t, N> &img, std::span<c
 		const FieldDesc &f = fields[r.Index(fields.size())];
 		if (f.bits == 0) StoreWord(img, f.offset, RandFloat(r));
 		else Store(img, f, RandInt(r, f.bits));
+	}
+}
+
+// every field a uniformly random word of its codec width (the worst case of the codec: such messages are escaped)
+template <size_t N> void Randomize(Rng &r, std::array<uint8_t, N> &img, std::span<const FieldDesc> fields) {
+	for (const FieldDesc &f : fields) {
+		const auto w = static_cast<uint32_t>(r.Next());
+		if (f.bits == 0) StoreWord(img, f.offset, w);
+		else Store(img, f, ValueBits(w, f.bits));
 	}
 }
 
@@ -174,6 +184,8 @@ inline Snapshot NextSnapshot(Rng &r, const Snapshot *base, const std::vector<Ent
 		if (b == nullptr || !r.PerMille(150)) Mutate(r, st, kEntityFields, 1 + r.Below(20));
 		ents.emplace(num, st);
 	}
+	if (r.PerMille(3))   // rare: every entity entirely random, so that the escape is used
+		for (auto &[num, st] : ents) Randomize(r, st, kEntityFields);
 	for (const auto &[num, st] : ents) sn.entities.push_back(Entity{ .number = num, .state = st });
 	return sn;
 }

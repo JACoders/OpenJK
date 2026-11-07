@@ -33,9 +33,9 @@ enum class Scalar : uint8_t {
 	kScalarCount
 };
 // alphabets of the scalars: 36 for a class of a value below 2^35 (zigzag differences), 65 for any 64-bit value,
-// 256 for bytes
+// 256 for bytes; the message's first symbol is its base delta (0 to 255) plus 256 when it is escaped
 inline constexpr std::array<uint16_t, static_cast<size_t>(Scalar::kScalarCount)> kScalarAlphabet{
-	256, 36, 36, 36, 16, 16, 36, 20, 36, 20, 256, 36, 256, 256, 2, 256, 256, 42,
+	512, 36, 36, 36, 16, 16, 36, 20, 36, 20, 256, 36, 256, 256, 2, 256, 256, 42,
 	8, 36, 2, 2, 2, 2, 2, 2, 65, 65 };
 
 inline constexpr uint32_t kEntityField = 0;

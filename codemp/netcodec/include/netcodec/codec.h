@@ -108,6 +108,10 @@ struct CommandHistory {
 
 class MessageEncoder {
 public:
+	// a message coded larger than this is also coded with its entity and player-state fields raw (escape), and the
+	// smaller of the two is sent; also when the coded form does not fit in maxBytes
+	static constexpr size_t kEscapeTrial = 1024;
+
 	// Codes msg against base; baselines: the entity baselines of the current gamestate (updated by a gamestate op
 	// inside the message for the ops after it); history: the server's commands. Returns false if a value is outside
 	// the model (a bug) or the output does not fit in maxBytes.

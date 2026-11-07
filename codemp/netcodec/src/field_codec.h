@@ -35,7 +35,25 @@ struct PredCtx {
 	ImageView old;                         // its base state
 	const uint8_t *older = nullptr;        // the base state's own base state (same structure), or none
 	bool pred = false;                     // the base state is the same object's previous state
+	bool escaped = false;                  // the message sends its entity and player-state fields raw (RawFields)
 };
+
+// The raw layout of an escaped message (worst case, PLAN step 6 escape): for every field of the table, a raw bit
+// "changed", then the value at its codec width (32 bits for a float). A message is escaped only when that is
+// smaller than its coded form (MessageEncoder::Encode).
+[[nodiscard]] constexpr uint32_t RawWidth(const FieldDesc &f) noexcept {
+	if (f.bits == 0) return 32;
+	return static_cast<uint32_t>(f.bits < 0 ? -f.bits : f.bits);
+}
+
+template <class O> void PutRawField(O &io, const FieldDesc &f, int64_t v) noexcept {
+	const uint32_t w = RawWidth(f);
+	io.Raw(static_cast<uint64_t>(v) & ((uint64_t{ 1 } << w) - 1), w);
+}
+
+[[nodiscard]] inline int64_t GetRawField(In &io, const FieldDesc &f) noexcept {
+	return ValueBits(static_cast<uint32_t>(io.Raw(RawWidth(f))), f.bits);
+}
 
 constexpr int64_t kTrInterpolate = 1, kTrLinearStop = 3;
 constexpr int64_t kTwo31 = 2147483648LL, kTwo32 = 4294967296LL;
