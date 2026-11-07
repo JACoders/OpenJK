@@ -170,6 +170,29 @@ char *Sys_GetCurrentUser( void )
 	return p->pw_name;
 }
 
+/*
+ ==================
+ Sys_OpenPath
+ ==================
+ */
+qboolean Sys_OpenPath( const char *path )
+{
+#ifdef __APPLE__
+	const char *opener = "open";
+#else
+	const char *opener = "xdg-open";
+#endif
+	const pid_t pid = fork();
+
+	if ( pid < 0 )
+		return qfalse;
+	if ( pid == 0 ) {
+		execlp( opener, opener, path, (char *)NULL );
+		_exit( 1 );
+	}
+	return qtrue;
+}
+
 #define MEM_THRESHOLD 96*1024*1024
 
 /*

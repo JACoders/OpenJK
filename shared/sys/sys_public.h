@@ -107,6 +107,9 @@ void	Sys_UnloadDll( void *dllHandle );
 
 char	*Sys_GetCurrentUser( void );
 
+// opens a file or folder of the computer as its desktop would (a page in the browser); qfalse if it couldn't
+qboolean	Sys_OpenPath( const char *path );
+
 void	NORETURN QDECL Sys_Error( const char *error, ... );
 void	NORETURN Sys_Quit (void);
 char	*Sys_GetClipboardData( void );	// note that this isn't journaled...

@@ -1679,6 +1679,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 			CL_SpecialMoves_Escape();
 			return;
 		}
+		if ( ( Key_GetCatcher() & KEYCATCH_CHATLOG ) && !( Key_GetCatcher() & KEYCATCH_UI ) ) {
+			CL_ChatLog_Escape();
+			return;
+		}
 		if ( ( Key_GetCatcher() & KEYCATCH_CINEDITOR ) && !( Key_GetCatcher() & KEYCATCH_UI ) ) {
 			CL_RpCinematic_EditorEscape();
 			return;
@@ -1789,6 +1793,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 	// special moves
 	else if ( Key_GetCatcher() & KEYCATCH_SPECIALMOVES ) {
 		CL_SpecialMoves_KeyEvent( key, qtrue );
+	}
+	// chat log
+	else if ( Key_GetCatcher() & KEYCATCH_CHATLOG ) {
+		CL_ChatLog_KeyEvent( key, qtrue );
 	}
 	// asset manager
 	else if ( Key_GetCatcher() & KEYCATCH_ASSETMANAGER ) {

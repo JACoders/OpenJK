@@ -200,6 +200,7 @@ void CL_AddReliableCommand( const char *cmd, qboolean isDisconnectCmd ) {
 	// a /me of your own is known for yours when it comes back
 	if ( !isDisconnectCmd )
 		CL_ChatRange_OutgoingCommand( cmd );
+		CL_ChatLog_OutgoingCommand( cmd );
 	// an emote's animation is watched for, a Help click shows one
 	if ( !isDisconnectCmd )
 		CL_EmotePreview_Command( cmd );
@@ -860,6 +861,7 @@ void CL_Disconnect( qboolean showMainMenu ) {
 	CL_ClearState ();
 	CL_RpHooks_Disconnect();
 	CL_RpAdmin_Disconnect();
+	CL_ChatLog_Disconnect();
 	CL_Feedback_Disconnect();
 	CL_NpcNames_Disconnect();
 	CL_AdminFlags_Reset();
@@ -2947,6 +2949,7 @@ void CL_Init( void ) {
 	CL_AnimManager_Init ();
 	CL_Presets_Init ();
 	CL_SpecialMoves_Init ();
+	CL_ChatLog_Init ();
 	CL_AssetManager_Init ();
 	CL_AdminFlags_Init ();
 	CL_QuickConnect_Init ();

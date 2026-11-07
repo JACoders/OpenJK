@@ -239,6 +239,9 @@ The console commands, keys and settings this client adds. What each feature does
 
 ## Other tools
 
+- `/chatlog` opens or closes the chat log window; `/chatlog start` and `/chatlog stop` record or stop on this server; `/chatlog open` opens today's page in your browser, `/chatlog folder` the folder
+- `cl_chatLog 1` records by itself on joining a server; `cl_chatLogTells`, `cl_chatLogTeam`, `cl_chatLogWhispers`, `cl_chatLogOOC`, `cl_chatLogEmotes`, `cl_chatLogAdmin` (1 or 0) keep those kinds of chat or not
+
 - `/toolaccess` shows whether the admin tools open for you on this server, and on Temple whether your rank may turn experimental features on; `/toolaccess check` asks again
 - `/feedback` sends a bug report or an idea for the OpenJK-RPMod project, with your RPMod account, and shows the answers; `/feedback mine` opens on your reports, `/feedback close` closes it
 - `/clientusers` lists who on this server has this client, and their version: the players the tools' hooks go to

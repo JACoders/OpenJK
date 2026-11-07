@@ -708,6 +708,7 @@ static qboolean PR_Open( int mode ) {
 		CL_SoundManager_Close();
 		CL_AnimManager_Close();
 		CL_SpecialMoves_Close();
+		CL_ChatLog_Close();
 
 		pr.font = re->RegisterFont( "arialnb" );
 		if ( !pr.font )

@@ -153,6 +153,16 @@ char *Sys_GetCurrentUser( void )
 }
 
 /*
+==================
+Sys_OpenPath
+==================
+*/
+qboolean Sys_OpenPath( const char *path )
+{
+	return (qboolean)( (INT_PTR)ShellExecuteA( NULL, "open", path, NULL, NULL, SW_SHOWNORMAL ) > 32 );
+}
+
+/*
 * Builds the path for the user's game directory
 */
 char *Sys_DefaultHomePath( void )

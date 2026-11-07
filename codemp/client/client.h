@@ -691,7 +691,8 @@ void CL_ModelManager_Draw( void );
 #define KEYCATCH_FEEDBACK		0x20000	// engine only, the feedback window owns keyboard and mouse
 #define KEYCATCH_ASSETMANAGER	0x40000	// engine only, the asset manager owns keyboard and mouse
 #define KEYCATCH_SPECIALMOVES	0x80000	// engine only, the special moves menu owns keyboard and mouse
-#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER | KEYCATCH_PRESETS | KEYCATCH_FEEDBACK | KEYCATCH_ASSETMANAGER | KEYCATCH_SPECIALMOVES )	// mods never see or clear these
+#define KEYCATCH_CHATLOG		0x100000	// engine only, the chat log window owns keyboard and mouse
+#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER | KEYCATCH_PRESETS | KEYCATCH_FEEDBACK | KEYCATCH_ASSETMANAGER | KEYCATCH_SPECIALMOVES | KEYCATCH_CHATLOG )	// mods never see or clear these
 
 void CL_NpcManager_Init( void );
 void CL_NpcManager_Shutdown( void );
@@ -1004,6 +1005,18 @@ void CL_SpecialMoves_MouseEvent( int dx, int dy );
 void CL_SpecialMoves_Escape( void );
 void CL_SpecialMoves_Draw( void );
 void CL_SpecialMoves_FilterCmd( usercmd_t *cmd );
+
+// cl_chatlog.cpp
+void CL_ChatLog_Init( void );
+void CL_ChatLog_Close( void );
+void CL_ChatLog_KeyEvent( int key, qboolean down );
+void CL_ChatLog_MouseEvent( int dx, int dy );
+void CL_ChatLog_Escape( void );
+void CL_ChatLog_Draw( void );
+void CL_ChatLog_Frame( void );
+void CL_ChatLog_Disconnect( void );
+void CL_ChatLog_ServerCommand( void );
+void CL_ChatLog_OutgoingCommand( const char *cmd );
 void CL_RpCinematic_Draw( void );
 void CL_RpCinematic_Frame( void );
 qboolean CL_RpCinematic_ShotHook( const char *name, char *hook, int size, int *ms );

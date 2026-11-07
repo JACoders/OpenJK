@@ -554,6 +554,7 @@ rescan:
 			}
 			// NPC talk is chat too: in a language, as the character playing hears it
 			CL_Languages_ServerCommand();
+			CL_ChatLog_ServerCommand();
 			return qtrue;
 		}
 	}
@@ -694,6 +695,8 @@ rescan:
 	CL_Languages_ServerCommand();
 	// chat from far away stays out of the console
 	CL_ChatRange_ServerCommand();
+	// the chat log keeps it as it's shown
+	CL_ChatLog_ServerCommand();
 	// during a cinematic with the HUD hidden, chat is a subtitle
 	CL_RpHooks_ChatSubtitle();
 

@@ -1106,6 +1106,8 @@ void CL_MouseEvent( int dx, int dy, int time ) {
 		CL_Presets_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_SPECIALMOVES ) {
 		CL_SpecialMoves_MouseEvent( dx, dy );
+	} else if ( Key_GetCatcher( ) & KEYCATCH_CHATLOG ) {
+		CL_ChatLog_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_ASSETMANAGER ) {
 		CL_AssetManager_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CINEDITOR ) {

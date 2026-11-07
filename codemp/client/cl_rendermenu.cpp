@@ -905,6 +905,7 @@ static const struct {
 	{ "Presets",			"presets",			"Characters saved, swapped to in a click" },
 	{ "Skin Select",		"skinselect",		"Every skin and model, worn in a click" },
 	{ "Special Moves",		"specialmoves",		"Saber moves explained, played from a key" },
+	{ "Chat Log",			"chatlog",			"The chat kept as text and a console-like page" },
 	{ "Languages",			"languages",		"Your characters' languages" },
 	{ "Radial Menus",		"radialsettings",	"Make radial menus and bind keys to them" },
 	{ "Console Settings",	"consolesettings",	"How the console looks" },

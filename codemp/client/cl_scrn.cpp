@@ -476,6 +476,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			CL_SaberStyle_Frame();
 			CL_RpAdmin_Frame();
 			CL_RpHooks_ExperimentalFrame();
+			CL_ChatLog_Frame();
 			CL_NpcNames_Frame();
 			CL_EmotePreview_Frame();
 			CL_RpCinematic_Frame();
@@ -496,6 +497,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			CL_AnimManager_Draw();
 			CL_Presets_Draw();
 			CL_SpecialMoves_Draw();
+			CL_ChatLog_Draw();
 			CL_AssetManager_Draw();
 			CL_RadialMenu_DrawSettings();
 			CL_Languages_Draw();

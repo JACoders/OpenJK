@@ -2274,6 +2274,7 @@ static void SM_Open( void ) {
 	CL_AnimManager_Close();
 	CL_Presets_Close();
 	CL_SpecialMoves_Close();
+	CL_ChatLog_Close();
 
 	sm.font = re->RegisterFont( "arialnb" );
 	if ( !sm.font )

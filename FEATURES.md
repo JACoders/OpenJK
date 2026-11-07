@@ -27,6 +27,7 @@ Some features reach other players through workarounds only this client understan
 - [Widescreen Text](#widescreen-text)
 - [Console Selection and Find](#console-selection-and-find)
 - [Lists and Text Boxes](#lists-and-text-boxes)
+- [Chat Log](#chat-log)
 - [Long Chat in Parts](#long-chat-in-parts)
 - [Chat Capitals](#chat-capitals)
 - [Console Key](#console-key)
@@ -565,6 +566,17 @@ The same lists and text boxes in every window.
 - In a text box, click to put the cursor anywhere, Home/End and the arrows move it, Ctrl+arrows jump a word, Ctrl+Backspace deletes one
 - Select with Shift or by dragging the mouse, double-click a word; Ctrl+A selects all, Ctrl+C, Ctrl+X and Ctrl+V copy, cut and paste
 - A text too long for its box goes on to the lines below while you type it, so long lines (Say, NPC talk, center messages...) can be read and fixed whole
+
+## Chat Log
+
+The chat kept in files as you play: plain text, and a page that looks like the console. `/chatlog` opens its window, or **TOOLS** in the in-game menu.
+
+- A day on a server is a pair of files in `chatlogs/` (in your `rpmod` folder): `2026-11-08 JEDI Temple.txt` and `.html`. Coming back the same day carries on in the same pair, with a line where you joined and left; a new day starts a new pair, at midnight too
+- The `.txt` is the chat with the colours left out, each line with its time. The `.html` opens in a browser looking like the console: dark, a console font, every colour the console shows, RPMod's `^a`-`^z` and `^A`-`^Z` too. A bar at its top shows or hides each kind of chat. It's written as you play, so reloading it shows the latest lines
+- **Start by itself**: recording begins on joining any server (`cl_chatLog 1`); otherwise **Start recording** does it for this server. Stopping keeps it off on this server until started again
+- Normal chat always goes in; each of these has a setting: **Tells** (yours say who they went to), **Team chat**, **Whispers and comms**, **OOC** `(( ))`, **Emotes** `/me`, **Admin chat** (`<Admin>`)
+- The chat is kept as it was shown: a language your character doesn't know as gibberish, NPC talk as chat. The storyteller's hidden messages and the tools' hooks never go in
+- **Open page** opens today's page in your browser, **Open folder** the folder
 
 ## Long Chat in Parts
 
