@@ -2523,6 +2523,66 @@ static void ME_LiftProp( qboolean removed, qboolean grab ) {
 		ME_Grab();
 }
 
+static void ME_ItemBounds( meItem_t *it, vec3_t mins, vec3_t maxs );
+
+// the chosen prop, lifted or not, swapped for the model picked in the list: the prop hidden,
+// the model standing where it stood, as big as fits in the space it took
+static void ME_SwapProp( void ) {
+	meItem_t *prop, *it;
+	vec3_t mins, maxs, m0, m1;
+	float fit = 0.0f;
+	qhandle_t h;
+
+	if ( !me.pickModel[0] || me.pickModel[0] == '#' ) {
+		ME_Message( S_COLOR_YELLOW "Pick a model in the list first" );
+		return;
+	}
+	if ( !( h = re->RegisterModel( me.pickModel ) ) ) {
+		ME_Message( S_COLOR_YELLOW "That model couldn't be loaded" );
+		return;
+	}
+	if ( me.selKind == ME_SEL_PROP ) {
+		VectorCopy( me.candMins, mins );
+		VectorCopy( me.candMaxs, maxs );
+		ME_LiftProp( qtrue, qfalse );
+		if ( !( prop = ME_SelectedItem() ) || prop->kind != ME_ITEM_PROP )
+			return;
+	} else {
+		if ( !( prop = ME_SelectedItem() ) || prop->kind != ME_ITEM_PROP )
+			return;
+		ME_ItemBounds( prop, mins, maxs );
+		prop->removed = qtrue;
+		me.propsDirty = qtrue;
+	}
+	if ( me.numItems >= ME_MAX_ITEMS ) {
+		ME_Changed();
+		ME_Message( S_COLOR_YELLOW "Hidden, but there's no room for another model" );
+		return;
+	}
+	re->ModelBounds( h, m0, m1 );
+	for ( int i = 0; i < 3; i++ ) {
+		if ( m1[i] - m0[i] > 1.0f && maxs[i] - mins[i] > 1.0f ) {
+			const float f = ( maxs[i] - mins[i] ) / ( m1[i] - m0[i] );
+
+			if ( fit <= 0.0f || f < fit )
+				fit = f;
+		}
+	}
+	fit = fit > 0.0f ? Com_Clamp( 0.05f, 50.0f, floorf( fit * 100.0f + 0.5f ) / 100.0f ) : 1.0f;
+	it = ME_NewItem( ME_ITEM_MODEL );
+	Q_strncpyz( it->model, me.pickModel, sizeof( it->model ) );
+	it->scale = fit;
+	// its bottom middle on the prop's
+	it->org[0] = ( mins[0] + maxs[0] ) * 0.5f - ( m0[0] + m1[0] ) * 0.5f * fit;
+	it->org[1] = ( mins[1] + maxs[1] ) * 0.5f - ( m0[1] + m1[1] ) * 0.5f * fit;
+	it->org[2] = mins[2] - m0[2] * fit;
+	me.numItems++;
+	ME_Select( ME_SEL_ITEM, me.numItems - 1 );
+	me.tab = ME_TAB_MODELS;
+	ME_Changed();
+	ME_Message( va( "Swapped for %s: turn or scale it to fit; the prop is hidden in the list", ME_ShownName( it->model ) ) );
+}
+
 /*
 ===============================================================================
 
@@ -5511,6 +5571,15 @@ static meItem_t *ME_DrawItemList( float *py, float x, float w, int kind, const c
 	return it;
 }
 
+// swap the chosen prop for the model picked in the list below
+static void ME_SwapButton( float *py, float x, float w ) {
+	const qboolean picked = (qboolean)( me.pickModel[0] && me.pickModel[0] != '#' );
+
+	if ( ME_Button( x, *py, w, picked ? va( "Swap for %s", COM_SkipPath( me.pickModel ) ) : "Swap: pick a model below", qfalse, picked ) )
+		ME_SwapProp();
+	*py += ME_CTRL_H + ME_GAP;
+}
+
 // a prop of the map's, chosen with a click: lift it out, or take it away
 static void ME_DrawPropChoice( float *py, float x, float w ) {
 	const float third = ( w - 8 ) / 3.0f;
@@ -5536,6 +5605,7 @@ static void ME_DrawPropChoice( float *py, float x, float w ) {
 	}
 	ME_Text( x, y, ME_CandIsBrush() ? S_COLOR_GREY "One brush of the map's: the faces on it" : S_COLOR_GREY "Take more adds loose pieces inside it", meWhite );
 	y += ME_ROW_H + 6;
+	ME_SwapButton( &y, x, w );
 	*py = y;
 }
 
@@ -5559,6 +5629,10 @@ static void ME_DrawModelsTab( float x, float y, float w ) {
 		if ( ME_Button( x + half + 4, y, half, "Take more", qfalse, (qboolean)( it->numSeeds < ME_MAX_SEEDS ) ) )
 			ME_TakeTouching();
 		y += ME_CTRL_H + ME_GAP;
+		ME_SwapButton( &y, x, w );
+		it = ME_SelectedItem();
+		if ( it && it->kind != ME_ITEM_MODEL && it->kind != ME_ITEM_PROP )
+			it = NULL;
 	}
 
 	if ( it ) {
@@ -5616,7 +5690,10 @@ static void ME_DrawModelsTab( float x, float y, float w ) {
 		}
 	}
 	y += rows * ME_ROW_H + 4;
-	ME_TextTail( x, y, w, me.pickModel[0] ? va( "Adds %s", ME_ShownName( me.pickModel ) ) : "Pick a model or a map (type map), then Add puts it at the crosshair", meDim );
+	if ( me.selKind == ME_SEL_PROP || ( it && it->kind == ME_ITEM_PROP ) )
+		ME_TextTail( x, y, w, "Pick a model, then Swap puts it in the prop's place", meDim );
+	else
+		ME_TextTail( x, y, w, me.pickModel[0] ? va( "Adds %s", ME_ShownName( me.pickModel ) ) : "Pick a model or a map (type map), then Add puts it at the crosshair", meDim );
 }
 
 static void ME_DrawLightsTab( float x, float y, float w ) {

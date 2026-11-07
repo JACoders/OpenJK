@@ -364,7 +364,7 @@ Edit the map on your own screen: move or hide any part of it, place models, ligh
 
 - **Map**: every entity of the map, with all its keys; triggers boxed in orange and brush entities in blue
 - **Brushes**: any brush of the map, not only its props, moved with the X, Y and Z arrows, or hidden on your screen
-- **Models**: place models, carry them to the crosshair, turn and scale them. The map's own props can be lifted out too, to move or remove them
+- **Models**: place models, carry them to the crosshair, turn and scale them. The map's own props can be lifted out too, to move or remove them; or swapped for another model: pick it in the list and **Swap for ...** hides the prop and stands the model where it was, as big as fits in its place, ready to turn and scale. It takes the light around it rather than the light baked into the map
   - Other maps too, whole: type *map* in the list, pick one and Add puts it at the crosshair, its middle there and its lowest point on what you're looking at; move, turn and scale it like a model to fuse the two maps; it turns and scales around that spot, and its sky and fog are left out. It's drawn only: no one can walk on it, as the server only knows its own map. Others see it shared if they have that map too
 - **Lights**: dynamic lights with a color and reach, that can follow a light style
 - **Triggers**: boxes that run a console command when you walk in
