@@ -159,7 +159,17 @@ int main(int argc, char **argv) {
 			sink = sink + acc;
 		});
 	};
-	const double decOurs = decode([](uint32_t, const rans::Table &tb, uint32_t slot) { return rans::FindSymbol(tb, slot); });
+	// the codec's own path: rans::Get decodes a slot inside the bucket's first symbol without reading cum
+	const double decOurs = Best(runs, [&] {
+		uint32_t acc = 0;
+		for (const trace::Message &m : t.messages) {
+			rans::Decoder d;
+			if (!d.Init(m.bytes)) continue;
+			for (const trace::Unit &u : m.units) acc += u.table == trace::kRaw ? d.GetRaw(u.bits) : rans::Get(d, t.tables[u.table]);
+		}
+		sink = sink + acc;
+	});
+	const double decFind = decode([](uint32_t, const rans::Table &tb, uint32_t slot) { return rans::FindSymbol(tb, slot); });
 	const double decBin = decode([](uint32_t, const rans::Table &tb, uint32_t slot) { return FindBinary(tb, slot); });
 	const double decLin = decode([](uint32_t, const rans::Table &tb, uint32_t slot) { return FindLinear(tb, slot); });
 	const double decLut = decode([&](uint32_t i, const rans::Table &, uint32_t slot) { return static_cast<uint32_t>(luts[i].sym[slot]); });
@@ -222,6 +232,7 @@ int main(int argc, char **argv) {
 	const double decRyg = decodeRyg([&](uint32_t i, const rans::Table &, uint32_t slot) { return static_cast<uint32_t>(luts[i].sym[slot]); });
 	const double decRygBin = decodeRyg([](uint32_t, const rans::Table &tb, uint32_t slot) { return FindBinary(tb, slot); });
 	const double decRygC8 = decodeRyg([&](uint32_t i, const rans::Table &tb, uint32_t slot) { return c8[i].Find(tb, slot); });
+	const double decRygFind = decodeRyg([](uint32_t, const rans::Table &tb, uint32_t slot) { return rans::FindSymbol(tb, slot); });
 
 	printf("trace: %zu messages, %zu units (%zu table symbols), %zu tables\n", nmsg, nunits, nsym, t.tables.size());
 	printf("size: netcodec %zu bytes, ryg (state starts at L) %zu bytes (%+.2f bytes per message)\n",
@@ -231,7 +242,8 @@ int main(int argc, char **argv) {
 	};
 	row("encode netcodec", encOurs);
 	row("encode ryg", encRyg);
-	row("decode netcodec (rans.h, coarse 2^6)", decOurs);
+	row("decode netcodec (rans::Get, codec path)", decOurs);
+	row("decode netcodec, FindSymbol + cum", decFind);
 	row("decode netcodec, binary search", decBin);
 	row("decode netcodec, linear search", decLin);
 	row("decode netcodec, full table", decLut);
@@ -241,5 +253,6 @@ int main(int argc, char **argv) {
 	row("decode ryg, full table", decRyg);
 	row("decode ryg, binary search", decRygBin);
 	row("decode ryg, coarse table 2^8", decRygC8);
+	row("decode ryg, FindSymbol + cum", decRygFind);
 	return sink == 0x12345678 ? 1 : 0;
 }
