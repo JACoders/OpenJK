@@ -2232,6 +2232,9 @@ void CL_RpCinematic_Draw( void ) {
 	// the shot fading or wiping in or out, over the bars too
 	if ( rc.active && rc.trans && !CE_Viewing() )
 		RC_DrawTransitions( &rc.shot, cls.realtime - rc.start );
+	// the cinematic's texts, over a fade to black too
+	if ( !CE_Viewing() )
+		CM_DrawPlayingTexts();
 	if ( CL_RpCinematic_Subtitles() && !CE_Viewing() )
 		CL_RpHooks_DrawSubtitles();
 	CM_Draw();

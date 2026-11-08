@@ -918,6 +918,9 @@ void CL_RpHooks_Shutdown( void );
 void CL_RpHooks_Disconnect( void );
 void CL_RpHooks_Draw( void );
 void CL_RpHooks_DrawSubtitles( void );
+int CL_RpHooks_Font( void );
+int CL_RpHooks_TextWidth( const char *text, int font, float scale );
+void CL_RpHooks_DrawText( float x, float y, const char *text, const float *color, int font, float scale );
 void CL_RpHooks_ChatSubtitle( void );
 // the features sent as cmd: hooks, which only players with this client see: off until turned on
 // in a tool's TOGGLE EXPERIMENTAL, for the session, or with rpexperimental, for good

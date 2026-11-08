@@ -218,6 +218,7 @@ qboolean CM_EditorCamera( vec3_t org, vec3_t ang, float *fov );
 int CM_EditorFilter( void );
 void CM_Frame( void );
 void CM_Draw( void );
+void CM_DrawPlayingTexts( void );
 void CM_Init( void );
 void CM_Shutdown( void );
 void CM_Reset( void );

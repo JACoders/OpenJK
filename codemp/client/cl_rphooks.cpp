@@ -718,6 +718,20 @@ static int RH_Font( void ) {
 	return font ? font : cls.menuFont;
 }
 
+// for the other tools: the font the subtitles use, and text in it with every colour, RPMod's
+// too, measured and drawn with a shadow
+int CL_RpHooks_Font( void ) {
+	return RH_Font();
+}
+
+int CL_RpHooks_TextWidth( const char *text, int font, float scale ) {
+	return RH_TextWidth( text, font, scale );
+}
+
+void CL_RpHooks_DrawText( float x, float y, const char *text, const float *color, int font, float scale ) {
+	RH_DrawText( x, y, text, color, font | STYLE_DROPSHADOW, scale );
+}
+
 // how RPMod's chat box shows chat from this far away (its rpc_chatRange_* cvars): qfalse
 // if it leaves it out, else how solid
 static qboolean RH_ChatRange( float distance, float *alpha ) {

@@ -42,6 +42,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //   npccmd <ent> <seconds in> <command> [value]     an npc command, spaces in it as _
 //   spawn <ent> <seconds in> <x y z yaw> <team> <NPC type>   its targetname the ent's who
 //   remove <ent> <seconds in>                       taken out with npc kill
+//   txt <seconds in> <seconds> <where 0 bottom bar|1 top bar|2 center|3 notify> <size 0-2> <typed 0|1> <who>|<text>
 //   rs <recording> <ms> <x y z> <pitch> <yaw> <legs> <torso> <flips> <holstered> <force powers> <saber move>
 // The shots of the camera editor from before (camshots/*.cam) open as a cinematic of one shot.
 //
@@ -95,6 +96,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define CM_FX_ONCE_MS		600			// how long a one-off shows on the timeline
 #define CM_MAX_SND			24			// sounds in a cinematic
 #define CM_SND_MS			4000		// a new looping one plays this long
+#define CM_MAX_TXT			32			// texts in a cinematic
+#define CM_TXT_LEN			256
+#define CM_TXT_WHO_LEN		48
+#define CM_TXT_MS			3000		// a new one shows this long
+#define CM_TXT_FADE_MS		250
+#define CM_TXT_TYPE_MS		35			// typed out, a letter this often
+#define CM_TXT_MAX_LINES	8
 
 typedef enum {
 	CM_CLIP_MOVE,
@@ -214,6 +222,30 @@ typedef struct {
 	vec3_t		org;
 } cmSnd_t;
 
+// a text shown from its moment for as long as it lasts: on the bottom bar (a line said, who
+// says it before it), on the top bar, in the middle of the screen, or in the top left as a
+// notification; typed out a letter at a time or not. Drawn on the screens with this client
+typedef enum {
+	CM_TXT_BOTTOM,
+	CM_TXT_TOP,
+	CM_TXT_CENTER,
+	CM_TXT_NOTIFY,
+	CM_NUM_TXT_KINDS
+} cmTxtKind_t;
+
+static const char *cmTxtKinds[CM_NUM_TXT_KINDS] = { "Bottom bar", "Top bar", "Center", "Notify" };
+static const char *cmTxtSizes[] = { "small", "normal", "large" };
+
+typedef struct {
+	int			start;				// ms into the cinematic
+	int			ms;					// how long it shows
+	int			kind;				// cmTxtKind_t
+	int			size;				// 0 small, 1 normal, 2 large
+	qboolean	typed;				// a letter at a time
+	char		who[CM_TXT_WHO_LEN];	// who says it, shown before it; "" none
+	char		text[CM_TXT_LEN];
+} cmTxt_t;
+
 typedef struct {
 	qboolean	bars, hud;
 	int			numShots;
@@ -227,6 +259,8 @@ typedef struct {
 	cmFx_t		fx[CM_MAX_FX];
 	int			numSnd;
 	cmSnd_t		snd[CM_MAX_SND];
+	int			numTxt;
+	cmTxt_t		txt[CM_MAX_TXT];
 } cmCine_t;
 
 // a move as it goes: each of them from where they are then through the spots, a group
@@ -823,6 +857,12 @@ static int CM_ToText( const cmCine_t *c, char *out, int size ) {
 		CM_ADD( va( "snd %g %g %i %i %i %i %s\n", RC_Seconds( s->start ), RC_Seconds( s->ms ), s->spot ? 1 : 0,
 			RC_Round( s->org[0] ), RC_Round( s->org[1] ), RC_Round( s->org[2] ), s->path ) );
 	}
+	// txt <start> <seconds> <kind> <size> <typed 0|1> <who>|<text>
+	for ( int i = 0; i < c->numTxt; i++ ) {
+		const cmTxt_t *x = &c->txt[i];
+
+		CM_ADD( va( "txt %g %g %i %i %i %s|%s\n", RC_Seconds( x->start ), RC_Seconds( x->ms ), x->kind, x->size, x->typed ? 1 : 0, x->who, x->text ) );
+	}
 	for ( int i = 0; i < c->numShots; i++ ) {
 		RC_WriteShot( &c->shots[i], hook, sizeof( hook ) );
 		Com_sprintf( line, sizeof( line ), "shot %g %s\n", c->shots[i].numKeys == 1 && !c->shots[i].orbit ? RC_Seconds( c->shots[i].ms ) : 0.0f, hook );
@@ -988,6 +1028,26 @@ static void CM_Parse( char *text, cmCine_t *c ) {
 			s->spot = (qboolean)( spot != 0 );
 			Q_strncpyz( s->path, line + 4 + n, sizeof( s->path ) );
 			c->numSnd++;
+		} else if ( !Q_stricmpn( line, "txt ", 4 ) && c->numTxt < CM_MAX_TXT ) {
+			cmTxt_t *x = &c->txt[c->numTxt];
+			float start, secs;
+			int kind = 0, size = 1, typed = 0, n = 0;
+			const char *who, *bar;
+
+			memset( x, 0, sizeof( *x ) );
+			if ( sscanf( line + 4, "%f %f %i %i %i %n", &start, &secs, &kind, &size, &typed, &n ) < 5 || n <= 0 )
+				continue;
+			who = line + 4 + n;
+			if ( !( bar = strchr( who, '|' ) ) || !bar[1] )
+				continue;
+			x->start = RC_SecondsMs( start );
+			x->ms = Q_max( 100, RC_SecondsMs( secs ) );
+			x->kind = Com_Clampi( 0, CM_NUM_TXT_KINDS - 1, kind );
+			x->size = Com_Clampi( 0, (int)ARRAY_LEN( cmTxtSizes ) - 1, size );
+			x->typed = (qboolean)( typed != 0 );
+			Q_strncpyz( x->who, who, Q_min( (int)sizeof( x->who ), (int)( bar - who ) + 1 ) );
+			Q_strncpyz( x->text, bar + 1, sizeof( x->text ) );
+			c->numTxt++;
 		} else if ( !Q_stricmpn( line, "ent ", 4 ) && c->numEnts < CM_MAX_ENTS ) {
 			// a player's name can have spaces in it
 			const char *who = line + 4;
@@ -1347,6 +1407,145 @@ static void CM_RunSnd( const cmCine_t *c, int t, int *next ) {
 		CM_PlaySnd( s, h );
 		next[i] = cls.realtime + Q_max( 200, (int)S_GetSampleLengthInMilliSeconds( h ) );
 	}
+}
+
+// a colour code, RPMod's letters too
+static qboolean CM_TxtCode( const char *p ) {
+	return (qboolean)( p[0] == Q_COLOR_ESCAPE && p[1] && isalnum( (unsigned char)p[1] ) );
+}
+
+// the text broken at spaces into lines that fit the width, each starting in the colour the one
+// before ended in; how many
+static int CM_TxtLines( const char *text, int font, float scale, float w, char lines[][CM_TXT_LEN + CM_TXT_WHO_LEN + 16], int max ) {
+	const int size = CM_TXT_LEN + CM_TXT_WHO_LEN + 16;
+	char code[3] = "";
+	int n = 0;
+
+	while ( *text && n < max ) {
+		char *line = lines[n];
+		const int start = strlen( code );
+		int len = 0, fit = 0;
+
+		Q_strncpyz( line, code, size );
+		while ( text[len] && start + len < size - 1 ) {
+			line[start + len] = text[len];
+			line[start + len + 1] = '\0';
+			if ( CL_RpHooks_TextWidth( line, font, scale ) > w )
+				break;
+			if ( text[len] == ' ' || !text[len + 1] )
+				fit = len + 1;
+			len++;
+		}
+		if ( !text[len] )
+			fit = len;
+		if ( !fit )
+			fit = Q_max( len, 1 );
+		line[start + fit] = '\0';
+		for ( int i = 0; i < fit; i++ ) {
+			if ( CM_TxtCode( text + i ) ) {
+				code[0] = text[i];
+				code[1] = text[i + 1];
+			}
+		}
+		n++;
+		text += fit;
+		while ( *text == ' ' )
+			text++;
+	}
+	return n;
+}
+
+// a line up to so many letters, its colour codes not counted; the letters it had
+static int CM_TxtTyped( const char *line, int letters, char *out, int size ) {
+	int len = 0, used = 0;
+
+	while ( *line && len < size - 2 ) {
+		if ( CM_TxtCode( line ) ) {
+			out[len++] = *line++;
+			out[len++] = *line++;
+			continue;
+		}
+		if ( used >= letters )
+			break;
+		out[len++] = *line++;
+		used++;
+	}
+	out[len] = '\0';
+	while ( *line ) {
+		if ( CM_TxtCode( line ) )
+			line += 2;
+		else
+			line++, used++;
+	}
+	return used;
+}
+
+// the texts showing t ms in: over the bars, in the middle, in the top left; a few of one kind at
+// once go one under the other
+static void CM_DrawTexts( const cmCine_t *c, int t ) {
+	static const float kindScale[CM_NUM_TXT_KINDS] = { 1.0f, 1.0f, 1.5f, 0.85f };
+	static const float sizeScale[] = { 0.8f, 1.0f, 1.3f };
+	static char lines[CM_TXT_MAX_LINES][CM_TXT_LEN + CM_TXT_WHO_LEN + 16];
+	const float barH = RC_BAR_FRAC * SCREEN_HEIGHT;
+	float used[CM_NUM_TXT_KINDS] = { 0 };
+	int font = 0;
+
+	for ( int i = 0; i < c->numTxt; i++ ) {
+		const cmTxt_t *x = &c->txt[i];
+		const int in = t - x->start;
+		char full[CM_TXT_LEN + CM_TXT_WHO_LEN + 16], part[sizeof( full )];
+		vec4_t color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float scale, rowH, w, left, top, blockH;
+		int numLines, letters;
+
+		if ( in < 0 || in >= x->ms || !x->text[0] )
+			continue;
+		if ( !font )
+			font = CL_RpHooks_Font();
+		// typed out it comes in a letter at a time, else it fades in; either fades out
+		color[3] = Com_Clamp( 0.0f, 1.0f, (float)Q_min( x->typed ? CM_TXT_FADE_MS : in, x->ms - in ) / CM_TXT_FADE_MS );
+		if ( x->who[0] )
+			Com_sprintf( full, sizeof( full ), "%s%s" S_COLOR_WHITE ": %s", CM_TxtCode( x->who ) ? "" : S_COLOR_YELLOW, x->who, x->text );
+		else
+			Q_strncpyz( full, x->text, sizeof( full ) );
+		scale = kindScale[x->kind] * sizeScale[x->size];
+		rowH = re->Font_HeightPixels( font, scale ) + 2.0f;
+		w = x->kind == CM_TXT_NOTIFY ? 300.0f : x->kind == CM_TXT_CENTER ? 520.0f : 560.0f;
+		numLines = CM_TxtLines( full, font, scale, w, lines, CM_TXT_MAX_LINES );
+		blockH = numLines * rowH;
+		switch ( x->kind ) {
+		case CM_TXT_BOTTOM:
+			// the newest lowest, in the middle of the bar
+			top = SCREEN_HEIGHT - barH * 0.5f - blockH * 0.5f - used[x->kind];
+			break;
+		case CM_TXT_TOP:
+			top = barH * 0.5f - blockH * 0.5f + used[x->kind];
+			break;
+		case CM_TXT_CENTER:
+			top = SCREEN_HEIGHT * 0.42f - blockH * 0.5f + used[x->kind];
+			break;
+		default:
+			top = barH + 10.0f + used[x->kind];
+			break;
+		}
+		used[x->kind] += blockH + 4.0f;
+		// who says it is there at once, what's said typed after
+		letters = x->typed ? ( x->who[0] ? CM_TxtTyped( full, 0, part, sizeof( part ) ) - CM_TxtTyped( x->text, 0, part, sizeof( part ) ) : 0 )
+			+ in / CM_TXT_TYPE_MS + 1 : 1 << 20;
+		for ( int l = 0; l < numLines && letters > 0; l++ ) {
+			const float lw = (float)CL_RpHooks_TextWidth( lines[l], font, scale );
+
+			left = x->kind == CM_TXT_NOTIFY ? 16.0f : ( SCREEN_WIDTH - w ) * 0.5f + ( w - lw ) * 0.5f;
+			letters -= CM_TxtTyped( lines[l], letters, part, sizeof( part ) );
+			CL_RpHooks_DrawText( left, top + l * rowH, part, color, font, scale );
+		}
+	}
+}
+
+// while it plays, preview too: the texts over the bars and the scene
+void CM_DrawPlayingTexts( void ) {
+	if ( cmp.playing )
+		CM_DrawTexts( &cmp.cine, cls.realtime - cmp.start );
 }
 
 static int CM_FxId( const char *path ) {
@@ -1928,7 +2127,8 @@ typedef enum {
 	CM_TAB_CAMERA,
 	CM_TAB_ENTITIES,
 	CM_TAB_EFFECTS,
-	CM_TAB_SOUNDS
+	CM_TAB_SOUNDS,
+	CM_TAB_TEXT
 } cmTab_t;
 
 typedef enum {
@@ -1948,7 +2148,9 @@ typedef enum {
 	CM_TYPE_EMOTE,
 	CM_TYPE_NEWNPC,		// a targetname for an NPC to spawn
 	CM_TYPE_NPCTYPE,	// a spawn's NPC type
-	CM_TYPE_DIALOG		// an NPC command's dialog
+	CM_TYPE_DIALOG,		// an NPC command's dialog
+	CM_TYPE_TXT,		// a text's words
+	CM_TYPE_TXTWHO		// and who says them
 } cmTyping_t;
 
 typedef enum {
@@ -1962,7 +2164,9 @@ typedef enum {
 	CM_DRAG_FX,			// an effect, when it starts
 	CM_DRAG_FX_END,		// how long it goes on
 	CM_DRAG_SND,		// a sound, when it starts
-	CM_DRAG_SND_END		// how long it goes on
+	CM_DRAG_SND_END,	// how long it goes on
+	CM_DRAG_TXT,		// a text, when it shows
+	CM_DRAG_TXT_END		// how long it shows
 } cmDrag_t;
 
 static struct {
@@ -2019,6 +2223,10 @@ static struct {
 	qboolean	sndPickPinned;
 	qboolean	sndPicked;
 	cmSnd_t		sndPickedSnd;
+
+	// the Text tab: the one picked
+	int			txt;
+	int			txtScroll;
 
 	// the move arrows over the effect picked: J; one dragged moves it along
 	qboolean	gizmo;
@@ -2263,6 +2471,8 @@ static void CM_Ripple( void ) {
 		CM_REMAP( c->fx[i].start );
 	for ( int i = 0; i < c->numSnd; i++ )
 		CM_REMAP( c->snd[i].start );
+	for ( int i = 0; i < c->numTxt; i++ )
+		CM_REMAP( c->txt[i].start );
 	if ( cm.tlPinned && !cm.tlDrag )
 		CM_REMAP( cm.tlMs );
 #undef CM_REMAP
@@ -2271,10 +2481,11 @@ static void CM_Ripple( void ) {
 
 // what starts at or after ms moves by delta, what's between ms and ms - delta back to ms
 static void CM_ShiftClips( int ms, int delta ) {
-	const int clips = cm.cine.numClips, fx = clips + cm.cine.numFx;
+	const int clips = cm.cine.numClips, fx = clips + cm.cine.numFx, snd = fx + cm.cine.numSnd;
 
-	for ( int i = 0; i < fx + cm.cine.numSnd; i++ ) {
-		int *start = i < clips ? &cm.cine.clips[i].start : i < fx ? &cm.cine.fx[i - clips].start : &cm.cine.snd[i - fx].start;
+	for ( int i = 0; i < snd + cm.cine.numTxt; i++ ) {
+		int *start = i < clips ? &cm.cine.clips[i].start : i < fx ? &cm.cine.fx[i - clips].start
+			: i < snd ? &cm.cine.snd[i - fx].start : &cm.cine.txt[i - snd].start;
 
 		if ( delta < 0 && *start >= ms + delta && *start < ms )
 			*start = ms + delta;
@@ -3187,6 +3398,12 @@ static char *CM_TypedText( int *size ) {
 	case CM_TYPE_NEWNPC:
 		*size = sizeof( cm.newNpc );
 		return cm.newNpc;
+	case CM_TYPE_TXT:
+	case CM_TYPE_TXTWHO:
+		if ( cm.txt < 0 || cm.txt >= cm.cine.numTxt )
+			return NULL;
+		*size = cm.typing == CM_TYPE_TXT ? sizeof( cm.cine.txt[0].text ) : sizeof( cm.cine.txt[0].who );
+		return cm.typing == CM_TYPE_TXT ? cm.cine.txt[cm.txt].text : cm.cine.txt[cm.txt].who;
 	case CM_TYPE_NPCTYPE:
 		if ( !clip || clip->kind != CM_CLIP_SPAWN )
 			return NULL;
@@ -3211,8 +3428,8 @@ static char *CM_TypedText( int *size ) {
 // a character the box typed in takes: a line anything, a name shown anything but the | that
 // ends it in the file; the rest names, who can be several with commas between
 static qboolean CM_AllowChar( int ch ) {
-	if ( cm.typing == CM_TYPE_SAY || cm.typing == CM_TYPE_SAYNAME || cm.typing == CM_TYPE_DIALOG )
-		return (qboolean)!( ch < ' ' || ch > '~' || ( cm.typing != CM_TYPE_SAY && ch == '|' ) || ( cm.typing == CM_TYPE_DIALOG && ch == ';' ) );
+	if ( cm.typing == CM_TYPE_SAY || cm.typing == CM_TYPE_SAYNAME || cm.typing == CM_TYPE_DIALOG || cm.typing == CM_TYPE_TXT || cm.typing == CM_TYPE_TXTWHO )
+		return (qboolean)!( ch < ' ' || ch > '~' || ( cm.typing != CM_TYPE_SAY && cm.typing != CM_TYPE_TXT && ch == '|' ) || ( cm.typing == CM_TYPE_DIALOG && ch == ';' ) );
 	return (qboolean)( CM_NameChar( ch ) || ( ( cm.typing == CM_TYPE_WHO || cm.typing == CM_TYPE_FOCUS ) && ch == ',' ) );
 }
 
@@ -3234,6 +3451,7 @@ static void CM_DeletePlaceKey( cmClip_t *clip );
 
 static void CM_DeleteFx( void );
 static void CM_DeleteSnd( void );
+static void CM_DeleteTxt( void );
 
 void CL_RpCinematic_EditorKeyEvent( int key, qboolean down ) {
 	cmClip_t *clip;
@@ -3337,6 +3555,8 @@ void CL_RpCinematic_EditorKeyEvent( int key, qboolean down ) {
 			CM_DeleteFx();
 		else if ( cm.tab == CM_TAB_SOUNDS )
 			CM_DeleteSnd();
+		else if ( cm.tab == CM_TAB_TEXT )
+			CM_DeleteTxt();
 		else if ( cm.tab == CM_TAB_ENTITIES && clip && clip->kind == CM_CLIP_PLACE )
 			CM_DeletePlaceKey( clip );
 		else if ( cm.tab == CM_TAB_ENTITIES )
@@ -5748,6 +5968,144 @@ static void CM_DrawSoundsTab( float x, float y, float w ) {
 	CM_Text( x, y, S_COLOR_GREY "Its bar on the timeline: drag it, or its end", cmWhite );
 }
 
+/*
+===============================================================================
+
+Text: what's written on the screen at its moment
+
+===============================================================================
+*/
+
+static cmTxt_t *CM_Txt( void ) {
+	return cm.txt >= 0 && cm.txt < cm.cine.numTxt ? &cm.cine.txt[cm.txt] : NULL;
+}
+
+// a new one at the moment picked, of the kind of the one picked, its words typed next
+static void CM_AddTxt( void ) {
+	cmCine_t *c = &cm.cine;
+	const cmTxt_t *like = CM_Txt();
+	cmTxt_t *x;
+
+	if ( c->numTxt >= CM_MAX_TXT ) {
+		CM_Message( S_COLOR_YELLOW "A cinematic has 32 texts at most" );
+		return;
+	}
+	x = &c->txt[c->numTxt];
+	memset( x, 0, sizeof( *x ) );
+	x->start = cm.tlPinned ? cm.tlMs : 0;
+	x->ms = CM_TXT_MS;
+	x->kind = like ? like->kind : CM_TXT_BOTTOM;
+	x->size = like ? like->size : 1;
+	x->typed = like ? like->typed : qfalse;
+	if ( like && like->kind == CM_TXT_BOTTOM )
+		Q_strncpyz( x->who, like->who, sizeof( x->who ) );
+	cm.txt = c->numTxt++;
+	cm.txtScroll = Q_max( 0, cm.txt - 3 );
+	cm.typing = CM_TYPE_TXT;
+	CM_Changed();
+}
+
+static void CM_DeleteTxt( void ) {
+	cmCine_t *c = &cm.cine;
+
+	if ( !CM_Txt() )
+		return;
+	cm.typing = CM_TYPE_NONE;
+	c->numTxt--;
+	memmove( &c->txt[cm.txt], &c->txt[cm.txt + 1], ( c->numTxt - cm.txt ) * sizeof( c->txt[0] ) );
+	cm.txt = Q_min( cm.txt, c->numTxt - 1 );
+	CM_Changed();
+}
+
+static void CM_DrawTextTab( float x, float y, float w ) {
+	cmCine_t *c = &cm.cine;
+	const float half = ( w - 4 ) * 0.5f;
+	const int rows = 6;
+	cmTxt_t *t;
+	int steps;
+
+	CM_Text( x, y + 2, va( "Texts (%i)", c->numTxt ), cmWhite );
+	y += CM_CTRL_H + 2;
+	if ( cm.wheel && CM_InRect( x, y, w, rows * CM_ROW_H ) ) {
+		cm.txtScroll += cm.wheel;
+		cm.wheel = 0;
+	}
+	cm.txtScroll = Com_Clampi( 0, Q_max( 0, c->numTxt - rows ), cm.txtScroll );
+	CM_Box( x, y, w, rows * CM_ROW_H + 2, cmPanelLight );
+	const float lw = CM_ListBar( x, y, w, rows * CM_ROW_H + 2, c->numTxt, rows, &cm.txtScroll );
+	for ( int i = 0; i < c->numTxt; i++ ) {
+		const cmTxt_t *e = &c->txt[i];
+		const int r = i - cm.txtScroll;
+		const float ry = y + 1 + r * CM_ROW_H;
+
+		if ( r < 0 || r >= rows )
+			continue;
+		if ( i == cm.txt )
+			CM_Fill( x + 1, ry, lw - 2, CM_ROW_H, cmHighlight );
+		else if ( CM_InRect( x, ry, lw, CM_ROW_H ) )
+			CM_Fill( x + 1, ry, lw - 2, CM_ROW_H, cmHoverBox );
+		CM_TextClipped( x + 4, ry, lw - 8, va( S_COLOR_CYAN "%.1fs " S_COLOR_GREY "%s  " S_COLOR_WHITE "%s%s%s", e->start / 1000.0f, cmTxtKinds[e->kind],
+			e->who[0] ? e->who : "", e->who[0] ? S_COLOR_WHITE ": " : "", e->text[0] ? e->text : S_COLOR_YELLOW "nothing yet" ), cmWhite );
+		if ( CM_Clicked( x, ry, lw, CM_ROW_H ) ) {
+			cm.txt = i;
+			cm.typing = CM_TYPE_NONE;
+		}
+	}
+	if ( !c->numTxt )
+		CM_Text( x + 4, y + 2, S_COLOR_GREY "None yet", cmWhite );
+	y += rows * CM_ROW_H + 6;
+	if ( CM_Button( x, y, w, va( "+ Add text, at %.1f s", ( cm.tlPinned ? cm.tlMs : 0 ) / 1000.0f ), qfalse, (qboolean)( c->numTxt < CM_MAX_TXT ) ) )
+		CM_AddTxt();
+	y += CM_CTRL_H + CM_GAP + 3;
+
+	t = CM_Txt();
+	if ( !t ) {
+		CM_Text( x, y, S_COLOR_GREY "Words on the screen at a moment: a line", cmWhite );
+		CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "said on the bottom bar, a title on the", cmWhite );
+		CM_Text( x, y + CM_ROW_H * 2, S_COLOR_GREY "top one, a centre message, a notification", cmWhite );
+		return;
+	}
+	CM_Fill( x, y - 2, w, 1, cmBorder );
+	CM_TextBox( x, y, w - 56, t->text, "type it: ^1 colours work", CM_TYPE_TXT, NULL );
+	if ( CM_Button( x + w - 50, y, 50, "Delete", qfalse, qtrue ) ) {
+		CM_DeleteTxt();
+		return;
+	}
+	y += CM_CTRL_H + CM_GAP;
+	CM_Text( x, y + 2, "Said by", cmDim );
+	CM_TextBox( x + 52, y, w - 52, t->who, "no one, or a name shown before it", CM_TYPE_TXTWHO, NULL );
+	y += CM_CTRL_H + CM_GAP;
+	// where it shows
+	for ( int k = 0; k < CM_NUM_TXT_KINDS; k++ ) {
+		const float bx = x + ( k & 1 ) * ( half + 4 ), by = y + ( k >> 1 ) * ( CM_CTRL_H + CM_GAP );
+
+		if ( CM_Button( bx, by, half, cmTxtKinds[k], (qboolean)( t->kind == k ), qtrue ) && t->kind != k ) {
+			t->kind = k;
+			CM_Changed();
+		}
+	}
+	y += ( CM_CTRL_H + CM_GAP ) * 2;
+	steps = CM_Stepper( x, y, w, "Shows at", va( "%.1f s", t->start / 1000.0f ) );
+	CM_AdjustMs( &t->start, steps, 0.1f, 0 );
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_Stepper( x, y, w, "For", va( "%.1f s", t->ms / 1000.0f ) );
+	CM_AdjustMs( &t->ms, steps, 0.5f, 100 );
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_Stepper( x, y, w, "Size", cmTxtSizes[t->size] );
+	if ( steps ) {
+		t->size = Com_Clampi( 0, (int)ARRAY_LEN( cmTxtSizes ) - 1, t->size + steps );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	if ( CM_Switch( x, y, w, "Typed out", t->typed ? "a letter at a time" : "no, all at once" ) ) {
+		t->typed = (qboolean)!t->typed;
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	CM_Text( x, y, S_COLOR_GREY "Its bar on the timeline: drag it, or its end", cmWhite );
+	CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "Seen on screens with this client", cmWhite );
+}
+
 // the sound held follows what's under the mouse
 static void CM_SndDrag( void ) {
 	cmSnd_t *s = CM_Snd();
@@ -6224,7 +6582,7 @@ static void CM_TlClick( const cmTrack_t *t, float rowsY, int numRows ) {
 	const int r = cm.clickY >= rowsY ? (int)( ( cm.clickY - rowsY ) / CM_ROW_H ) : -1;
 	const int row = r > 0 ? cm.tlScroll + r : r;
 	const int at = CM_TlMsAt( t, cx, qfalse );
-	const int fxRow = 1 + c->numEnts * 2, sndRow = fxRow + 1;
+	const int fxRow = 1 + c->numEnts * 2, sndRow = fxRow + 1, txtRow = sndRow + 1;
 
 	cm.tlDragSpan = t->span;
 	cm.typing = CM_TYPE_NONE;
@@ -6238,6 +6596,8 @@ static void CM_TlClick( const cmTrack_t *t, float rowsY, int numRows ) {
 			cm.tab = CM_TAB_EFFECTS;
 		} else if ( row == sndRow ) {
 			cm.tab = CM_TAB_SOUNDS;
+		} else if ( row == txtRow ) {
+			cm.tab = CM_TAB_TEXT;
 		} else if ( row > 0 ) {
 			cm.ent = ( row - 1 ) / 2;
 			cm.clip = -1;
@@ -6332,6 +6692,25 @@ static void CM_TlClick( const cmTrack_t *t, float rowsY, int numRows ) {
 			} else {
 				cm.tlDrag = CM_DRAG_SND;
 				cm.tlDragGrab = at - s->start;
+			}
+			return;
+		}
+	} else if ( row == txtRow ) {
+		// a text: its bar, or its end to make it show longer
+		for ( int i = c->numTxt - 1; i >= 0; i-- ) {
+			const cmTxt_t *x = &c->txt[i];
+			const float x0 = CM_TlX( t, x->start ), x1 = CM_TlX( t, x->start + x->ms );
+
+			if ( cx < x0 - 2 || cx > x1 + CM_TL_GRAB )
+				continue;
+			cm.txt = i;
+			cm.tab = CM_TAB_TEXT;
+			cm.tlDragIndex = i;
+			if ( cx >= x1 - CM_TL_GRAB && x1 - x0 > CM_TL_GRAB * 2 ) {
+				cm.tlDrag = CM_DRAG_TXT_END;
+			} else {
+				cm.tlDrag = CM_DRAG_TXT;
+				cm.tlDragGrab = at - x->start;
 			}
 			return;
 		}
@@ -6473,6 +6852,19 @@ static void CM_TlDrag( const cmTrack_t *t ) {
 			}
 		}
 		break;
+	case CM_DRAG_TXT:
+	case CM_DRAG_TXT_END:
+		if ( cm.tlDragIndex < c->numTxt ) {
+			cmTxt_t *x = &c->txt[cm.tlDragIndex];
+			const int ms = cm.tlDrag == CM_DRAG_TXT ? CM_TlSnap( at - cm.tlDragGrab ) : Q_max( CM_TL_MIN_MS, CM_TlSnap( at - x->start ) );
+			int *field = cm.tlDrag == CM_DRAG_TXT ? &x->start : &x->ms;
+
+			if ( ms != *field ) {
+				*field = ms;
+				CM_Changed();
+			}
+		}
+		break;
 	case CM_DRAG_CLIP:
 	case CM_DRAG_CLIP_END:
 		if ( cm.tlDragIndex < c->numClips ) {
@@ -6493,7 +6885,7 @@ static void CM_TlDrag( const cmTrack_t *t ) {
 
 static void CM_DrawTimeline( void ) {
 	cmCine_t *c = &cm.cine;
-	const int fxRow = 1 + c->numEnts * 2, sndRow = fxRow + 1, numRows = sndRow + 1, visRows = Q_min( CM_TL_ROWS, numRows );
+	const int fxRow = 1 + c->numEnts * 2, sndRow = fxRow + 1, txtRow = sndRow + 1, numRows = txtRow + 1, visRows = Q_min( CM_TL_ROWS, numRows );
 	const float x = CM_TL_X, w = CM_TL_W;
 	const float boxH = CM_TL_RULER_H + Q_max( 2, visRows ) * CM_ROW_H + 3, boxY = CM_TL_BOTTOM - boxH, headY = boxY - CM_CTRL_H - 2;
 	const float rowsY = boxY + 1 + CM_TL_RULER_H;
@@ -6617,6 +7009,16 @@ static void CM_DrawTimeline( void ) {
 
 				CM_TlBar( CM_TlX( &t, s->start ), CM_TlX( &t, CM_SndEnd( s ) ), ry, sndBar, COM_SkipPath( (char *)s->path ), (qboolean)( i == cm.snd && cm.tab == CM_TAB_SOUNDS ) );
 			}
+		} else if ( row == txtRow ) {
+			static const vec4_t txtBar = { 0.6f, 0.4f, 0.8f, 0.85f };
+
+			CM_TextClipped( x + 3, ry, CM_TL_LABEL_W - 6, "Text", cm.tab == CM_TAB_TEXT ? cmTlSel : cmWhite );
+			for ( int i = 0; i < c->numTxt; i++ ) {
+				const cmTxt_t *e = &c->txt[i];
+
+				CM_TlBar( CM_TlX( &t, e->start ), CM_TlX( &t, e->start + e->ms ), ry, txtBar, e->text[0] ? e->text : "nothing yet",
+					(qboolean)( i == cm.txt && cm.tab == CM_TAB_TEXT ) );
+			}
 		} else {
 			const int e = ( row - 1 ) / 2, lane = ( row - 1 ) & 1;
 
@@ -6659,8 +7061,8 @@ static void CM_DrawTimeline( void ) {
 			}
 		}
 	}
-	if ( !c->numEnts && !c->numFx && !c->numSnd )
-		CM_Text( t.x + 3, rowsY + CM_ROW_H, S_COLOR_GREY "Who's in it: the Entities tab. Effects and sounds: their tabs", cmWhite );
+	if ( !c->numEnts && !c->numFx && !c->numSnd && !c->numTxt )
+		CM_Text( t.x + 3, rowsY + CM_ROW_H, S_COLOR_GREY "Who's in it: the Entities tab. Effects, sounds and text: their tabs", cmWhite );
 	else if ( numRows > visRows )
 		CM_Text( x + 3, boxY, va( S_COLOR_GREY "%i of %i", cm.tlScroll / 2 + 1, c->numEnts ), cmWhite );
 
@@ -6776,6 +7178,9 @@ static void CM_DrawEditor( void ) {
 
 		RC_DrawTransitions( &cm.cine.shots[shot], local );
 	}
+	// the texts then, seen through its camera or written on the Text tab
+	if ( cm.tlPinned && ( CM_TlLooking() || cm.tab == CM_TAB_TEXT ) )
+		CM_DrawTexts( &cm.cine, cm.tlMs );
 	CM_DrawGuides();
 	CM_DrawFocusCircle();
 	CM_GizmoFrame();
@@ -6842,6 +7247,7 @@ static void CM_DrawEditor( void ) {
 			cm.tab == CM_TAB_ENTITIES ? "Click someone to pick them   Enter adds a move's spot or a position's key, a click picks one, drag moves it   Del takes it off"
 				: cm.tab == CM_TAB_EFFECTS ? "Click an effect to pick it, drag it over walls and floors   J move arrows   Del deletes it   P preview"
 				: cm.tab == CM_TAB_SOUNDS ? "Click a sound's spot to pick it, drag it over walls and floors   J move arrows   Del deletes it   P preview"
+				: cm.tab == CM_TAB_TEXT ? "Pick a moment on the timeline to see the texts then   Del deletes the one picked   P preview"
 				: "Enter add a spot   Del delete   Up/Down pick   F look through it   P preview",
 			cm.tlHidden ? "T shows the timeline" : "Timeline: click or drag a moment, drag bars to retime   P plays from it   T hides it",
 			cm.tlPinned ? "Esc lets go of the moment" : "Esc back"
@@ -6878,7 +7284,7 @@ static void CM_DrawEditor( void ) {
 	if ( cm.listing ) {
 		CM_DrawFileList( x, y + 6, w );
 	} else {
-		static const char *tabs[] = { "Camera", "Entities", "Effects", "Sounds" };
+		static const char *tabs[] = { "Camera", "Entities", "Effects", "Sounds", "Text" };
 
 		// how it looks to everyone
 		if ( CM_Switch( x, y, half, "Bars", cm.cine.bars ? "on" : "off" ) ) {
@@ -6906,6 +7312,8 @@ static void CM_DrawEditor( void ) {
 			CM_DrawEffectsTab( x, y, w );
 		else if ( cm.tab == CM_TAB_SOUNDS )
 			CM_DrawSoundsTab( x, y, w );
+		else if ( cm.tab == CM_TAB_TEXT )
+			CM_DrawTextTab( x, y, w );
 		else
 			CM_DrawCameraTab( x, y, w );
 
