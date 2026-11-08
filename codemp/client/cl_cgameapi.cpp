@@ -383,6 +383,8 @@ static void CL_R_RenderScene( const refdef_t *fd ) {
 	CL_MapEditor_AddToScene( fd );
 	// a cinematic's extras, people only this client draws
 	CL_Extras_AddToScene( fd );
+	// and its props and lights
+	CL_Cinematic_AddToScene( fd );
 	// where the stories armed wait, for the storyteller
 	CL_Storyteller_AddToScene( fd );
 	// where the crosshair looks, for an NPC's name under it

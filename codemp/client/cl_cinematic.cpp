@@ -43,6 +43,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //   spawn <ent> <seconds in> <x y z yaw> <team> <NPC type>   its targetname the ent's who
 //   remove <ent> <seconds in>                       taken out with npc kill
 //   appear <ent> <seconds in> <seconds, 0 to the end> <hidden 0|1> <size %> <cmShells> <cmSaberLooks> <blade %>
+//   prop <seconds in> <seconds, 0 to the end> <smooth 0|1> <scale> <ms,x,y,z,pitch,yaw,roll;...> <model>
+//   light <seconds in> <seconds, 0 to the end> <x y z> <radius> <r g b 0-1> <steady|flicker|pulse|strobe|flash 0-4> <fade seconds> <who|->
 //   txt <seconds in> <seconds> <where 0 bottom bar|1 top bar|2 center|3 notify> <size 0-2> <typed 0|1> <who>|<text>
 //   extra <ent> <x y z yaw> <saber 0 none|1|2 staff|3 two> <colour 0-5> <model[/skin]>   the ent "+name"
 //   rs <recording> <ms> <x y z> <pitch> <yaw> <legs> <torso> <flips> <holstered> <force powers> <saber move>
@@ -65,6 +67,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "qcommon/cm_public.h"
 #include "cl_gizmo.h"
 #include "cl_widgets.h"
+#include <vector>
+#include <string>
+#include <algorithm>
 
 #define CM_DIR				"cinematics"	// in the game folder
 #define CM_EXT				".cin"
@@ -105,6 +110,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define CM_TXT_FADE_MS		250
 #define CM_TXT_TYPE_MS		35			// typed out, a letter this often
 #define CM_TXT_MAX_LINES	8
+#define CM_MAX_PROPS		16			// props in a cinematic
+#define CM_PROP_KEYS		8
+#define CM_PROP_MS			4000		// a new one shows this long
+#define CM_MAX_LIGHTS		16
+#define CM_LIGHT_MS			3000
 
 typedef enum {
 	CM_CLIP_MOVE,
@@ -294,6 +304,42 @@ typedef struct {
 	char		text[CM_TXT_LEN];
 } cmTxt_t;
 
+// a model in the scene from its moment for as long as it lasts, through its keys (ms into it,
+// where, turned how), smoothly or straight from one to the next: a ship setting down, a door
+typedef struct {
+	int			start;
+	int			ms;					// 0 to the end
+	char		model[MAX_QPATH];	// models/....md3
+	float		scale;
+	qboolean	smooth;
+	int			numKeys;
+	cmPlace_t	keys[CM_PROP_KEYS];
+} cmProp_t;
+
+// a light from its moment for as long as it lasts: at a spot or on someone, steady or flickering,
+// pulsing, strobing or a flash dying away, faded in and out
+typedef enum {
+	CM_LIGHT_STEADY,
+	CM_LIGHT_FLICKER,
+	CM_LIGHT_PULSE,
+	CM_LIGHT_STROBE,
+	CM_LIGHT_FLASH,
+	CM_NUM_LIGHT_FX
+} cmLightFx_t;
+
+static const char *cmLightFx[CM_NUM_LIGHT_FX] = { "steady", "flickering", "pulsing", "strobe", "a flash, dying away" };
+
+typedef struct {
+	int			start;
+	int			ms;					// 0 to the end
+	vec3_t		org;
+	char		who[MAX_QPATH];		// on someone, "" at org
+	float		radius;
+	vec3_t		color;
+	int			fx;					// cmLightFx_t
+	int			fade;				// ms in and out
+} cmLight_t;
+
 typedef struct {
 	qboolean	bars, hud;
 	int			numShots;
@@ -309,6 +355,10 @@ typedef struct {
 	cmSnd_t		snd[CM_MAX_SND];
 	int			numTxt;
 	cmTxt_t		txt[CM_MAX_TXT];
+	int			numProps;
+	cmProp_t	props[CM_MAX_PROPS];
+	int			numLights;
+	cmLight_t	lights[CM_MAX_LIGHTS];
 } cmCine_t;
 
 // a move as it goes: each of them from where they are then through the spots, a group
@@ -498,9 +548,8 @@ static float CM_CatmullRom( float p0, float p1, float p2, float p3, float t ) {
 		+ ( 3.0f * p1 - p0 - 3.0f * p2 + p3 ) * t * t * t );
 }
 
-// where a position has them ms into it, and how they're turned
-static void CM_PlaceAt( const cmClip_t *clip, int ms, vec3_t org, vec3_t ang ) {
-	const int n = clip->numKeys;
+// where keys have something ms in, and how it's turned: smoothly through them, or straight
+static void CM_KeysAt( const cmPlace_t *keys, int n, qboolean smooth, int ms, vec3_t org, vec3_t ang ) {
 	int i;
 
 	if ( !n ) {
@@ -508,26 +557,101 @@ static void CM_PlaceAt( const cmClip_t *clip, int ms, vec3_t org, vec3_t ang ) {
 		VectorClear( ang );
 		return;
 	}
-	if ( n == 1 || ms <= clip->keys[0].ms || ms >= clip->keys[n - 1].ms ) {
-		const cmPlace_t *k = ms <= clip->keys[0].ms ? &clip->keys[0] : &clip->keys[n - 1];
+	if ( n == 1 || ms <= keys[0].ms || ms >= keys[n - 1].ms ) {
+		const cmPlace_t *k = ms <= keys[0].ms ? &keys[0] : &keys[n - 1];
 
 		VectorCopy( k->org, org );
 		VectorCopy( k->ang, ang );
 		return;
 	}
-	for ( i = 1; i < n - 1 && ms > clip->keys[i].ms; i++ )
+	for ( i = 1; i < n - 1 && ms > keys[i].ms; i++ )
 		;
 	{
-		const cmPlace_t *k0 = &clip->keys[Q_max( i - 2, 0 )], *k1 = &clip->keys[i - 1], *k2 = &clip->keys[i], *k3 = &clip->keys[Q_min( i + 1, n - 1 )];
+		const cmPlace_t *k0 = &keys[Q_max( i - 2, 0 )], *k1 = &keys[i - 1], *k2 = &keys[i], *k3 = &keys[Q_min( i + 1, n - 1 )];
 		const int span = k2->ms - k1->ms;
 		const float f = span > 0 ? Com_Clamp( 0.0f, 1.0f, (float)( ms - k1->ms ) / span ) : 1.0f;
 
 		for ( int j = 0; j < 3; j++ ) {
-			org[j] = clip->smooth ? CM_CatmullRom( k0->org[j], k1->org[j], k2->org[j], k3->org[j], f ) : k1->org[j] + ( k2->org[j] - k1->org[j] ) * f;
-			ang[j] = LerpAngle( k1->ang[j], k2->ang[j], clip->smooth ? RC_Ease( f, qfalse ) : f );
+			org[j] = smooth ? CM_CatmullRom( k0->org[j], k1->org[j], k2->org[j], k3->org[j], f ) : k1->org[j] + ( k2->org[j] - k1->org[j] ) * f;
+			ang[j] = LerpAngle( k1->ang[j], k2->ang[j], smooth ? RC_Ease( f, qfalse ) : f );
 		}
 	}
 }
+
+// where a position has them ms into it, and how they're turned
+static void CM_PlaceAt( const cmClip_t *clip, int ms, vec3_t org, vec3_t ang ) {
+	CM_KeysAt( clip->keys, clip->numKeys, clip->smooth, ms, org, ang );
+}
+
+// a prop and a light: when they go, where they are, how bright
+static int CM_PropEnd( const cmCine_t *c, const cmProp_t *pr ) {
+	return pr->ms > 0 ? pr->start + pr->ms : Q_max( pr->start + 1, CM_Total( c ) );
+}
+
+static int CM_LightEnd( const cmCine_t *c, const cmLight_t *l ) {
+	return l->ms > 0 ? l->start + l->ms : Q_max( l->start + 1, CM_Total( c ) );
+}
+
+// where a prop is t ms into the cinematic, qfalse if it isn't there then; t < 0 at its first key
+static qboolean CM_PropAt( const cmCine_t *c, const cmProp_t *pr, int t, vec3_t org, vec3_t ang ) {
+	if ( !pr->numKeys )
+		return qfalse;
+	if ( t < 0 ) {
+		VectorCopy( pr->keys[0].org, org );
+		VectorCopy( pr->keys[0].ang, ang );
+		return qtrue;
+	}
+	if ( t < pr->start || t >= CM_PropEnd( c, pr ) )
+		return qfalse;
+	CM_KeysAt( pr->keys, pr->numKeys, pr->smooth, t - pr->start, org, ang );
+	return qtrue;
+}
+
+// how bright a light is in ms into it, of len: faded in and out, and as it flickers
+static float CM_LightNow( const cmLight_t *l, int in, int len ) {
+	float a = 1.0f;
+
+	if ( l->fade > 0 ) {
+		a = Q_min( a, (float)in / l->fade );
+		a = Q_min( a, (float)( len - in ) / l->fade );
+	}
+	switch ( l->fx ) {
+	case CM_LIGHT_FLICKER: {
+		// the same flicker on every screen: from the time, not chance
+		const unsigned h = (unsigned)( in / 60 + 1 ) * 2654435761u;
+
+		a *= 0.35f + 0.65f * ( ( h >> 16 ) & 255 ) / 255.0f;
+		break;
+	}
+	case CM_LIGHT_PULSE:
+		a *= 0.55f + 0.45f * sinf( in * 0.00628f );
+		break;
+	case CM_LIGHT_STROBE:
+		a *= ( in % 250 ) < 70 ? 1.0f : 0.0f;
+		break;
+	case CM_LIGHT_FLASH: {
+		const float f = 1.0f - (float)in / Q_max( 1, len );
+
+		a *= f * f;
+		break;
+	}
+	default:
+		break;
+	}
+	return Com_Clamp( 0.0f, 1.0f, a );
+}
+
+// where a light is: on whoever it follows, a little over their middle, else its spot
+static void CM_LightOrg( const cmLight_t *l, vec3_t org ) {
+	int num;
+
+	if ( l->who[0] && CM_Resolve( l->who, &num, 1 ) && RC_EntityOrigin( num, org ) ) {
+		org[2] += 16.0f;
+		return;
+	}
+	VectorCopy( l->org, org );
+}
+
 
 // what a recording has ms into it: where from where it began, how they're turned; the moment's
 // doings, NULL if it has none
@@ -910,6 +1034,27 @@ static int CM_ToText( const cmCine_t *c, char *out, int size ) {
 		CM_ADD( va( "snd %g %g %i %i %i %i %s\n", RC_Seconds( s->start ), RC_Seconds( s->ms ), s->spot ? 1 : 0,
 			RC_Round( s->org[0] ), RC_Round( s->org[1] ), RC_Round( s->org[2] ), s->path ) );
 	}
+	// prop <start> <seconds, 0 to the end> <smooth 0|1> <scale> <ms,x,y,z,pitch,yaw,roll;...> <model>
+	for ( int i = 0; i < c->numProps; i++ ) {
+		const cmProp_t *pr = &c->props[i];
+		char keys[CM_PROP_KEYS * 64] = "";
+
+		for ( int k = 0; k < pr->numKeys; k++ ) {
+			const cmPlace_t *pk = &pr->keys[k];
+
+			Q_strcat( keys, sizeof( keys ), va( "%s%i,%i,%i,%i,%i,%i,%i", k ? ";" : "", pk->ms, RC_Round( pk->org[0] ), RC_Round( pk->org[1] ), RC_Round( pk->org[2] ),
+				RC_Round( AngleNormalize180( pk->ang[PITCH] ) ), RC_Round( AngleNormalize360( pk->ang[YAW] ) ), RC_Round( AngleNormalize180( pk->ang[ROLL] ) ) ) );
+		}
+		if ( pr->numKeys && pr->model[0] )
+			CM_ADD( va( "prop %g %g %i %g %s %s\n", RC_Seconds( pr->start ), RC_Seconds( pr->ms ), pr->smooth ? 1 : 0, pr->scale, keys, pr->model ) );
+	}
+	// light <start> <seconds, 0 to the end> <x y z> <radius> <r g b> <cmLightFx> <fade seconds> <who|->
+	for ( int i = 0; i < c->numLights; i++ ) {
+		const cmLight_t *l = &c->lights[i];
+
+		CM_ADD( va( "light %g %g %i %i %i %i %g %g %g %i %g %s\n", RC_Seconds( l->start ), RC_Seconds( l->ms ), RC_Round( l->org[0] ), RC_Round( l->org[1] ),
+			RC_Round( l->org[2] ), RC_Round( l->radius ), l->color[0], l->color[1], l->color[2], l->fx, RC_Seconds( l->fade ), l->who[0] ? l->who : "-" ) );
+	}
 	// txt <start> <seconds> <kind> <size> <typed 0|1> <who>|<text>
 	for ( int i = 0; i < c->numTxt; i++ ) {
 		const cmTxt_t *x = &c->txt[i];
@@ -1091,6 +1236,49 @@ static void CM_Parse( char *text, cmCine_t *c ) {
 			s->spot = (qboolean)( spot != 0 );
 			Q_strncpyz( s->path, line + 4 + n, sizeof( s->path ) );
 			c->numSnd++;
+		} else if ( !Q_stricmpn( line, "prop ", 5 ) && c->numProps < CM_MAX_PROPS ) {
+			cmProp_t *pr = &c->props[c->numProps];
+			char keys[CM_PROP_KEYS * 64];
+			float start, secs, scale;
+			int smooth = 1, n = 0;
+
+			memset( pr, 0, sizeof( *pr ) );
+			if ( sscanf( line + 5, "%f %f %i %f %511s %n", &start, &secs, &smooth, &scale, keys, &n ) < 5 || n <= 0 || !line[5 + n] )
+				continue;
+			pr->start = RC_SecondsMs( start );
+			pr->ms = RC_SecondsMs( secs );
+			pr->smooth = (qboolean)( smooth != 0 );
+			pr->scale = Com_Clamp( 0.05f, 50.0f, scale );
+			Q_strncpyz( pr->model, line + 5 + n, sizeof( pr->model ) );
+			for ( const char *k = keys; *k && pr->numKeys < CM_PROP_KEYS; ) {
+				cmPlace_t *pk = &pr->keys[pr->numKeys];
+
+				if ( sscanf( k, "%i,%f,%f,%f,%f,%f,%f", &pk->ms, &pk->org[0], &pk->org[1], &pk->org[2], &pk->ang[PITCH], &pk->ang[YAW], &pk->ang[ROLL] ) == 7 )
+					pr->numKeys++;
+				k = strchr( k, ';' );
+				if ( !k )
+					break;
+				k++;
+			}
+			if ( pr->numKeys )
+				c->numProps++;
+		} else if ( !Q_stricmpn( line, "light ", 6 ) && c->numLights < CM_MAX_LIGHTS ) {
+			cmLight_t *l = &c->lights[c->numLights];
+			float start, secs, fade;
+			char who[MAX_QPATH];
+			int fx = 0;
+
+			memset( l, 0, sizeof( *l ) );
+			if ( sscanf( line + 6, "%f %f %f %f %f %f %f %f %f %i %f %63s", &start, &secs, &l->org[0], &l->org[1], &l->org[2], &l->radius,
+				&l->color[0], &l->color[1], &l->color[2], &fx, &fade, who ) < 11 )
+				continue;
+			l->start = RC_SecondsMs( start );
+			l->ms = RC_SecondsMs( secs );
+			l->radius = Com_Clamp( 8.0f, 2000.0f, l->radius );
+			l->fx = Com_Clampi( 0, CM_NUM_LIGHT_FX - 1, fx );
+			l->fade = RC_SecondsMs( fade );
+			Q_strncpyz( l->who, strcmp( who, "-" ) ? who : "", sizeof( l->who ) );
+			c->numLights++;
 		} else if ( !Q_stricmpn( line, "txt ", 4 ) && c->numTxt < CM_MAX_TXT ) {
 			cmTxt_t *x = &c->txt[c->numTxt];
 			float start, secs;
@@ -2226,7 +2414,8 @@ typedef enum {
 	CM_TAB_ENTITIES,
 	CM_TAB_EFFECTS,
 	CM_TAB_SOUNDS,
-	CM_TAB_TEXT
+	CM_TAB_TEXT,
+	CM_TAB_WORLD		// props and lights
 } cmTab_t;
 
 typedef enum {
@@ -2252,7 +2441,9 @@ typedef enum {
 	CM_TYPE_TXTWHO,		// and who says them
 	CM_TYPE_TRACK,		// who a shot keeps in frame
 	CM_TYPE_EXTRANAME,	// an extra's name, + first
-	CM_TYPE_EXTRAMODEL	// and its model
+	CM_TYPE_EXTRAMODEL,	// and its model
+	CM_TYPE_PROPMODEL,	// a prop's model, and the search for one
+	CM_TYPE_LIGHTWHO	// who a light follows
 } cmTyping_t;
 
 typedef enum {
@@ -2268,7 +2459,11 @@ typedef enum {
 	CM_DRAG_SND,		// a sound, when it starts
 	CM_DRAG_SND_END,	// how long it goes on
 	CM_DRAG_TXT,		// a text, when it shows
-	CM_DRAG_TXT_END		// how long it shows
+	CM_DRAG_TXT_END,	// how long it shows
+	CM_DRAG_PROP,		// a prop, when it comes
+	CM_DRAG_PROP_END,	// how long it stays
+	CM_DRAG_LIGHT,		// a light, when it comes on
+	CM_DRAG_LIGHT_END	// how long it stays on
 } cmDrag_t;
 
 static struct {
@@ -2332,6 +2527,12 @@ static struct {
 
 	// the Track page: the jolt picked
 	int			shakeSel;
+
+	// the World tab: its page, the prop and its key picked, the light picked; one held in the view
+	int			worldPage;			// 0 props, 1 lights
+	int			prop, propKey, propScroll, propPickScroll;
+	int			light, lightScroll;
+	qboolean	worldDrag;
 
 	// the move arrows over the effect picked: J; one dragged moves it along
 	qboolean	gizmo;
@@ -2579,6 +2780,10 @@ static void CM_Ripple( void ) {
 		CM_REMAP( c->snd[i].start );
 	for ( int i = 0; i < c->numTxt; i++ )
 		CM_REMAP( c->txt[i].start );
+	for ( int i = 0; i < c->numProps; i++ )
+		CM_REMAP( c->props[i].start );
+	for ( int i = 0; i < c->numLights; i++ )
+		CM_REMAP( c->lights[i].start );
 	if ( cm.tlPinned && !cm.tlDrag )
 		CM_REMAP( cm.tlMs );
 #undef CM_REMAP
@@ -2587,11 +2792,13 @@ static void CM_Ripple( void ) {
 
 // what starts at or after ms moves by delta, what's between ms and ms - delta back to ms
 static void CM_ShiftClips( int ms, int delta ) {
-	const int clips = cm.cine.numClips, fx = clips + cm.cine.numFx, snd = fx + cm.cine.numSnd;
+	const int clips = cm.cine.numClips, fx = clips + cm.cine.numFx, snd = fx + cm.cine.numSnd, txt = snd + cm.cine.numTxt;
+	const int props = txt + cm.cine.numProps;
 
-	for ( int i = 0; i < snd + cm.cine.numTxt; i++ ) {
+	for ( int i = 0; i < props + cm.cine.numLights; i++ ) {
 		int *start = i < clips ? &cm.cine.clips[i].start : i < fx ? &cm.cine.fx[i - clips].start
-			: i < snd ? &cm.cine.snd[i - fx].start : &cm.cine.txt[i - snd].start;
+			: i < snd ? &cm.cine.snd[i - fx].start : i < txt ? &cm.cine.txt[i - snd].start
+			: i < props ? &cm.cine.props[i - txt].start : &cm.cine.lights[i - props].start;
 
 		if ( delta < 0 && *start >= ms + delta && *start < ms )
 			*start = ms + delta;
@@ -3507,6 +3714,16 @@ static char *CM_TypedText( int *size ) {
 			return NULL;
 		*size = cm.typing == CM_TYPE_EXTRANAME ? sizeof( cm.cine.ents[0].who ) : sizeof( cm.cine.ents[0].model );
 		return cm.typing == CM_TYPE_EXTRANAME ? cm.cine.ents[cm.ent].who : cm.cine.ents[cm.ent].model;
+	case CM_TYPE_PROPMODEL:
+		if ( cm.prop < 0 || cm.prop >= cm.cine.numProps )
+			return NULL;
+		*size = sizeof( cm.cine.props[0].model );
+		return cm.cine.props[cm.prop].model;
+	case CM_TYPE_LIGHTWHO:
+		if ( cm.light < 0 || cm.light >= cm.cine.numLights )
+			return NULL;
+		*size = sizeof( cm.cine.lights[0].who );
+		return cm.cine.lights[cm.light].who;
 	case CM_TYPE_TRACK:
 		if ( !s )
 			return NULL;
@@ -3554,6 +3771,10 @@ static qboolean CM_AllowChar( int ch ) {
 		return (qboolean)!( ch < ' ' || ch > '~' || ( cm.typing != CM_TYPE_SAY && cm.typing != CM_TYPE_TXT && ch == '|' ) || ( cm.typing == CM_TYPE_DIALOG && ch == ';' ) );
 	if ( cm.typing == CM_TYPE_EXTRAMODEL )
 		return (qboolean)( CM_NameChar( ch ) || ch == '/' || ch == '|' );
+	if ( cm.typing == CM_TYPE_PROPMODEL )
+		return (qboolean)( CM_NameChar( ch ) || ch == '/' || ch == '.' );
+	if ( cm.typing == CM_TYPE_LIGHTWHO )
+		return (qboolean)( CM_NameChar( ch ) || ch == ',' || ch == '+' );
 	if ( cm.typing == CM_TYPE_EXTRANAME )
 		return (qboolean)( CM_NameChar( ch ) || ch == '+' );
 	return (qboolean)( CM_NameChar( ch ) || ( ( cm.typing == CM_TYPE_WHO || cm.typing == CM_TYPE_FOCUS || cm.typing == CM_TYPE_TRACK ) && ch == ',' ) );
@@ -3587,6 +3808,7 @@ static void CM_DeletePlaceKey( cmClip_t *clip );
 static void CM_DeleteFx( void );
 static void CM_DeleteSnd( void );
 static void CM_DeleteTxt( void );
+static void CM_DeleteWorld( void );
 
 void CL_RpCinematic_EditorKeyEvent( int key, qboolean down ) {
 	cmClip_t *clip;
@@ -3692,6 +3914,8 @@ void CL_RpCinematic_EditorKeyEvent( int key, qboolean down ) {
 			CM_DeleteSnd();
 		else if ( cm.tab == CM_TAB_TEXT )
 			CM_DeleteTxt();
+		else if ( cm.tab == CM_TAB_WORLD )
+			CM_DeleteWorld();
 		else if ( cm.tab == CM_TAB_ENTITIES && clip && clip->kind == CM_CLIP_PLACE )
 			CM_DeletePlaceKey( clip );
 		else if ( cm.tab == CM_TAB_ENTITIES )
@@ -4052,6 +4276,29 @@ static void CM_AddScene( void ) {
 
 		if ( cm.cine.snd[i].spot )
 			CM_Cross( cm.cine.snd[i].org, sel ? 8.0f : 4.0f, sel ? cmSelColor : cm.tab == CM_TAB_SOUNDS ? sndColor : sndFaint );
+	}
+	// the props' paths through their keys, the one picked brighter; the lights, in their colour
+	if ( cm.tab == CM_TAB_WORLD ) {
+		static const byte propColor[4] = { 230, 200, 120, 255 }, propFaint[4] = { 230, 200, 120, 90 };
+
+		for ( int i = 0; i < cm.cine.numProps && cm.worldPage == 0; i++ ) {
+			const cmProp_t *pr = &cm.cine.props[i];
+			const qboolean sel = (qboolean)( i == cm.prop );
+
+			for ( int k = 0; k < pr->numKeys; k++ ) {
+				CM_Cross( pr->keys[k].org, sel && k == cm.propKey ? 8.0f : 4.0f, sel && k == cm.propKey ? cmSelColor : sel ? propColor : propFaint );
+				if ( k )
+					CM_Line( pr->keys[k - 1].org, pr->keys[k].org, sel ? propColor : propFaint );
+			}
+		}
+		for ( int i = 0; i < cm.cine.numLights && cm.worldPage == 1; i++ ) {
+			const cmLight_t *l = &cm.cine.lights[i];
+			const byte color[4] = { (byte)( l->color[0] * 255 ), (byte)( l->color[1] * 255 ), (byte)( l->color[2] * 255 ), 255 };
+			vec3_t org;
+
+			CM_LightOrg( l, org );
+			CM_Cross( org, i == cm.light ? 8.0f : 5.0f, i == cm.light ? cmSelColor : color );
+		}
 	}
 
 	// the shots' trails, the one shown brighter
@@ -6514,6 +6761,469 @@ static void CM_DrawTextTab( float x, float y, float w ) {
 	CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "Seen on screens with this client", cmWhite );
 }
 
+/*
+===============================================================================
+
+The World tab: props, models through keys while they last; and lights
+
+===============================================================================
+*/
+
+static const struct {
+	const char	*name;
+	vec3_t		rgb;
+} cmLightColors[] = {
+	{ "White", { 1.0f, 1.0f, 1.0f } },
+	{ "Warm", { 1.0f, 0.8f, 0.55f } },
+	{ "Red", { 1.0f, 0.15f, 0.1f } },
+	{ "Orange", { 1.0f, 0.5f, 0.1f } },
+	{ "Yellow", { 1.0f, 0.9f, 0.25f } },
+	{ "Green", { 0.2f, 1.0f, 0.3f } },
+	{ "Cyan", { 0.2f, 0.9f, 1.0f } },
+	{ "Blue", { 0.2f, 0.35f, 1.0f } },
+	{ "Purple", { 0.7f, 0.25f, 1.0f } }
+};
+
+static std::vector<std::string> cmModels;	// every models/**/*.md3 but the players', to pick a prop's
+static qboolean cmModelsIndexed;
+
+static void CM_AddModelName( const char *name, void *ctx ) {
+	std::string n( name );
+
+	if ( !Q_stricmpn( name, "models/players/", 15 ) )
+		return;
+	for ( size_t i = 0; i < n.size(); i++ )
+		n[i] = n[i] == '\\' ? '/' : (char)tolower( (unsigned char)n[i] );
+	cmModels.push_back( n );
+}
+
+static void CM_IndexModels( void ) {
+	if ( cmModelsIndexed )
+		return;
+	cmModelsIndexed = qtrue;
+	cmModels.clear();
+	FS_ListFilesRecursive( "models", ".md3", CM_AddModelName, NULL );
+	std::sort( cmModels.begin(), cmModels.end() );
+	cmModels.erase( std::unique( cmModels.begin(), cmModels.end() ), cmModels.end() );
+}
+
+static cmProp_t *CM_Prop( void ) {
+	return cm.prop >= 0 && cm.prop < cm.cine.numProps ? &cm.cine.props[cm.prop] : NULL;
+}
+
+static cmPlace_t *CM_PropKey( void ) {
+	cmProp_t *pr = CM_Prop();
+
+	return pr && cm.propKey >= 0 && cm.propKey < pr->numKeys ? &pr->keys[cm.propKey] : NULL;
+}
+
+static cmLight_t *CM_Light( void ) {
+	return cm.light >= 0 && cm.light < cm.cine.numLights ? &cm.cine.lights[cm.light] : NULL;
+}
+
+// what the move arrows and a drag in the view move on the World tab: the prop's key picked, or
+// the light picked, unless it follows someone
+static float *CM_WorldOrg( void ) {
+	if ( cm.worldPage == 0 )
+		return CM_PropKey() ? CM_PropKey()->org : NULL;
+	return CM_Light() && !CM_Light()->who[0] ? CM_Light()->org : NULL;
+}
+
+// where something new goes: on what the crosshair is on, else in front of the camera
+static void CM_NewSpot( vec3_t out ) {
+	vec3_t forward;
+
+	if ( cm.haveAim ) {
+		VectorCopy( cm.aim, out );
+		return;
+	}
+	AngleVectors( cm.camAng, forward, NULL, NULL );
+	VectorMA( cm.camOrg, 128.0f, forward, out );
+}
+
+// a key kept in order of when, and still the one picked
+static void CM_SortPropKey( cmProp_t *pr ) {
+	int i = cm.propKey;
+
+	while ( i > 0 && pr->keys[i - 1].ms > pr->keys[i].ms ) {
+		const cmPlace_t k = pr->keys[i];
+
+		pr->keys[i] = pr->keys[i - 1];
+		pr->keys[i - 1] = k;
+		i--;
+	}
+	while ( i < pr->numKeys - 1 && pr->keys[i + 1].ms < pr->keys[i].ms ) {
+		const cmPlace_t k = pr->keys[i];
+
+		pr->keys[i] = pr->keys[i + 1];
+		pr->keys[i + 1] = k;
+		i++;
+	}
+	cm.propKey = i;
+}
+
+static void CM_AddProp( void ) {
+	cmCine_t *c = &cm.cine;
+	const cmProp_t *like = CM_Prop();
+	cmProp_t *pr;
+
+	if ( c->numProps >= CM_MAX_PROPS ) {
+		CM_Message( S_COLOR_YELLOW "A cinematic has 16 props at most" );
+		return;
+	}
+	pr = &c->props[c->numProps];
+	memset( pr, 0, sizeof( *pr ) );
+	pr->start = cm.tlPinned ? cm.tlMs : 0;
+	pr->ms = CM_PROP_MS;
+	pr->scale = 1.0f;
+	pr->smooth = qtrue;
+	if ( like )
+		Q_strncpyz( pr->model, like->model, sizeof( pr->model ) );
+	pr->numKeys = 1;
+	CM_NewSpot( pr->keys[0].org );
+	pr->keys[0].ang[YAW] = AngleNormalize360( cm.camAng[YAW] + 180.0f );
+	cm.prop = c->numProps++;
+	cm.propKey = 0;
+	cm.propScroll = Q_max( 0, cm.prop - 3 );
+	cm.typing = like ? CM_TYPE_NONE : CM_TYPE_PROPMODEL;
+	CM_Changed();
+	CM_Message( "A prop: pick its model, then add keys at other moments for where it goes" );
+}
+
+static void CM_AddLight( void ) {
+	cmCine_t *c = &cm.cine;
+	const cmLight_t *like = CM_Light();
+	cmLight_t *l;
+
+	if ( c->numLights >= CM_MAX_LIGHTS ) {
+		CM_Message( S_COLOR_YELLOW "A cinematic has 16 lights at most" );
+		return;
+	}
+	l = &c->lights[c->numLights];
+	memset( l, 0, sizeof( *l ) );
+	l->start = cm.tlPinned ? cm.tlMs : 0;
+	l->ms = CM_LIGHT_MS;
+	CM_NewSpot( l->org );
+	l->org[2] += 32.0f;
+	l->radius = like ? like->radius : 300.0f;
+	if ( like )
+		VectorCopy( like->color, l->color );
+	else
+		VectorCopy( cmLightColors[1].rgb, l->color );
+	l->fx = like ? like->fx : CM_LIGHT_STEADY;
+	cm.light = c->numLights++;
+	cm.lightScroll = Q_max( 0, cm.light - 3 );
+	CM_Changed();
+}
+
+static void CM_DeleteWorld( void ) {
+	cmCine_t *c = &cm.cine;
+
+	cm.typing = CM_TYPE_NONE;
+	if ( cm.worldPage == 0 && CM_Prop() ) {
+		c->numProps--;
+		memmove( &c->props[cm.prop], &c->props[cm.prop + 1], ( c->numProps - cm.prop ) * sizeof( c->props[0] ) );
+		cm.prop = Q_min( cm.prop, c->numProps - 1 );
+		cm.propKey = 0;
+		CM_Changed();
+	} else if ( cm.worldPage == 1 && CM_Light() ) {
+		c->numLights--;
+		memmove( &c->lights[cm.light], &c->lights[cm.light + 1], ( c->numLights - cm.light ) * sizeof( c->lights[0] ) );
+		cm.light = Q_min( cm.light, c->numLights - 1 );
+		CM_Changed();
+	}
+}
+
+// a list's rows, the one picked lit; the one clicked, -1 none
+static int CM_WorldList( float x, float y, float w, int rows, int count, int sel, int *scroll, const char *( *label )( int ) ) {
+	int clicked = -1;
+
+	if ( cm.wheel && CM_InRect( x, y, w, rows * CM_ROW_H ) ) {
+		*scroll += cm.wheel;
+		cm.wheel = 0;
+	}
+	*scroll = Com_Clampi( 0, Q_max( 0, count - rows ), *scroll );
+	CM_Box( x, y, w, rows * CM_ROW_H + 2, cmPanelLight );
+	const float lw = CM_ListBar( x, y, w, rows * CM_ROW_H + 2, count, rows, scroll );
+	for ( int i = *scroll; i < count && i < *scroll + rows; i++ ) {
+		const float ry = y + 1 + ( i - *scroll ) * CM_ROW_H;
+
+		if ( i == sel )
+			CM_Fill( x + 1, ry, lw - 2, CM_ROW_H, cmHighlight );
+		else if ( CM_InRect( x, ry, lw, CM_ROW_H ) )
+			CM_Fill( x + 1, ry, lw - 2, CM_ROW_H, cmHoverBox );
+		CM_TextClipped( x + 4, ry, lw - 8, label( i ), cmWhite );
+		if ( CM_Clicked( x, ry, lw, CM_ROW_H ) )
+			clicked = i;
+	}
+	if ( !count )
+		CM_Text( x + 4, y + 2, S_COLOR_GREY "None yet", cmWhite );
+	return clicked;
+}
+
+static const char *CM_PropLabel( int i ) {
+	const cmProp_t *pr = &cm.cine.props[i];
+
+	return va( S_COLOR_CYAN "%.1fs " S_COLOR_WHITE "%s" S_COLOR_GREY "  %i key%s", pr->start / 1000.0f,
+		pr->model[0] ? COM_SkipPath( (char *)pr->model ) : S_COLOR_YELLOW "no model yet", pr->numKeys, pr->numKeys == 1 ? "" : "s" );
+}
+
+static const char *CM_LightLabel( int i ) {
+	const cmLight_t *l = &cm.cine.lights[i];
+
+	return va( S_COLOR_CYAN "%.1fs " S_COLOR_WHITE "%s" S_COLOR_GREY "  reach %i%s", l->start / 1000.0f, cmLightFx[l->fx], RC_Round( l->radius ),
+		l->who[0] ? va( ", on %s", l->who ) : "" );
+}
+
+static void CM_DrawPropsPage( float x, float y, float w ) {
+	cmCine_t *c = &cm.cine;
+	const float half = ( w - 4 ) * 0.5f;
+	cmProp_t *pr;
+	cmPlace_t *k;
+	int clicked, steps;
+
+	clicked = CM_WorldList( x, y, w, 4, c->numProps, cm.prop, &cm.propScroll, CM_PropLabel );
+	if ( clicked >= 0 && clicked != cm.prop ) {
+		cm.prop = clicked;
+		cm.propKey = 0;
+		cm.typing = CM_TYPE_NONE;
+	}
+	y += 4 * CM_ROW_H + 6;
+	if ( CM_Button( x, y, w, va( "+ Prop at %.1f s, at the crosshair", ( cm.tlPinned ? cm.tlMs : 0 ) / 1000.0f ), qfalse, (qboolean)( c->numProps < CM_MAX_PROPS ) ) )
+		CM_AddProp();
+	y += CM_CTRL_H + CM_GAP + 3;
+	if ( !( pr = CM_Prop() ) ) {
+		CM_Text( x, y, S_COLOR_GREY "A model in the scene for a while: a ship", cmWhite );
+		CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "setting down, a speeder going by, a door", cmWhite );
+		return;
+	}
+	CM_Fill( x, y - 2, w, 1, cmBorder );
+	CM_TextBox( x, y, w - 54, pr->model, "type to find a model", CM_TYPE_PROPMODEL, NULL );
+	if ( CM_Button( x + w - 50, y, 50, "Delete", qfalse, qtrue ) ) {
+		CM_DeleteWorld();
+		return;
+	}
+	y += CM_CTRL_H + 1;
+	// the models there are, while it's typed in or has none
+	if ( cm.typing == CM_TYPE_PROPMODEL || !pr->model[0] ) {
+		static std::vector<int> picks;
+		const int rows = 6;
+
+		CM_IndexModels();
+		picks.clear();
+		for ( size_t i = 0; i < cmModels.size(); i++ ) {
+			if ( !pr->model[0] || Q_stristr( cmModels[i].c_str(), pr->model ) )
+				picks.push_back( (int)i );
+		}
+		if ( cm.wheel && CM_InRect( x, y, w, rows * CM_ROW_H ) ) {
+			cm.propPickScroll += cm.wheel;
+			cm.wheel = 0;
+		}
+		cm.propPickScroll = Com_Clampi( 0, Q_max( 0, (int)picks.size() - rows ), cm.propPickScroll );
+		CM_Box( x, y, w, rows * CM_ROW_H + 2, cmPanelLight );
+		const float lw = CM_ListBar( x, y, w, rows * CM_ROW_H + 2, (int)picks.size(), rows, &cm.propPickScroll );
+		for ( int r = 0; r < rows && cm.propPickScroll + r < (int)picks.size(); r++ ) {
+			const char *name = cmModels[picks[cm.propPickScroll + r]].c_str();
+			const float ry = y + 1 + r * CM_ROW_H;
+
+			if ( CM_InRect( x, ry, lw, CM_ROW_H ) )
+				CM_Fill( x + 1, ry, lw - 2, CM_ROW_H, cmHoverBox );
+			CM_TextClipped( x + 4, ry, lw - 8, name + 7, cmWhite );
+			if ( CM_Clicked( x, ry, lw, CM_ROW_H ) ) {
+				Q_strncpyz( pr->model, name, sizeof( pr->model ) );
+				cm.typing = CM_TYPE_NONE;
+				CM_Changed();
+			}
+		}
+		if ( picks.empty() )
+			CM_Text( x + 4, y + 2, S_COLOR_GREY "No model has that in its name", cmWhite );
+		y += rows * CM_ROW_H + 6;
+	}
+	steps = CM_Stepper( x, y, w, "Shows", pr->ms > 0 ? va( "%.1f s", pr->ms / 1000.0f ) : "to the end" );
+	CM_AdjustMs( &pr->ms, steps, 0.5f, 0 );
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_MiniStepper( x, y, half, "Size", va( "%.2f", pr->scale ) );
+	CM_Adjust( &pr->scale, steps, 0.1f, 0.05f, 50.0f );
+	if ( CM_Button( x + half + 4, y, half, pr->smooth ? "Moves smoothly" : "Moves straight", pr->smooth, qtrue ) ) {
+		pr->smooth = (qboolean)!pr->smooth;
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP + 2;
+
+	// its keys: where it is, turned how, at moments of it
+	cm.propKey = Com_Clampi( 0, pr->numKeys - 1, cm.propKey );
+	steps = CM_Stepper( x, y, w, "Key", va( "%i of %i, at %.1f s", cm.propKey + 1, pr->numKeys, ( pr->start + pr->keys[cm.propKey].ms ) / 1000.0f ) );
+	if ( steps )
+		cm.propKey = Com_Clampi( 0, pr->numKeys - 1, cm.propKey + steps );
+	y += CM_CTRL_H + CM_GAP;
+	{
+		const int at = cm.tlPinned ? Q_max( 0, cm.tlMs - pr->start ) : pr->keys[pr->numKeys - 1].ms + 1000;
+
+		if ( CM_Button( x, y, half, va( "+ Key at %.1f s", ( pr->start + at ) / 1000.0f ), qfalse, (qboolean)( pr->numKeys < CM_PROP_KEYS ) ) ) {
+			cmPlace_t nk;
+
+			nk.ms = at;
+			CM_KeysAt( pr->keys, pr->numKeys, pr->smooth, at, nk.org, nk.ang );
+			pr->keys[pr->numKeys] = nk;
+			cm.propKey = pr->numKeys++;
+			CM_SortPropKey( pr );
+			CM_Changed();
+		}
+	}
+	if ( CM_Button( x + half + 4, y, half, "Delete key", qfalse, (qboolean)( pr->numKeys > 1 ) ) ) {
+		memmove( &pr->keys[cm.propKey], &pr->keys[cm.propKey + 1], ( pr->numKeys - cm.propKey - 1 ) * sizeof( pr->keys[0] ) );
+		pr->numKeys--;
+		cm.propKey = Q_min( cm.propKey, pr->numKeys - 1 );
+		CM_Changed();
+		return;
+	}
+	y += CM_CTRL_H + CM_GAP;
+	k = &pr->keys[cm.propKey];
+	if ( CM_Button( x, y, half, "To the crosshair", qfalse, cm.haveAim ) ) {
+		VectorCopy( cm.aim, k->org );
+		CM_Changed();
+	}
+	if ( cm.propKey > 0 ) {
+		steps = CM_MiniStepper( x + half + 4, y, half, "At", va( "%.1f", ( pr->start + k->ms ) / 1000.0f ) );
+		if ( steps ) {
+			CM_AdjustMs( &k->ms, steps, 0.1f, 0 );
+			CM_SortPropKey( pr );
+			k = &pr->keys[cm.propKey];
+		}
+	}
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_MiniStepper( x, y, half, "Yaw", va( "%i", RC_Round( AngleNormalize360( k->ang[YAW] ) ) ) );
+	CM_Adjust( &k->ang[YAW], steps, 15.0f, -3600.0f, 3600.0f );
+	steps = CM_MiniStepper( x + half + 4, y, half, "Pitch", va( "%i", RC_Round( AngleNormalize180( k->ang[PITCH] ) ) ) );
+	CM_Adjust( &k->ang[PITCH], steps, 15.0f, -3600.0f, 3600.0f );
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_MiniStepper( x, y, half, "Roll", va( "%i", RC_Round( AngleNormalize180( k->ang[ROLL] ) ) ) );
+	CM_Adjust( &k->ang[ROLL], steps, 15.0f, -3600.0f, 3600.0f );
+	steps = CM_MiniStepper( x + half + 4, y, half, "Up", va( "%i", RC_Round( k->org[2] ) ) );
+	CM_Adjust( &k->org[2], steps, 8.0f, -65536.0f, 65536.0f );
+	y += CM_CTRL_H + CM_GAP;
+	CM_Text( x, y, S_COLOR_GREY "Drag the key in the view, or J for arrows;", cmWhite );
+	CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "its bar on the timeline: drag it, or its end", cmWhite );
+}
+
+static void CM_DrawLightsPage( float x, float y, float w ) {
+	cmCine_t *c = &cm.cine;
+	const float sw = ( w - 4.0f * ( ARRAY_LEN( cmLightColors ) - 1 ) ) / ARRAY_LEN( cmLightColors );
+	cmLight_t *l;
+	int clicked, steps;
+	vec3_t at;
+
+	clicked = CM_WorldList( x, y, w, 4, c->numLights, cm.light, &cm.lightScroll, CM_LightLabel );
+	if ( clicked >= 0 && clicked != cm.light ) {
+		cm.light = clicked;
+		cm.typing = CM_TYPE_NONE;
+	}
+	y += 4 * CM_ROW_H + 6;
+	if ( CM_Button( x, y, w, va( "+ Light at %.1f s, at the crosshair", ( cm.tlPinned ? cm.tlMs : 0 ) / 1000.0f ), qfalse, (qboolean)( c->numLights < CM_MAX_LIGHTS ) ) )
+		CM_AddLight();
+	y += CM_CTRL_H + CM_GAP + 3;
+	if ( !( l = CM_Light() ) ) {
+		CM_Text( x, y, S_COLOR_GREY "A light for a while: blaster fire, a fire,", cmWhite );
+		CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "an alarm, lightning, a torch someone holds", cmWhite );
+		return;
+	}
+	CM_Fill( x, y - 2, w, 1, cmBorder );
+	CM_Text( x, y + 2, "Light", cmWhite );
+	if ( CM_Button( x + w - 50, y, 50, "Delete", qfalse, qtrue ) ) {
+		CM_DeleteWorld();
+		return;
+	}
+	y += CM_CTRL_H + CM_GAP;
+	for ( int i = 0; i < (int)ARRAY_LEN( cmLightColors ); i++ ) {
+		const float sx = x + i * ( sw + 4 );
+		vec4_t col;
+
+		VectorCopy( cmLightColors[i].rgb, col );
+		col[3] = 1.0f;
+		CM_Box( sx, y, sw, CM_CTRL_H, VectorCompare( cmLightColors[i].rgb, l->color ) ? cmHighlight : CM_InRect( sx, y, sw, CM_CTRL_H ) ? cmHoverBox : cmPanelLight );
+		CM_Fill( sx + 3, y + 3, sw - 6, CM_CTRL_H - 6, col );
+		if ( CM_Clicked( sx, y, sw, CM_CTRL_H ) ) {
+			VectorCopy( cmLightColors[i].rgb, l->color );
+			CM_Changed();
+		}
+	}
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_Stepper( x, y, w, "Reach", va( "%i", RC_Round( l->radius ) ) );
+	CM_Adjust( &l->radius, steps, 25.0f, 8.0f, 2000.0f );
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_Stepper( x, y, w, "It's", cmLightFx[l->fx] );
+	if ( steps ) {
+		l->fx = ( l->fx + steps + CM_NUM_LIGHT_FX ) % CM_NUM_LIGHT_FX;
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_Stepper( x, y, w, "On for", l->ms > 0 ? va( "%.1f s", l->ms / 1000.0f ) : "to the end" );
+	CM_AdjustMs( &l->ms, steps, 0.5f, 0 );
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_Stepper( x, y, w, "Fades", l->fade > 0 ? va( "%.2f s in and out", l->fade / 1000.0f ) : "no, at once" );
+	CM_AdjustMs( &l->fade, steps, 0.25f, 0 );
+	y += CM_CTRL_H + CM_GAP;
+	CM_Text( x, y + 2, "On", cmDim );
+	CM_TextBox( x + 30, y, w - 30 - 34, l->who, "nobody: at its spot", CM_TYPE_LIGHTWHO, NULL );
+	if ( CM_Button( x + w - 30, y, 30, "Aim", qfalse, (qboolean)( CM_PersonAtCrosshair() != NULL ) ) ) {
+		Q_strncpyz( l->who, CM_PersonAtCrosshair(), sizeof( l->who ) );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	if ( l->who[0] ) {
+		int num;
+
+		if ( CM_Resolve( l->who, &num, 1 ) && RC_EntityOrigin( num, at ) )
+			CM_TextClipped( x, y, w, va( S_COLOR_GREEN "%s" S_COLOR_GREY ": it goes where they go", l->who ), cmWhite );
+		else
+			CM_TextClipped( x, y, w, va( S_COLOR_YELLOW "%s isn't here: at its spot meanwhile", l->who ), cmWhite );
+		y += CM_ROW_H + 2;
+	}
+	if ( CM_Button( x, y, w, "To the crosshair", qfalse, cm.haveAim ) ) {
+		VectorCopy( cm.aim, l->org );
+		l->org[2] += 32.0f;
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	CM_Text( x, y, S_COLOR_GREY "Drag it in the view, or J for arrows", cmWhite );
+}
+
+static void CM_DrawWorldTab( float x, float y, float w ) {
+	static const char *pages[] = { "Props", "Lights" };
+	const int page = CM_Tabs( x, y, w, pages, ARRAY_LEN( pages ), cm.worldPage );
+
+	if ( page != cm.worldPage ) {
+		cm.worldPage = page;
+		cm.typing = CM_TYPE_NONE;
+	}
+	y += CM_CTRL_H + 6;
+	if ( cm.worldPage == 0 )
+		CM_DrawPropsPage( x, y, w );
+	else
+		CM_DrawLightsPage( x, y, w );
+}
+
+// the key or light held follows what's under the mouse
+static void CM_WorldDrag( void ) {
+	float *org = CM_WorldOrg();
+	vec3_t at;
+
+	if ( !cm.worldDrag )
+		return;
+	if ( !cm.held[A_MOUSE1] || !org || cm.tab != CM_TAB_WORLD ) {
+		cm.worldDrag = qfalse;
+		return;
+	}
+	if ( CM_CursorSurface( at ) ) {
+		if ( cm.worldPage == 1 )
+			at[2] += 32.0f;
+		if ( !VectorCompare( at, org ) ) {
+			VectorCopy( at, org );
+			CM_Changed();
+		}
+	}
+}
+
 // the sound held follows what's under the mouse
 static void CM_SndDrag( void ) {
 	cmSnd_t *s = CM_Snd();
@@ -6537,6 +7247,8 @@ static float *CM_GzOrg( void ) {
 		return CM_Fx()->org;
 	if ( cm.tab == CM_TAB_SOUNDS && CM_Snd() && CM_Snd()->spot )
 		return CM_Snd()->org;
+	if ( cm.tab == CM_TAB_WORLD )
+		return CM_WorldOrg();
 	return NULL;
 }
 
@@ -6786,6 +7498,56 @@ static void CM_ViewClick( void ) {
 			return;
 		}
 	}
+	if ( cm.tab == CM_TAB_WORLD && cm.worldPage == 0 ) {
+		const cmProp_t *pr = CM_Prop();
+		int prop = -1, key = -1;
+
+		// the keys of the one picked first, then where each prop is
+		for ( int k = 0; pr && k < pr->numKeys; k++ ) {
+			if ( !CM_Project( pr->keys[k].org, &sx, &sy ) || sqrtf( Square( sx - cm.clickX ) + Square( sy - cm.clickY ) ) > best )
+				continue;
+			best = sqrtf( Square( sx - cm.clickX ) + Square( sy - cm.clickY ) );
+			prop = cm.prop;
+			key = k;
+		}
+		for ( int i = 0; key < 0 && i < cm.cine.numProps; i++ ) {
+			vec3_t org, ang;
+
+			if ( !CM_PropAt( &cm.cine, &cm.cine.props[i], cm.tlPinned ? cm.tlMs : -1, org, ang ) || !CM_Project( org, &sx, &sy )
+				|| sqrtf( Square( sx - cm.clickX ) + Square( sy - cm.clickY ) ) > best )
+				continue;
+			best = sqrtf( Square( sx - cm.clickX ) + Square( sy - cm.clickY ) );
+			prop = i;
+		}
+		if ( prop >= 0 ) {
+			if ( prop != cm.prop )
+				cm.propKey = 0;
+			cm.prop = prop;
+			if ( key >= 0 ) {
+				cm.propKey = key;
+				cm.worldDrag = qtrue;
+			}
+			cm.click = qfalse;
+			return;
+		}
+	}
+	if ( cm.tab == CM_TAB_WORLD && cm.worldPage == 1 ) {
+		for ( int i = 0; i < cm.cine.numLights; i++ ) {
+			vec3_t org;
+
+			CM_LightOrg( &cm.cine.lights[i], org );
+			if ( !CM_Project( org, &sx, &sy ) || sqrtf( Square( sx - cm.clickX ) + Square( sy - cm.clickY ) ) > best )
+				continue;
+			best = sqrtf( Square( sx - cm.clickX ) + Square( sy - cm.clickY ) );
+			found = i;
+		}
+		if ( found >= 0 ) {
+			cm.light = found;
+			cm.worldDrag = (qboolean)!cm.cine.lights[found].who[0];
+			cm.click = qfalse;
+			return;
+		}
+	}
 	if ( CM_OnFocusCircle( cm.clickX, cm.clickY ) <= 1.0f ) {
 		cm.focusDrag = qtrue;
 		cm.focusDragMs = CM_FocusMs( CM_Shot() );
@@ -6990,7 +7752,7 @@ static void CM_TlClick( const cmTrack_t *t, float rowsY, int numRows ) {
 	const int r = cm.clickY >= rowsY ? (int)( ( cm.clickY - rowsY ) / CM_ROW_H ) : -1;
 	const int row = r > 0 ? cm.tlScroll + r : r;
 	const int at = CM_TlMsAt( t, cx, qfalse );
-	const int fxRow = 1 + c->numEnts * 2, sndRow = fxRow + 1, txtRow = sndRow + 1;
+	const int fxRow = 1 + c->numEnts * 2, sndRow = fxRow + 1, txtRow = sndRow + 1, propRow = txtRow + 1, lightRow = propRow + 1;
 
 	cm.tlDragSpan = t->span;
 	cm.typing = CM_TYPE_NONE;
@@ -7006,6 +7768,9 @@ static void CM_TlClick( const cmTrack_t *t, float rowsY, int numRows ) {
 			cm.tab = CM_TAB_SOUNDS;
 		} else if ( row == txtRow ) {
 			cm.tab = CM_TAB_TEXT;
+		} else if ( row == propRow || row == lightRow ) {
+			cm.tab = CM_TAB_WORLD;
+			cm.worldPage = row == propRow ? 0 : 1;
 		} else if ( row > 0 ) {
 			cm.ent = ( row - 1 ) / 2;
 			cm.clip = -1;
@@ -7119,6 +7884,35 @@ static void CM_TlClick( const cmTrack_t *t, float rowsY, int numRows ) {
 			} else {
 				cm.tlDrag = CM_DRAG_TXT;
 				cm.tlDragGrab = at - x->start;
+			}
+			return;
+		}
+	} else if ( row == propRow || row == lightRow ) {
+		// a prop or a light: its bar, or its end to make it last longer
+		const qboolean props = (qboolean)( row == propRow );
+
+		for ( int i = ( props ? c->numProps : c->numLights ) - 1; i >= 0; i-- ) {
+			const int start = props ? c->props[i].start : c->lights[i].start;
+			const int end = props ? CM_PropEnd( c, &c->props[i] ) : CM_LightEnd( c, &c->lights[i] );
+			const float x0 = CM_TlX( t, start ), x1 = CM_TlX( t, end );
+
+			if ( cx < x0 - 2 || cx > x1 + CM_TL_GRAB )
+				continue;
+			cm.tab = CM_TAB_WORLD;
+			cm.worldPage = props ? 0 : 1;
+			if ( props ) {
+				if ( cm.prop != i )
+					cm.propKey = 0;
+				cm.prop = i;
+			} else {
+				cm.light = i;
+			}
+			cm.tlDragIndex = i;
+			if ( cx >= x1 - CM_TL_GRAB && x1 - x0 > CM_TL_GRAB * 2 ) {
+				cm.tlDrag = props ? CM_DRAG_PROP_END : CM_DRAG_LIGHT_END;
+			} else {
+				cm.tlDrag = props ? CM_DRAG_PROP : CM_DRAG_LIGHT;
+				cm.tlDragGrab = at - start;
 			}
 			return;
 		}
@@ -7260,6 +8054,26 @@ static void CM_TlDrag( const cmTrack_t *t ) {
 			}
 		}
 		break;
+	case CM_DRAG_PROP:
+	case CM_DRAG_PROP_END:
+	case CM_DRAG_LIGHT:
+	case CM_DRAG_LIGHT_END: {
+		const qboolean props = (qboolean)( cm.tlDrag == CM_DRAG_PROP || cm.tlDrag == CM_DRAG_PROP_END );
+		const qboolean end = (qboolean)( cm.tlDrag == CM_DRAG_PROP_END || cm.tlDrag == CM_DRAG_LIGHT_END );
+
+		if ( cm.tlDragIndex < ( props ? c->numProps : c->numLights ) ) {
+			int *startField = props ? &c->props[cm.tlDragIndex].start : &c->lights[cm.tlDragIndex].start;
+			int *msField = props ? &c->props[cm.tlDragIndex].ms : &c->lights[cm.tlDragIndex].ms;
+			const int ms = !end ? CM_TlSnap( at - cm.tlDragGrab ) : Q_max( CM_TL_MIN_MS, CM_TlSnap( at - *startField ) );
+			int *field = end ? msField : startField;
+
+			if ( ms != *field ) {
+				*field = ms;
+				CM_Changed();
+			}
+		}
+		break;
+	}
 	case CM_DRAG_TXT:
 	case CM_DRAG_TXT_END:
 		if ( cm.tlDragIndex < c->numTxt ) {
@@ -7293,7 +8107,8 @@ static void CM_TlDrag( const cmTrack_t *t ) {
 
 static void CM_DrawTimeline( void ) {
 	cmCine_t *c = &cm.cine;
-	const int fxRow = 1 + c->numEnts * 2, sndRow = fxRow + 1, txtRow = sndRow + 1, numRows = txtRow + 1, visRows = Q_min( CM_TL_ROWS, numRows );
+	const int fxRow = 1 + c->numEnts * 2, sndRow = fxRow + 1, txtRow = sndRow + 1, propRow = txtRow + 1, lightRow = propRow + 1;
+	const int numRows = lightRow + 1, visRows = Q_min( CM_TL_ROWS, numRows );
 	const float x = CM_TL_X, w = CM_TL_W;
 	const float boxH = CM_TL_RULER_H + Q_max( 2, visRows ) * CM_ROW_H + 3, boxY = CM_TL_BOTTOM - boxH, headY = boxY - CM_CTRL_H - 2;
 	const float rowsY = boxY + 1 + CM_TL_RULER_H;
@@ -7427,6 +8242,28 @@ static void CM_DrawTimeline( void ) {
 				CM_TlBar( CM_TlX( &t, e->start ), CM_TlX( &t, e->start + e->ms ), ry, txtBar, e->text[0] ? e->text : "nothing yet",
 					(qboolean)( i == cm.txt && cm.tab == CM_TAB_TEXT ) );
 			}
+		} else if ( row == propRow ) {
+			static const vec4_t propBar = { 0.55f, 0.5f, 0.35f, 0.85f };
+
+			CM_TextClipped( x + 3, ry, CM_TL_LABEL_W - 6, "Props", cm.tab == CM_TAB_WORLD && cm.worldPage == 0 ? cmTlSel : cmWhite );
+			for ( int i = 0; i < c->numProps; i++ ) {
+				const cmProp_t *pr = &c->props[i];
+
+				CM_TlBar( CM_TlX( &t, pr->start ), CM_TlX( &t, CM_PropEnd( c, pr ) ), ry, propBar, pr->model[0] ? COM_SkipPath( (char *)pr->model ) : "no model yet",
+					(qboolean)( i == cm.prop && cm.tab == CM_TAB_WORLD && cm.worldPage == 0 ) );
+				// its keys, along the bottom
+				for ( int k = 0; k < pr->numKeys; k++ )
+					CM_Fill( CM_TlX( &t, pr->start + pr->keys[k].ms ) - 2, ry + CM_ROW_H - 6, 5, 5, i == cm.prop && k == cm.propKey ? cmTlHead : cmWhite );
+			}
+		} else if ( row == lightRow ) {
+			CM_TextClipped( x + 3, ry, CM_TL_LABEL_W - 6, "Lights", cm.tab == CM_TAB_WORLD && cm.worldPage == 1 ? cmTlSel : cmWhite );
+			for ( int i = 0; i < c->numLights; i++ ) {
+				const cmLight_t *l = &c->lights[i];
+				const vec4_t bar = { l->color[0] * 0.75f, l->color[1] * 0.75f, l->color[2] * 0.75f, 0.85f };
+
+				CM_TlBar( CM_TlX( &t, l->start ), CM_TlX( &t, CM_LightEnd( c, l ) ), ry, bar, cmLightFx[l->fx],
+					(qboolean)( i == cm.light && cm.tab == CM_TAB_WORLD && cm.worldPage == 1 ) );
+			}
 		} else {
 			const int e = ( row - 1 ) / 2, lane = ( row - 1 ) & 1;
 
@@ -7471,8 +8308,8 @@ static void CM_DrawTimeline( void ) {
 			}
 		}
 	}
-	if ( !c->numEnts && !c->numFx && !c->numSnd && !c->numTxt )
-		CM_Text( t.x + 3, rowsY + CM_ROW_H, S_COLOR_GREY "Who's in it: the Entities tab. Effects, sounds and text: their tabs", cmWhite );
+	if ( !c->numEnts && !c->numFx && !c->numSnd && !c->numTxt && !c->numProps && !c->numLights )
+		CM_Text( t.x + 3, rowsY + CM_ROW_H, S_COLOR_GREY "Who's in it: the Entities tab. Effects, sounds, text, props and lights: their tabs", cmWhite );
 	else if ( numRows > visRows )
 		CM_Text( x + 3, boxY, va( S_COLOR_GREY "%i of %i", cm.tlScroll / 2 + 1, c->numEnts ), cmWhite );
 
@@ -7658,6 +8495,7 @@ static void CM_DrawEditor( void ) {
 				: cm.tab == CM_TAB_EFFECTS ? "Click an effect to pick it, drag it over walls and floors   J move arrows   Del deletes it   P preview"
 				: cm.tab == CM_TAB_SOUNDS ? "Click a sound's spot to pick it, drag it over walls and floors   J move arrows   Del deletes it   P preview"
 				: cm.tab == CM_TAB_TEXT ? "Pick a moment on the timeline to see the texts then   Del deletes the one picked   P preview"
+				: cm.tab == CM_TAB_WORLD ? "Click a prop's key or a light to pick it, drag it over walls and floors   J move arrows   Del deletes it   P preview"
 				: "Enter add a spot   Del delete   Up/Down pick   F look through it   P preview",
 			cm.tlHidden ? "T shows the timeline" : "Timeline: click or drag a moment, drag bars to retime   P plays from it   T hides it",
 			cm.tlPinned ? "Esc lets go of the moment" : "Esc back"
@@ -7694,7 +8532,7 @@ static void CM_DrawEditor( void ) {
 	if ( cm.listing ) {
 		CM_DrawFileList( x, y + 6, w );
 	} else {
-		static const char *tabs[] = { "Camera", "Entities", "Effects", "Sounds", "Text" };
+		static const char *tabs[] = { "Camera", "Entities", "Effects", "Sounds", "Text", "World" };
 
 		// how it looks to everyone
 		if ( CM_Switch( x, y, half, "Bars", cm.cine.bars ? "on" : "off" ) ) {
@@ -7724,6 +8562,8 @@ static void CM_DrawEditor( void ) {
 			CM_DrawSoundsTab( x, y, w );
 		else if ( cm.tab == CM_TAB_TEXT )
 			CM_DrawTextTab( x, y, w );
+		else if ( cm.tab == CM_TAB_WORLD )
+			CM_DrawWorldTab( x, y, w );
 		else
 			CM_DrawCameraTab( x, y, w );
 
@@ -7755,6 +8595,7 @@ static void CM_DrawEditor( void ) {
 	CM_FocusDrag();
 	CM_FxDrag();
 	CM_SndDrag();
+	CM_WorldDrag();
 	if ( cm.click )
 		cm.typing = CM_TYPE_NONE;
 	cm.click = qfalse;
@@ -8575,6 +9416,70 @@ Every frame, and the command
 
 ===============================================================================
 */
+
+/*
+===============================================================================
+
+Props and lights: in the scene while they last, on this screen
+
+===============================================================================
+*/
+
+// the props and lights of the cinematic playing, or of the one being made at the moment picked
+// (all of them, the props at their first key, with no moment picked)
+void CL_Cinematic_AddToScene( const refdef_t *fd ) {
+	const cmCine_t *c;
+	int t;
+
+	if ( ( fd->rdflags & ( RDF_NOWORLDMODEL | RDF_SKYBOXPORTAL | RDF_AUTOMAP ) ) || cls.state != CA_ACTIVE )
+		return;
+	if ( cmp.playing ) {
+		c = &cmp.cine;
+		t = cls.realtime - cmp.start;
+	} else if ( cm.open ) {
+		c = &cm.cine;
+		t = cm.tlPinned ? cm.tlMs : -1;
+	} else {
+		return;
+	}
+	for ( int i = 0; i < c->numProps; i++ ) {
+		const cmProp_t *pr = &c->props[i];
+		refEntity_t ent;
+		vec3_t org, ang;
+		qhandle_t h;
+
+		if ( !pr->model[0] || !CM_PropAt( c, pr, t, org, ang ) || !( h = re->RegisterModel( pr->model ) ) )
+			continue;
+		memset( &ent, 0, sizeof( ent ) );
+		ent.reType = RT_MODEL;
+		ent.hModel = h;
+		VectorCopy( org, ent.origin );
+		VectorCopy( org, ent.oldorigin );
+		VectorCopy( org, ent.lightingOrigin );
+		AnglesToAxis( ang, ent.axis );
+		if ( pr->scale != 1.0f ) {
+			for ( int j = 0; j < 3; j++ )
+				VectorScale( ent.axis[j], pr->scale, ent.axis[j] );
+			ent.nonNormalizedAxes = qtrue;
+		}
+		ent.shaderRGBA[0] = ent.shaderRGBA[1] = ent.shaderRGBA[2] = ent.shaderRGBA[3] = 255;
+		re->AddRefEntityToScene( &ent );
+	}
+	for ( int i = 0; i < c->numLights; i++ ) {
+		const cmLight_t *l = &c->lights[i];
+		const int end = CM_LightEnd( c, l );
+		float a;
+		vec3_t org;
+
+		if ( t >= 0 && ( t < l->start || t >= end ) )
+			continue;
+		a = t < 0 ? 1.0f : CM_LightNow( l, t - l->start, end - l->start );
+		if ( a < 0.01f )
+			continue;
+		CM_LightOrg( l, org );
+		re->AddLightToScene( org, l->radius, l->color[0] * a, l->color[1] * a, l->color[2] * a );
+	}
+}
 
 // the extras of the cinematic playing, or being made: defined for cl_extras, shown from their
 // spawn, if they have one, until they're taken out

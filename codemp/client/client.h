@@ -774,6 +774,7 @@ qboolean CL_Extras_Origin( int num, vec3_t out );
 qboolean CL_Extras_Yaw( int num, float *yaw );
 int CL_Extras_Bodies( int *nums, vec3_t *orgs, int max );
 void CL_Extras_AddToScene( const refdef_t *fd );
+void CL_Cinematic_AddToScene( const refdef_t *fd );
 const char *CL_EmotePreview_AnimName( int anim );
 int CL_NpcWalk_Tilts( vec3_t *pos, vec3_t *angles, int max );
 int CL_EmotePreview_Count( void );
