@@ -247,11 +247,16 @@ static void PS_AskList( void ) {
 		ps.askNext = cls.realtime + PS_RETRY_MS;
 }
 
+static const char *PS_Rank( void );
+
 static const char *PS_State( void ) {
 	if ( !psv.on )
 		return va( S_COLOR_YELLOW "not connected" S_COLOR_WHITE " (%s)", psv.helloStatus ? va( "C1B3R answered %i", psv.helloStatus ) : "C1B3R didn't answer" );
 	if ( psv.sends )
 		return S_COLOR_GREEN "connected and approved: you may send" S_COLOR_WHITE;
+	if ( psv.approved && CL_RpAdmin_OnTemple() && psa.account[0] )
+		return va( "connected and approved, but on Temple only Department Head, Council and God send (your rank: %s)",
+			PS_Rank()[0] ? PS_Rank() : "none known" );
 	if ( psv.approved )
 		return va( "connected and approved, but you send only logged in to the RPMod account you linked%s",
 			psa.account[0] ? va( " (now: %s)", psa.account ) : " (now: logged out)" );
@@ -336,14 +341,21 @@ static void PS_SetState( const char *linked, const char *approved, const char *s
 		Com_Printf( S_COLOR_GREEN "C1B3R: " S_COLOR_WHITE "you may send what the tools share\n" );
 }
 
-// a session for where we are: made when there's none, or the server, number, name, account or link changed
+// the RPMod admin rank, as rpstatus said (on Temple it's asked by itself): only some send there
+static const char *PS_Rank( void ) {
+	const char *rank = PS_LocalTest() ? "God" : CL_RpAdmin_Rank();
+
+	return rank ? rank : "";
+}
+
+// a session for where we are: made when there's none, or the server, number, name, account, rank or link changed
 static void PS_Hello( void ) {
 	char key[512];
 	std::string body;
 
 	if ( psHelloHttp.state == HTTP_BUSY || cls.realtime < psv.helloNext )
 		return;
-	Com_sprintf( key, sizeof( key ), "%s|%i|%s|%s|%s", ps.server, clc.clientNum, PS_MyName(), PS_Token(), psa.account );
+	Com_sprintf( key, sizeof( key ), "%s|%i|%s|%s|%s|%s", ps.server, clc.clientNum, PS_MyName(), PS_Token(), psa.account, PS_Rank() );
 	if ( psv.on && !strcmp( key, psv.key ) )
 		return;
 	body = "{\"key\":";
@@ -360,6 +372,8 @@ static void PS_Hello( void ) {
 	}
 	body += ",\"account\":";
 	PS_Json( body, psa.account );
+	body += ",\"rank\":";
+	PS_Json( body, PS_Rank() );
 	body += "}";
 	if ( !PS_Send( &psHelloHttp, "/v2/hello", body ) ) {
 		psv.helloNext = cls.realtime + PS_HELLO_RETRY_MS;
@@ -617,7 +631,8 @@ qboolean CL_Presence_Outgoing( const char *cmd ) {
 		return qtrue;
 	}
 	if ( !psv.sends ) {
-		PS_Note( psv.approved ? "not sent: log in to the RPMod account you linked"
+		PS_Note( psv.approved && CL_RpAdmin_OnTemple() && psa.account[0] ? "not sent: on Temple only Department Head, Council and God send"
+			: psv.approved ? "not sent: log in to the RPMod account you linked"
 			: psv.linked ? "not sent: staff haven't approved your link in Discord yet"
 			: "not sent: sending is for admins whose game is linked (/c1b3r link)" );
 		return qtrue;
@@ -655,7 +670,7 @@ static void PS_PollRequests( void ) {
 			if ( PS_Token()[0] && !psv.linked ) {
 				Com_Printf( S_COLOR_YELLOW "C1B3R: " S_COLOR_WHITE "this game's link was ended (denied, revoked or unlinked); /c1b3r link to link it again\n" );
 				Cvar_Set( "cl_c1b3rToken", "" );
-				Q_strncpyz( psv.asked, va( "%s|%i|%s||%s", ps.server, clc.clientNum, PS_MyName(), psa.account ), sizeof( psv.asked ) );
+				Q_strncpyz( psv.asked, va( "%s|%i|%s||%s|%s", ps.server, clc.clientNum, PS_MyName(), psa.account, PS_Rank() ), sizeof( psv.asked ) );
 			}
 			Q_strncpyz( psv.key, psv.asked, sizeof( psv.key ) );
 			psv.pollNext = 0;

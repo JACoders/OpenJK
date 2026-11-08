@@ -949,6 +949,7 @@ qboolean CL_RpHooks_ServerCommand( qboolean *replaced );
 void CL_RpHooks_Deliver( const char *text );
 int CL_Feedback_Account( const char **name, int *answerTime );	// 1 in, 0 logged out, -2 asking, -3 no answer, -1 not asked
 void CL_Feedback_AskAccount( void );
+const char *CL_RpAdmin_Rank( void );		// "" none, NULL not known yet
 const char *CL_Feedback_Key( void );
 qboolean CL_RpHooks_AllowCommand( const char *cmd );
 int CL_RpHooks_LongestWord( const char *text );
