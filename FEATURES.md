@@ -532,12 +532,11 @@ Characters saved, and swapped to in one click: for missions, or anyone you play.
 
 ## Skin Select
 
-Every skin of your model, and every model you have, worn in one click.
+Every skin of your model worn in one click.
 
 - `/skinselect` shows the skins of the model you are: each `model_<skin>.skin` as a card, the character wearing it; click one to wear it. The one worn now is outlined
 - A model made of parts (`head_`, `torso_` and `lower_` skins, as the base game's Jedi are) has a **Put together** card first: step through the heads, torsos and legs with **<** and **>**, see them together, click it to wear that combination
-- **All models** shows every model installed, as it is: **Wear it**, or click it for its skins. **Back to all models** goes back
-- The same window as the presets, with their **Presets** tab, its search and its pages; `/skinselect <model>` opens on that model's skins, `/skinselect models` on all of them
+- The same window as the presets, with their **Presets** tab, its search and its pages; `/skinselect <model>` opens on that model's skins
 
 ## Asset Manager
 

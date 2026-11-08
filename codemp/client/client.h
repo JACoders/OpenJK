@@ -1002,7 +1002,7 @@ void CL_AnimManager_MouseEvent( int dx, int dy );
 void CL_AnimManager_Escape( void );
 void CL_AnimManager_Frame( void );
 void CL_AnimManager_Draw( void );
-void CL_AnimManager_Entity( const refEntity_t *ent );
+const refEntity_t *CL_AnimManager_Entity( const refEntity_t *ent, refEntity_t *copy );
 void CL_AnimManager_Hook( char **argv, int argc, const char *message );
 
 // cl_rendermenu.cpp: the camera follows right behind with the camera settings on

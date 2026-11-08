@@ -39,6 +39,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 // anyone else's show on their own screen only. An RPMod emote can play under one, for everyone.
 //
+// One playing is drawn on a copy of the player's model, made each frame from their own and drawn
+// in its place: their own model's bones are never touched, so once it's over their own model is
+// drawn again, in whatever animation the game has it in by then. Each emote has its player's
+// body: of the bodies drawn, the nearest to where they are, one body to one emote.
+//
 // Both kinds are saved in emotes/, <name>.chain and <name>.emote, and each is a command of its
 // own, its name starting with em as the server's emotes do.
 //
@@ -84,7 +89,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define AM_MOVE_SPEED		40.0f	// moving this fast ends your own emote
 #define AM_MOVE_GRACE_MS	500		// not in its first moments
 #define AM_HOLD_MS			400		// one that's over holds its last pose this long
-#define AM_STOP_MS			2000	// one stopped is cleaned off its model this soon, or forgotten
 #define AM_PREVIEW_HOLD_MS	1200	// the preview holds the end of one that doesn't loop, then starts over
 
 #define AM_ROW_H			13.0f
@@ -201,7 +205,19 @@ typedef struct {
 	int			num;
 	int			start, stopTime;
 	amCustom_t	def;
+	void		*body;				// their body's ghoul2, as the cgame draws it (last frame's pick)
+	CGhoul2Info_v	*copy;			// drawn in its place, playing the emote
+	int			copyFrame;			// the frame it was made for
 } amPlay_t;
+
+// the bodies drawn this frame, for the emotes to find theirs next frame
+#define AM_MAX_BODIES		128
+static struct {
+	void		*ghoul2;
+	vec3_t		origin;
+} amBodies[AM_MAX_BODIES];
+static int			amNumBodies;
+static int			amFrameNum;
 
 static amSkel_t		amSkels[AM_MAX_SKELS];
 static int			amNumSkels;
@@ -931,12 +947,6 @@ static void AM_ApplyCustom( CGhoul2Info_v &g2, int skel, const amCustom_t *c, fl
 	}
 }
 
-// its bones let go, the body's left to the cgame
-static void AM_ReleaseCustom( CGhoul2Info_v &g2, const amCustom_t *c ) {
-	for ( int i = 0; i < c->numBones; i++ )
-		AM_FreeBone( g2, c->bones[i].bone, (qboolean)( c->bones[i].anim[0] != '\0' ) );
-}
-
 // how long one plays before it's over, 0 never (it loops, or holds until you move)
 static float AM_CustomMs( const amCustom_t *c ) {
 	const amAnim_t *a = AM_FindAnim( AM_Skel( AM_HUMANOID ), c->anim );
@@ -974,6 +984,13 @@ static void AM_StopOn( int num ) {
 	}
 }
 
+// a copy is let go between frames only: the renderer reads it until the frame it was drawn in ends
+static void AM_FreeCopy( amPlay_t *p ) {
+	if ( p->copy )
+		re->G2API_CleanGhoul2Models( &p->copy );
+	p->copy = NULL;
+}
+
 static amPlay_t *AM_StartOn( int num, const amCustom_t *def ) {
 	amPlay_t *p = NULL;
 
@@ -986,6 +1003,7 @@ static amPlay_t *AM_StartOn( int num, const amCustom_t *def ) {
 	}
 	if ( !p )
 		return NULL;
+	AM_FreeCopy( p );
 	memset( p, 0, sizeof( *p ) );
 	p->active = qtrue;
 	p->num = num;
@@ -1011,43 +1029,107 @@ static qboolean AM_EntityOrigin( int num, vec3_t out ) {
 	return qfalse;
 }
 
-// a model on its way to the renderer: someone's body playing a custom emote, on its frame
-void CL_AnimManager_Entity( const refEntity_t *ent ) {
+// each frame, before it's drawn: every emote's body found among last frame's, the nearest pairs
+// first, one body to one emote; the copies of the frame before let go
+static void AM_BodiesFrame( void ) {
+	qboolean bodyTaken[AM_MAX_BODIES] = { qfalse }, playDone[AM_MAX_PLAYING] = { qfalse };
+	vec3_t org[AM_MAX_PLAYING];
+	qboolean known[AM_MAX_PLAYING];
+
+	amFrameNum++;
+	for ( int i = 0; i < AM_MAX_PLAYING; i++ ) {
+		amPlay_t *p = &amPlaying[i];
+
+		if ( p->copy && ( !p->active || p->stopping || p->copyFrame != amFrameNum - 1 ) )
+			AM_FreeCopy( p );
+		// over: their own body's drawn again, as it is
+		if ( p->stopping )
+			p->active = qfalse;
+		known[i] = (qboolean)( p->active && !p->stopping && AM_EntityOrigin( p->num, org[i] ) );
+		if ( !known[i] )
+			p->body = NULL;
+	}
+	for ( ;; ) {
+		float best = AM_NEAR;
+		int bp = -1, bb = -1;
+
+		for ( int i = 0; i < AM_MAX_PLAYING; i++ ) {
+			if ( !known[i] || playDone[i] )
+				continue;
+			for ( int b = 0; b < amNumBodies; b++ ) {
+				const float d = Distance( org[i], amBodies[b].origin );
+
+				if ( !bodyTaken[b] && d < best ) {
+					best = d;
+					bp = i;
+					bb = b;
+				}
+			}
+		}
+		if ( bp < 0 )
+			break;
+		playDone[bp] = qtrue;
+		bodyTaken[bb] = qtrue;
+		amPlaying[bp].body = amBodies[bb].ghoul2;
+	}
+	for ( int i = 0; i < AM_MAX_PLAYING; i++ ) {
+		if ( known[i] && !playDone[i] )
+			amPlaying[i].body = NULL;
+	}
+	amNumBodies = 0;
+}
+
+// a model on its way to the renderer: a body playing a custom emote is swapped for a copy of
+// itself playing it (into *copy); NULL when it's left as it is
+const refEntity_t *CL_AnimManager_Entity( const refEntity_t *ent, refEntity_t *copy ) {
 	amPlay_t *pick = NULL;
-	float best = AM_NEAR;
 	const char *gla;
 	int skel;
 
 	if ( !ent || ent->reType != RT_MODEL || !ent->ghoul2 )
-		return;
-	for ( int i = 0; i < AM_MAX_PLAYING; i++ ) {
-		amPlay_t *p = &amPlaying[i];
-		vec3_t org;
-
-		if ( !p->active || !AM_EntityOrigin( p->num, org ) )
-			continue;
-		if ( Distance( org, ent->origin ) < best ) {
-			best = Distance( org, ent->origin );
-			pick = p;
-		}
-	}
-	if ( !pick )
-		return;
+		return NULL;
 	CGhoul2Info_v &g2 = *(CGhoul2Info_v *)ent->ghoul2;
 	if ( !re->G2API_HaveWeGhoul2Models( g2 ) )
-		return;
+		return NULL;
 	gla = re->G2API_GetGLAName( g2, 0 );
 	skel = AM_Skel( gla );
-	// a weapon or a saber has no such animation: only the body takes it
-	if ( skel < 0 || !AM_FindAnim( skel, pick->def.anim ) )
-		return;
-	if ( pick->stopping ) {
-		AM_ReleaseCustom( g2, &pick->def );
-		CL_RpCinematic_RestartAnim( pick->num );
-		pick->active = qfalse;
-		return;
+	if ( skel < 0 )
+		return NULL;
+	// a body: noted for next frame's pairing (a weapon or a saber has no such skeleton)
+	if ( amNumBodies < AM_MAX_BODIES ) {
+		qboolean seen = qfalse;
+
+		for ( int b = 0; b < amNumBodies && !seen; b++ )
+			seen = (qboolean)( amBodies[b].ghoul2 == ent->ghoul2 );
+		if ( !seen ) {
+			amBodies[amNumBodies].ghoul2 = ent->ghoul2;
+			VectorCopy( ent->origin, amBodies[amNumBodies].origin );
+			amNumBodies++;
+		}
 	}
-	AM_ApplyCustom( g2, skel, &pick->def, (float)( cls.realtime - pick->start ) );
+	for ( int i = 0; i < AM_MAX_PLAYING && !pick; i++ ) {
+		amPlay_t *p = &amPlaying[i];
+
+		if ( p->active && !p->stopping && p->body == ent->ghoul2 )
+			pick = p;
+	}
+	if ( !pick || !AM_FindAnim( skel, pick->def.anim ) )
+		return NULL;
+	// the copy, made once a frame from the body as the cgame has it now (drawn twice, as with a
+	// shell around it, both are the copy)
+	if ( !pick->copy || pick->copyFrame != amFrameNum ) {
+		AM_FreeCopy( pick );
+		re->G2API_DuplicateGhoul2Instance( g2, &pick->copy );
+		if ( !pick->copy || !re->G2API_HaveWeGhoul2Models( *pick->copy ) ) {
+			AM_FreeCopy( pick );
+			return NULL;
+		}
+		pick->copyFrame = amFrameNum;
+		AM_ApplyCustom( *pick->copy, skel, &pick->def, (float)( cls.realtime - pick->start ) );
+	}
+	*copy = *ent;
+	copy->ghoul2 = pick->copy;
+	return copy;
 }
 
 /*
@@ -1294,16 +1376,6 @@ static void AM_OwnFrame( void ) {
 		AM_StopOwn( qfalse );
 	} else if ( ms > 0.0f && cls.realtime - p->start > ms ) {
 		AM_StopOwn( qfalse );
-	}
-}
-
-// the ones stopped and never drawn again are forgotten
-static void AM_PlayingFrame( void ) {
-	for ( int i = 0; i < AM_MAX_PLAYING; i++ ) {
-		amPlay_t *p = &amPlaying[i];
-
-		if ( p->active && p->stopping && cls.realtime - p->stopTime > AM_STOP_MS )
-			p->active = qfalse;
 	}
 }
 
@@ -1843,17 +1915,20 @@ void CL_AnimManager_Init( void ) {
 void CL_AnimManager_Shutdown( void ) {
 	AM_Close();
 	AM_FreePreview();
+	for ( int i = 0; i < AM_MAX_PLAYING; i++ )
+		AM_FreeCopy( &amPlaying[i] );
 	memset( amPlaying, 0, sizeof( amPlaying ) );
 	memset( amRecv, 0, sizeof( amRecv ) );
+	amNumBodies = 0;
 	amRun.on = qfalse;
 	// the next server's files may differ
 	AM_FreeSkels();
 }
 
 void CL_AnimManager_Frame( void ) {
+	AM_BodiesFrame();
 	AM_ChainFrame();
 	AM_OwnFrame();
-	AM_PlayingFrame();
 }
 
 /*

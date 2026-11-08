@@ -29,7 +29,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 // /skinselect shows the skins of your model the same way, every model_<skin>.skin of it, worn in a
 // click; a model with head_, torso_ and lower_ skins has a card to put them together, a part at
-// a time. All models shows every model installed, as it is: worn as it is, or clicked for its skins.
+// a time. (All models, every model installed as a
+// card, is gone: each model shown stays loaded until the next map, and big model folders ran the
+// 32-bit game out of memory.)
 
 #include "client.h"
 #include "ghoul2/G2.h"
@@ -39,7 +41,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define PR_CMD				"presets"
 #define PR_SKIN_CMD			"skinselect"
 #define PR_MAX				256
-#define PR_MAX_MODELS		1024
 #define PR_MAX_SKINS		256
 #define PR_MAX_PARTS		128
 #define PR_VALUE_LEN		64
@@ -71,7 +72,7 @@ typedef struct {
 	qboolean	favorite;
 } prPreset_t;
 
-enum { PR_MODE_PRESETS, PR_MODE_SKINS, PR_MODE_MODELS };
+enum { PR_MODE_PRESETS, PR_MODE_SKINS };
 
 // a card's character, built once for its model and sabers
 typedef struct {
@@ -88,8 +89,6 @@ static int			prNumPresets;
 static prView_t		prViews[PR_MAX];
 static prView_t		prSlotViews[8];		// a model's or a skin's card, by its place on the page
 
-static char			prModels[PR_MAX_MODELS][MAX_QPATH];
-static int			prNumModels;
 static char			prSkins[PR_MAX_SKINS][MAX_QPATH];	// a model's: model_<this>.skin
 static int			prNumSkins;
 static char			prHeads[PR_MAX_PARTS][MAX_QPATH], prTorsos[PR_MAX_PARTS][MAX_QPATH], prLowers[PR_MAX_PARTS][MAX_QPATH];
@@ -110,11 +109,10 @@ static struct {
 	char		search[48];
 	qboolean	typing;
 	qboolean	favOnly;
-	int			shown[PR_MAX_MODELS];	// what the pages show, filtered: presets, skins (-1 the parts card) or models
+	int			shown[PR_MAX_SKINS + PR_MAX + 1];	// what the pages show, filtered: presets, or skins (-1 the parts card)
 	int			numShown;
 	char		skinModel[MAX_QPATH];	// the model whose skins are shown
 	int			head, torso, lower;		// the parts card's
-	qboolean	modelsListed;
 } pr;
 
 static vec4_t prWhite		= { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -522,36 +520,6 @@ static int QDECL PR_CompareNames( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, (const char *)b );
 }
 
-// the models installed: each folder of models/players with a model.glm
-static void PR_ListModels( void ) {
-	static char list[65536];
-	const int n = FS_GetFileList( "models/players", "/", list, sizeof( list ) );
-	char *p = list;
-
-	prNumModels = 0;
-	for ( int i = 0; i < n && prNumModels < PR_MAX_MODELS; i++, p += strlen( p ) + 1 ) {
-		char name[MAX_QPATH];
-
-		Q_strncpyz( name, p, sizeof( name ) );
-		if ( name[0] && name[strlen( name ) - 1] == '/' )
-			name[strlen( name ) - 1] = '\0';
-		if ( !name[0] || name[0] == '.' || FS_ReadFile( va( "models/players/%s/model.glm", name ), NULL ) <= 0 )
-			continue;
-		// a model in several pk3s is listed once
-		{
-			qboolean seen = qfalse;
-
-			for ( int k = 0; k < prNumModels && !seen; k++ )
-				seen = (qboolean)!Q_stricmp( prModels[k], name );
-			if ( seen )
-				continue;
-		}
-		Q_strncpyz( prModels[prNumModels++], name, sizeof( prModels[0] ) );
-	}
-	qsort( prModels, prNumModels, sizeof( prModels[0] ), PR_CompareNames );
-	pr.modelsListed = qtrue;
-}
-
 // a model's skins: model_<skin>.skin each a skin, head_, torso_ and lower_ the parts a character
 // is put together from
 static void PR_ListSkins( const char *model ) {
@@ -647,22 +615,6 @@ static void PR_ShowSkins( const char *model ) {
 	pr.page = 0;
 	pr.search[0] = '\0';
 	pr.typing = qfalse;
-}
-
-static void PR_ShowModels( void ) {
-	if ( !pr.modelsListed )
-		PR_ListModels();
-	pr.mode = PR_MODE_MODELS;
-	pr.page = 0;
-	pr.search[0] = '\0';
-	pr.typing = qfalse;
-	// on the page of the model you are
-	for ( int i = 0; i < prNumModels; i++ ) {
-		if ( !Q_stricmp( prModels[i], PR_CurrentModel() ) ) {
-			pr.page = i / ( PR_COLS * PR_ROWS );
-			break;
-		}
-	}
 }
 
 // the model becomes yours
@@ -775,8 +727,8 @@ static void PR_SkinSelect_f( void ) {
 		return;
 	}
 	if ( !Q_stricmp( arg, "models" ) ) {
-		if ( PR_Open( PR_MODE_SKINS ) )
-			PR_ShowModels();
+		Com_Printf( "Skin select: All models is off, as showing every model installed is too much for the 32-bit game. "
+			"/" PR_SKIN_CMD " <model> shows one model's skins\n" );
 		return;
 	}
 	if ( !PR_Open( PR_MODE_SKINS ) )
@@ -790,14 +742,13 @@ void CL_Presets_Init( void ) {
 	memset( &pr, 0, sizeof( pr ) );
 	pr.confirm = -1;
 	Cmd_AddCommand( PR_CMD, PR_Cmd_f, "Characters saved, and swapped to in one click" );
-	Cmd_AddCommand( PR_SKIN_CMD, PR_SkinSelect_f, "Every skin of your model (or the one named), and every model, to wear in one click" );
+	Cmd_AddCommand( PR_SKIN_CMD, PR_SkinSelect_f, "Every skin of your model (or the one named), to wear in one click" );
 }
 
 // cgame is going away: the card models with it; the next server may have other models
 void CL_Presets_Shutdown( void ) {
 	PR_Close();
 	PR_FreeViews();
-	pr.modelsListed = qfalse;
 }
 
 static qboolean PR_IsToggleKey( int key ) {
@@ -1119,8 +1070,7 @@ static void PR_DrawPartsCard( int slot, float x, float y ) {
 		PR_SetModel( PR_PartsValue() );
 }
 
-// what the page shows: the presets, a model's skins (the parts card first) or the models, as
-// filtered; how many
+// what the page shows: the presets, or a model's skins (the parts card first), as filtered; how many
 static int PR_BuildShown( void ) {
 	pr.numShown = 0;
 	if ( pr.mode == PR_MODE_PRESETS ) {
@@ -1133,11 +1083,6 @@ static int PR_BuildShown( void ) {
 			pr.shown[pr.numShown++] = -1;
 		for ( int i = 0; i < prNumSkins; i++ ) {
 			if ( !pr.search[0] || Q_stristr( prSkins[i], pr.search ) )
-				pr.shown[pr.numShown++] = i;
-		}
-	} else {
-		for ( int i = 0; i < prNumModels && pr.numShown < (int)ARRAY_LEN( pr.shown ); i++ ) {
-			if ( !pr.search[0] || Q_stristr( prModels[i], pr.search ) )
 				pr.shown[pr.numShown++] = i;
 		}
 	}
@@ -1163,19 +1108,6 @@ static void PR_DrawSlot( int slot, int index, float x, float y ) {
 		PR_DrawViewCard( slot, x, y, value, prSkins[index], current ? "worn now" : "click to wear it", current );
 		if ( PR_Clicked( x, y, PR_CARD_W, PR_CARD_H ) )
 			PR_SetModel( !Q_stricmp( prSkins[index], "default" ) ? pr.skinModel : value );
-		return;
-	}
-	{
-		const char *name = prModels[index];
-		const qboolean current = (qboolean)!Q_stricmp( PR_CurrentModel(), name );
-
-		PR_DrawViewCard( slot, x, y, va( "%s/default", name ), name, "click for its skins", current );
-		if ( PR_Button( x + 4, y + PR_CARD_H - PR_CTRL_H - 3, PR_CARD_W - 8, "Wear it", prPanelLight ) ) {
-			PR_SetModel( name );
-			return;
-		}
-		if ( PR_Clicked( x, y, PR_CARD_W, PR_CARD_H ) )
-			PR_ShowSkins( name );
 	}
 }
 
@@ -1188,22 +1120,18 @@ void CL_Presets_Draw( void ) {
 		return;
 	PR_Fill( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, prPanel );
 
-	// the tabs: presets, the skins of a model, the models
+	// the tabs: presets, the skins of a model
 	if ( PR_Button( 16, 12, 70, "Presets", pr.mode == PR_MODE_PRESETS ? prAccentFill : prPanelLight ) && pr.mode != PR_MODE_PRESETS )
 		PR_Open( PR_MODE_PRESETS );
 	if ( PR_Button( 90, 12, 120, pr.mode == PR_MODE_SKINS ? va( "Skins: %s", pr.skinModel ) : "Skins", pr.mode == PR_MODE_SKINS ? prAccentFill : prPanelLight )
 		&& pr.mode != PR_MODE_SKINS )
 		PR_ShowSkins( pr.skinModel[0] ? pr.skinModel : PR_CurrentModel() );
-	if ( PR_Button( 214, 12, 80, "All models", pr.mode == PR_MODE_MODELS ? prAccentFill : prPanelLight ) && pr.mode != PR_MODE_MODELS )
-		PR_ShowModels();
 	if ( PR_Button( SCREEN_WIDTH - 16 - 60, 12, 60, "Close", prPanelLight ) ) {
 		PR_Close();
 		return;
 	}
 	if ( pr.mode == PR_MODE_PRESETS && PR_Button( SCREEN_WIDTH - 16 - 60 - 6 - 130, 12, 130, "Save who I am now", prPanelLight ) )
 		PR_SaveCurrent();
-	if ( pr.mode == PR_MODE_SKINS && PR_Button( SCREEN_WIDTH - 16 - 60 - 6 - 130, 12, 130, "Back to all models", prPanelLight ) )
-		PR_ShowModels();
 
 	// the search, and the favorites only
 	style.font = pr.font;
@@ -1240,8 +1168,6 @@ void CL_Presets_Draw( void ) {
 	} else if ( pr.mode == PR_MODE_SKINS ) {
 		PR_Text( 244, 36, SCREEN_WIDTH - 260, PR_HasParts() ? va( "%i skins and parts to put together: click one to wear it", prNumSkins )
 			: va( "%i skins: click one to wear it", prNumSkins ), prDim, PR_TEXT_SCALE, qfalse );
-	} else {
-		PR_Text( 244, 36, SCREEN_WIDTH - 260, va( "%i models: click one for its skins, or wear it as it is", prNumModels ), prDim, PR_TEXT_SCALE, qfalse );
 	}
 
 	PR_BuildShown();
@@ -1249,7 +1175,7 @@ void CL_Presets_Draw( void ) {
 	pr.page = Com_Clampi( 0, pages - 1, pr.page );
 	if ( !pr.numShown ) {
 		const char *none = pr.search[0] || pr.favOnly ? "None match" : pr.mode == PR_MODE_PRESETS
-			? "No presets yet: Save who I am now keeps your name, model, skin and sabers as one" : pr.mode == PR_MODE_SKINS ? "This model has no skins here" : "No models here";
+			? "No presets yet: Save who I am now keeps your name, model, skin and sabers as one" : "This model has no skins here";
 
 		PR_Text( 16, 200, SCREEN_WIDTH - 32, none, prDim, 1.0f, qtrue );
 	}

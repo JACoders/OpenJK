@@ -325,8 +325,14 @@ static void CL_R_AddRefEntityToScene( const refEntity_t *ent ) {
 	ent = CL_RpCinematic_Entity( ent, &copy );
 	if ( !ent )
 		return;
-	// someone playing a custom emote
-	CL_AnimManager_Entity( ent );
+	// someone playing a custom emote: a copy of their body playing it, drawn in its place
+	{
+		static refEntity_t emoteCopy;
+		const refEntity_t *swapped = CL_AnimManager_Entity( ent, &emoteCopy );
+
+		if ( swapped )
+			ent = swapped;
+	}
 	// the shader manager's player shaders on each player's own sabers and shells
 	ent = CL_ShaderManager_MineEntity( ent, &copy );
 	CL_ShaderManager_AddEntity( ent );
