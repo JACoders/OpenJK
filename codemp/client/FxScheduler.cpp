@@ -232,6 +232,8 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 
 			mEffectTemplates[i].mInUse = false;
 		}
+		// the ids swapped effects were known by are gone with them
+		CL_EffectSwap_Reset();
 
 		if (idToPreserve == 0)
 		{
@@ -832,6 +834,15 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int 
 		ReportPlayEffectError(id);
 		mNextScale = 1.0f;
 		return;
+	}
+
+	// a player's own, played as the effect they swapped it for (the effect manager's Mine tab)
+	if ( mOwner >= 0 && !mInCreate )
+	{
+		const int swapped = CL_EffectSwap_Play( mOwner, id, mEffectTemplates[id].mEffectName );
+
+		if ( swapped != id && swapped > 0 && swapped < FX_MAX_EFFECTS && mEffectTemplates[swapped].mInUse )
+			id = swapped;
 	}
 
 	// how big: as the one it plays from, as asked for, or as the effect manager has it there

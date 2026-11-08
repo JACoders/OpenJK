@@ -132,7 +132,9 @@ typedef enum {
 typedef enum {
 	EM_TAB_EFFECTS,
 	EM_TAB_ACTIVE,
-	EM_TAB_PRESETS
+	EM_TAB_PRESETS,
+	EM_TAB_MINE,		// your own effects played as others (cl_effectswap.cpp)
+	EM_NUM_TABS
 } emTab_t;
 
 typedef enum {
@@ -367,6 +369,12 @@ static struct {
 	int			numView;
 	emList_t	folderList, effectList;
 	int			effect;					// selected effect, -1 = none
+
+	// mine tab: opened by itself (effectreplacer) for anyone, the other tabs for admins only
+	qboolean	mineOnly;
+	emList_t	recentList, swapList;
+	char		swapFrom[MAX_QPATH];	// the effect of yours to swap
+	char		swapTo[MAX_QPATH];		// and what plays instead
 	int			selTime;				// when it was selected
 	qboolean	loop;					// "add" rather than "once"
 	emWhere_t	where;
@@ -1565,7 +1573,7 @@ static void EM_PreviewWaiting( void ) {
 // plays the selected effect where it would go, again and again, on this client only
 static void EM_PreviewFrame( void ) {
 	emEffect_t *e = em.effect >= 0 && em.effect < em.numEffects ? &em.effects[em.effect] : NULL;
-	qboolean bolted = (qboolean)( em.where == EM_WHERE_BOLT );
+	qboolean bolted = (qboolean)( em.where == EM_WHERE_BOLT && em.tab != EM_TAB_MINE );
 	char key[sizeof( em.playKey )];
 	vec3_t org, dir;
 	int id, bolt = -1;
@@ -1604,7 +1612,7 @@ static void EM_PreviewFrame( void ) {
 		return;
 	if ( em.state == EM_BROWSE ) {
 		// bolted effects are shown on the model in the window, and played in the world from "View in world"
-		if ( em.tab != EM_TAB_EFFECTS || bolted || EM_ConstructShown() )
+		if ( ( em.tab != EM_TAB_EFFECTS && em.tab != EM_TAB_MINE ) || bolted || EM_ConstructShown() )
 			return;
 	} else if ( em.state != EM_PLACE ) {
 		return;
@@ -3345,6 +3353,9 @@ static void EM_ReleaseKeys( void ) {
 }
 
 static void EM_SetTab( emTab_t tab ) {
+	// opened for the Mine tab only: the others are for admins
+	if ( em.mineOnly )
+		tab = EM_TAB_MINE;
 	em.tab = tab;
 	em.focus = EM_F_NONE;
 	em.picker = EM_PICKER_NONE;
@@ -3524,14 +3535,20 @@ static void EM_StartConstructPlace( void ) {
 	EM_ReleaseKeys();
 }
 
-static void EM_Open( void ) {
+static void EM_MineSwap( void );
+
+// mineOnly: the Mine tab by itself, for anyone: it changes only how their own effects look
+static void EM_OpenAs( qboolean mineOnly ) {
 	if ( cls.state != CA_ACTIVE || !cls.cgameStarted ) {
 		Com_Printf( "Effect manager: join a server first\n" );
 		return;
 	}
 	// for RPMod's admins: whoever else can't run what it makes
-	if ( !CL_RpAdmin_Allow( "Effect manager", "effectmanager" ) )
+	if ( !mineOnly && !CL_RpAdmin_Allow( "Effect manager", "effectmanager" ) )
 		return;
+	em.mineOnly = mineOnly;
+	if ( mineOnly )
+		em.tab = EM_TAB_MINE;
 	CL_ModelManager_Close();
 	CL_NpcManager_Close();
 	CL_ShaderManager_Close();
@@ -3566,6 +3583,10 @@ static void EM_Open( void ) {
 	Key_SetCatcher( Key_GetCatcher() | KEYCATCH_EFFECTMANAGER );
 }
 
+static void EM_Open( void ) {
+	EM_OpenAs( qfalse );
+}
+
 static void EM_Close( void ) {
 	em.state = EM_OFF;
 	em.picker = EM_PICKER_NONE;
@@ -3587,6 +3608,7 @@ void CL_EffectManager_Init( void ) {
 	em.snap = 2;
 	em.instant = qtrue;
 	em.construct = -1;
+	em.recentList.sel = em.swapList.sel = -1;
 	Q_strncpyz( em.fields[EM_F_BOLT], "*r_hand", EM_FIELD_LEN );
 	Q_strncpyz( em.fields[EM_F_INTENSITY], "5", EM_FIELD_LEN );
 	Q_strncpyz( em.fields[EM_F_DURATION], "2", EM_FIELD_LEN );
@@ -3659,6 +3681,15 @@ CONSOLE COMMAND
 ===============================================================================
 */
 
+// effectreplacer: the Mine tab, for anyone; again closes it
+void CL_EffectReplacer_f( void ) {
+	if ( em.state != EM_OFF ) {
+		EM_Close();
+		return;
+	}
+	EM_OpenAs( qtrue );
+}
+
 void CL_EffectManager_f( void ) {
 	const char *arg = Cmd_Argv( 1 );
 
@@ -3670,8 +3701,9 @@ void CL_EffectManager_f( void ) {
 		return;
 	}
 
-	if ( !Q_stricmp( arg, "active" ) || !Q_stricmp( arg, "presets" ) || !Q_stricmp( arg, "effects" ) ) {
-		emTab_t tab = !Q_stricmp( arg, "active" ) ? EM_TAB_ACTIVE : !Q_stricmp( arg, "presets" ) ? EM_TAB_PRESETS : EM_TAB_EFFECTS;
+	if ( !Q_stricmp( arg, "active" ) || !Q_stricmp( arg, "presets" ) || !Q_stricmp( arg, "effects" ) || !Q_stricmp( arg, "mine" ) ) {
+		emTab_t tab = !Q_stricmp( arg, "active" ) ? EM_TAB_ACTIVE : !Q_stricmp( arg, "presets" ) ? EM_TAB_PRESETS
+			: !Q_stricmp( arg, "mine" ) ? EM_TAB_MINE : EM_TAB_EFFECTS;
 
 		if ( em.state == EM_OFF ) {
 			em.tab = tab;
@@ -3815,7 +3847,7 @@ static qboolean EM_IsToggleKey( int key ) {
 	if ( ( em.state == EM_BROWSE || em.naming != EM_NAMING_NONE ) && EM_ActiveField() != EM_F_NONE && key >= A_SPACE && key <= A_TILDE )
 		return qfalse;
 	binding = Key_GetBinding( key );
-	return (qboolean)( VALIDSTRING( binding ) && !Q_stricmp( binding, EM_TOGGLE_CMD ) );
+	return (qboolean)( VALIDSTRING( binding ) && ( !Q_stricmp( binding, EM_TOGGLE_CMD ) || !Q_stricmp( binding, "effectreplacer" ) ) );
 }
 
 static qboolean EM_FieldAllows( emField_t f, int ch ) {
@@ -3872,7 +3904,7 @@ static void EM_BrowseListKey( int key ) {
 		list = &em.pickerList;
 		count = em.numPickerView;
 		visible = (int)( ( EM_PICKER_H - 74 ) / EM_ROW_H );
-	} else if ( em.tab == EM_TAB_EFFECTS ) {
+	} else if ( em.tab == EM_TAB_EFFECTS || em.tab == EM_TAB_MINE ) {
 		if ( key == A_CURSOR_LEFT || key == A_CURSOR_RIGHT ) {
 			if ( !em.fields[EM_F_SEARCH][0] ) {
 				EM_StepFolder( key == A_CURSOR_LEFT ? -1 : 1 );
@@ -3944,7 +3976,7 @@ static void EM_BrowseKey( int key ) {
 		break;
 	case A_TAB:
 		if ( em.picker == EM_PICKER_NONE )
-			EM_SetTab( (emTab_t)( ( em.tab + 1 ) % 3 ) );
+			EM_SetTab( (emTab_t)( ( em.tab + 1 ) % EM_NUM_TABS ) );
 		break;
 	case A_ENTER:
 	case A_KP_ENTER:
@@ -3956,6 +3988,8 @@ static void EM_BrowseKey( int key ) {
 				EM_ApplyConstructBolts( qfalse );
 			else
 				EM_Send();
+		} else if ( em.tab == EM_TAB_MINE ) {
+			EM_MineSwap();
 		}
 		break;
 	default:
@@ -5174,7 +5208,7 @@ static void EM_DrawWindow( void ) {
 	const float x = EM_RIGHT_X, y = EM_VIEW_Y, w = EM_RIGHT_W, h = EM_VIEW_H;
 	const emEffect_t *e = EM_Effect();
 
-	if ( em.where == EM_WHERE_BOLT ) {
+	if ( em.where == EM_WHERE_BOLT && em.tab != EM_TAB_MINE ) {
 		EM_Box( x, y, w, h, emPanelLight );
 		if ( em.wheel && EM_InRect( x, y, w, h ) ) {
 			em.modelYaw += em.wheel * 5.0f;	// 15 degrees a notch
@@ -5287,12 +5321,9 @@ static void EM_DrawConstructPanel( int picked ) {
 		EM_StartConstructPlace();
 }
 
-static void EM_DrawEffects( void ) {
-	const emEffect_t *e;
-	const char *cmd;
-	float y, x;
+// the folders and effects on the left, with the search and the filter bar; the row double-clicked
+static int EM_DrawBrowser( void ) {
 	int picked, clicked;
-	int length = 0, repeatDelay = 0;
 
 	// folders and effects, of the kind the filter bar lets through
 	const float searchW = EM_FOLDER_W + EM_EFFECT_W + 4 - EM_FILTER_COUNT * ( EM_FILTER_W + 4 );
@@ -5324,6 +5355,17 @@ static void EM_DrawEffects( void ) {
 			: !em.fields[EM_F_SEARCH][0] && em.row < em.numRows && em.rows[em.row].type == EM_ROW_FAVES ? "None yet: click the * by an effect"
 			: em.numEffects ? "No effects match" : "No effects found", emDim );
 	}
+	return picked;
+}
+
+static void EM_DrawEffects( void ) {
+	const emEffect_t *e;
+	const char *cmd;
+	float y, x;
+	int picked;
+	int length = 0, repeatDelay = 0;
+
+	picked = EM_DrawBrowser();
 	if ( EM_ConstructShown() ) {
 		EM_DrawConstructPanel( picked );
 		return;
@@ -5421,6 +5463,157 @@ static void EM_DrawEffects( void ) {
 	if ( EM_Button( EM_RIGHT_X + EM_RIGHT_W - 116, EM_BUTTON_Y, 116, em.where == EM_WHERE_BOLT ? "View in world..." : "Place in world...", qfalse, (qboolean)( e != NULL ) )
 		|| ( picked >= 0 && e ) )
 		EM_EnterPlace();
+}
+
+/*
+===============================================================================
+
+MINE TAB
+
+Your own effects played as others, on your screen and, shared, on everyone's with this client
+who has them: see cl_effectswap.cpp
+
+===============================================================================
+*/
+
+// an effect's path as the list has it, from one kept without .efx
+static void EM_SelectByName( const char *name ) {
+	int index = EM_FindEffect( va( "%s" EM_EXT, name ) );
+
+	if ( index < 0 )
+		index = EM_FindEffect( name );
+	if ( index >= 0 )
+		EM_SelectEffect( index );
+}
+
+// the effect picked on the left, without .efx
+static const char *EM_PickedName( void ) {
+	const emEffect_t *e = EM_Effect();
+	static char name[MAX_QPATH];
+
+	if ( !e )
+		return NULL;
+	Q_strncpyz( name, e->path, sizeof( name ) );
+	if ( strlen( name ) > 4 && !Q_stricmp( name + strlen( name ) - 4, EM_EXT ) )
+		name[strlen( name ) - 4] = '\0';
+	return name;
+}
+
+static void EM_MineSwap( void ) {
+	if ( !em.swapFrom[0] || !em.swapTo[0] )
+		return;
+	if ( !Q_stricmp( em.swapFrom, em.swapTo ) ) {
+		EM_Message( S_COLOR_YELLOW "That's the same effect" );
+		return;
+	}
+	if ( !CL_EffectSwap_Set( em.swapFrom, em.swapTo ) ) {
+		EM_Message( S_COLOR_YELLOW "Too many swaps: remove one first" );
+		return;
+	}
+	EM_Message( va( S_COLOR_GREEN "Your %s now plays as %s%s", em.swapFrom, em.swapTo,
+		CL_EffectSwap_Shared() ? ", for everyone with this client who has it" : ", on your screen" ) );
+}
+
+static void EM_DrawRecentRow( int row, float x, float y, float w ) {
+	int count = 0, ago = 0, swap;
+	const char *name = CL_EffectSwap_Recent( row, &count, &ago ), *from, *to;
+	const char *when = ago < 60000 ? va( "%is ago", ago / 1000 ) : va( "%im ago", ago / 60000 );
+
+	if ( !name )
+		return;
+	swap = CL_EffectSwap_Find( name );
+	if ( swap >= 0 && CL_EffectSwap_Get( swap, &from, &to ) )
+		EM_TextClipped( x, y, w, va( "%s " S_COLOR_GREEN "as %s " S_COLOR_GREY "%s", name, to, when ), emWhite );
+	else
+		EM_TextClipped( x, y, w, va( "%s " S_COLOR_GREY "x%i, %s", name, count, when ), emWhite );
+}
+
+static void EM_DrawSwapRow( int row, float x, float y, float w ) {
+	const char *from, *to;
+
+	if ( CL_EffectSwap_Get( row, &from, &to ) )
+		EM_TextClipped( x, y, w, va( "%s " S_COLOR_GREY "as " S_COLOR_GREEN "%s", from, to ), emWhite );
+}
+
+static void EM_DrawMine( void ) {
+	const float x = EM_RIGHT_X, w = EM_RIGHT_W;
+	const float bw = 74.0f, tx = EM_CTRL_X, tw = EM_CTRL_W - bw - 4;
+	const char *picked;
+	float y;
+	int clicked, numSwaps;
+
+	EM_DrawBrowser();
+	picked = EM_PickedName();
+	EM_DrawWindow();
+
+	y = EM_VIEW_Y + EM_VIEW_H + 4;
+	EM_TextClipped( x, y, w, picked ? va( S_COLOR_YELLOW "%s", picked )
+		: S_COLOR_GREY "Pick an effect on the left to see it here", emWhite );
+
+	// what of yours, and what plays instead
+	y += 16;
+	EM_Label( x, y, "Yours" );
+	EM_Box( tx, y, tw, EM_CTRL_H, emPanelLight );
+	EM_TextClipped( tx + 4, y + 2, tw - 8, em.swapFrom[0] ? em.swapFrom : S_COLOR_GREY "pick one played as yours, below", emWhite );
+	if ( EM_Button( tx + tw + 4, y, bw, "The picked", qfalse, (qboolean)( picked != NULL ) ) )
+		Q_strncpyz( em.swapFrom, picked, sizeof( em.swapFrom ) );
+	y += 18;
+	EM_Label( x, y, "As" );
+	EM_Box( tx, y, tw, EM_CTRL_H, emPanelLight );
+	EM_TextClipped( tx + 4, y + 2, tw - 8, em.swapTo[0] ? va( S_COLOR_GREEN "%s", em.swapTo ) : S_COLOR_GREY "pick the one to play instead on the left", emWhite );
+	if ( EM_Button( tx + tw + 4, y, bw, "The picked", qfalse, (qboolean)( picked != NULL ) ) )
+		Q_strncpyz( em.swapTo, picked, sizeof( em.swapTo ) );
+	y += 20;
+	if ( EM_Button( x, y, 110, "Swap it  (Enter)", qfalse, (qboolean)( em.swapFrom[0] && em.swapTo[0] ) ) )
+		EM_MineSwap();
+	if ( EM_Button( x + 114, y, 110, va( "Shared: %s", CL_EffectSwap_Shared() ? "on" : "off" ), CL_EffectSwap_Shared(), qtrue ) )
+		CL_EffectSwap_SetShared( (qboolean)!CL_EffectSwap_Shared() );
+
+	// what played as yours lately: a click takes it
+	y += 20;
+	EM_TextClipped( x, y, w, S_COLOR_GREY "Played as yours lately: use a power or your saber, then click it", emWhite );
+	y += EM_ROW_H + 1;
+	EM_List( &em.recentList, CL_EffectSwap_NumRecent(), x, y, w, EM_ROW_H * 5, EM_DrawRecentRow, &clicked );
+	if ( clicked >= 0 ) {
+		const char *name = CL_EffectSwap_Recent( clicked, NULL, NULL ), *from, *to;
+		const int swap = name ? CL_EffectSwap_Find( name ) : -1;
+
+		if ( name ) {
+			Q_strncpyz( em.swapFrom, name, sizeof( em.swapFrom ) );
+			if ( swap >= 0 && CL_EffectSwap_Get( swap, &from, &to ) )
+				Q_strncpyz( em.swapTo, to, sizeof( em.swapTo ) );
+			EM_SelectByName( name );
+		}
+	}
+	if ( !CL_EffectSwap_NumRecent() )
+		EM_TextClipped( x + 4, y + 1, w - 8, S_COLOR_GREY "Nothing yet", emWhite );
+
+	// the swaps
+	numSwaps = CL_EffectSwap_Count();
+	y += EM_ROW_H * 5 + 4;
+	EM_TextClipped( x, y, w, va( S_COLOR_GREY "Your swaps (%i): each map, until removed", numSwaps ), emWhite );
+	y += EM_ROW_H + 1;
+	em.swapList.sel = Com_Clampi( -1, numSwaps - 1, em.swapList.sel );
+	EM_List( &em.swapList, numSwaps, x, y, w, EM_ROW_H * 3, EM_DrawSwapRow, &clicked );
+	if ( clicked >= 0 ) {
+		const char *from, *to;
+
+		if ( CL_EffectSwap_Get( clicked, &from, &to ) ) {
+			Q_strncpyz( em.swapFrom, from, sizeof( em.swapFrom ) );
+			Q_strncpyz( em.swapTo, to, sizeof( em.swapTo ) );
+			EM_SelectByName( to );
+		}
+	}
+	if ( !numSwaps )
+		EM_TextClipped( x + 4, y + 1, w - 8, S_COLOR_GREY "None yet", emWhite );
+	if ( EM_Button( x, EM_BUTTON_Y, 80, "Remove", qfalse, (qboolean)( em.swapList.sel >= 0 && em.swapList.sel < numSwaps ) ) ) {
+		CL_EffectSwap_Remove( em.swapList.sel );
+		em.swapList.sel = -1;
+	}
+	if ( EM_DangerButton( x + 84, EM_BUTTON_Y, 80, "Remove all", EM_CONFIRM_CLEAR, (qboolean)( numSwaps > 0 ) ) ) {
+		CL_EffectSwap_Clear();
+		em.swapList.sel = -1;
+	}
 }
 
 static void EM_DrawActive( void ) {
@@ -5677,7 +5870,7 @@ static void EM_DrawNaming( void ) {
 
 static void EM_DrawBrowse( void ) {
 	char buf[MAX_STRING_CHARS];
-	const qboolean window = (qboolean)( em.tab == EM_TAB_EFFECTS && em.where != EM_WHERE_BOLT );
+	const qboolean window = (qboolean)( em.tab == EM_TAB_MINE || ( em.tab == EM_TAB_EFFECTS && em.where != EM_WHERE_BOLT ) );
 
 	// the picker sits on top and gets the clicks first, but is drawn last
 	qboolean pickerOpen = (qboolean)( em.picker != EM_PICKER_NONE );
@@ -5696,13 +5889,19 @@ static void EM_DrawBrowse( void ) {
 		EM_Fill( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, emPanel );
 	}
 
-	EM_Text( EM_FOLDER_X, 14, "Effect Manager", emWhite );
-	if ( EM_Button( 112, 12, 64, "Effects", (qboolean)( em.tab == EM_TAB_EFFECTS ), qtrue ) )
-		EM_SetTab( EM_TAB_EFFECTS );
-	if ( EM_Button( 180, 12, 64, "Active", (qboolean)( em.tab == EM_TAB_ACTIVE ), qtrue ) )
-		EM_SetTab( EM_TAB_ACTIVE );
-	if ( EM_Button( 248, 12, 64, "Presets", (qboolean)( em.tab == EM_TAB_PRESETS ), qtrue ) )
-		EM_SetTab( EM_TAB_PRESETS );
+	if ( em.mineOnly ) {
+		EM_Text( EM_FOLDER_X, 14, "Effect Replacer: your own effects as others", emWhite );
+	} else {
+		EM_Text( EM_FOLDER_X, 14, "Effect Manager", emWhite );
+		if ( EM_Button( 112, 12, 54, "Effects", (qboolean)( em.tab == EM_TAB_EFFECTS ), qtrue ) )
+			EM_SetTab( EM_TAB_EFFECTS );
+		if ( EM_Button( 170, 12, 54, "Active", (qboolean)( em.tab == EM_TAB_ACTIVE ), qtrue ) )
+			EM_SetTab( EM_TAB_ACTIVE );
+		if ( EM_Button( 228, 12, 54, "Presets", (qboolean)( em.tab == EM_TAB_PRESETS ), qtrue ) )
+			EM_SetTab( EM_TAB_PRESETS );
+		if ( EM_Button( 286, 12, 46, "Mine", (qboolean)( em.tab == EM_TAB_MINE ), qtrue ) )
+			EM_SetTab( EM_TAB_MINE );
+	}
 
 	// the server's answer to the last command
 	if ( em.reply[0] && cls.realtime - em.replyTime < 8000 )
@@ -5714,11 +5913,14 @@ static void EM_DrawBrowse( void ) {
 	switch ( em.tab ) {
 	case EM_TAB_EFFECTS:	EM_DrawEffects();	break;
 	case EM_TAB_ACTIVE:		EM_DrawActive();	break;
+	case EM_TAB_MINE:		EM_DrawMine();		break;
 	default:				EM_DrawPresets();	break;
 	}
 
 	if ( em.tab == EM_TAB_EFFECTS )
 		EM_Text( EM_FOLDER_X, 440, S_COLOR_GREY "Up/Down effect   Left/Right folder   Enter send   Double-click place/view in world   Tab switch tab", emWhite );
+	else if ( em.tab == EM_TAB_MINE )
+		EM_Text( EM_FOLDER_X, 440, S_COLOR_GREY "Up/Down effect   Left/Right folder   Enter swap   Only your own effects change: everyone else's stay as they are", emWhite );
 	else
 		EM_Text( EM_FOLDER_X, 440, S_COLOR_GREY "Up/Down select   Wheel scroll   Tab switch tab   Click a box to type in it", emWhite );
 	Com_sprintf( buf, sizeof( buf ), S_COLOR_GREY "Esc back / close   %s",

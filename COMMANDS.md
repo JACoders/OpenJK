@@ -91,7 +91,8 @@ The console commands, keys and settings this client adds. What each feature does
 
 - `/effectmanager` opens or closes the manager (I recommend binding it to a key)
 - `/effectmanager <search>` opens the browser already filtered
-- `/effectmanager active | presets` opens it on that tab
+- `/effectmanager active | presets | mine` opens it on that tab
+- `/effectreplacer` opens the Mine tab by itself, for anyone: your own force powers', saber's and weapons' effects played as others
 - `/effectmanager place` places the selected effect in the world
 - `/effectmanager edit` selects and moves the map's effects, and the ones waiting
 - `/effectmanager bolt <tag>` bolts the selected effect to your own tag or bone
@@ -293,6 +294,7 @@ The console commands, keys and settings this client adds. What each feature does
 - `cl_cinRecordKey F10` the key that ends a recording in the cinematic manager
 - `cl_safeModels 1` shows map objects with too many verts as missing models; `cl_safePlayerModels 1` shows such player models as Kyle
 - `cl_shaderShareMine 1` shares your player shaders (the Mine tab's Shared)
+- `cl_effectShareMine 1` shares the effects you swapped in the Effect Replacer (its Shared, on by default)
 - `cl_rpExperimental 1` experimental features on as the game starts (`/rpexperimental`)
 - `con_modernInput 1` the console's line goes on to more rows, with word jumps, selection and copy and paste
 - `cl_chatSplit 1` a chat too long for the server is sent in parts; `cl_chatSplitLength`, `cl_chatSplitMark`, `cl_chatSplitDelay`, `cl_chatSplitCommands`

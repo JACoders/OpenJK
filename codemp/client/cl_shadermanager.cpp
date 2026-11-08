@@ -605,8 +605,9 @@ static void SM_MyOrigin( vec3_t out ) {
 
 // the player whose own what is at org, or bolted to entity entNum, is: the player entity, else
 // the player it started within reach of and nearer than any other player or NPC; -1 for none
+// always worked out: the effect manager's Mine tab lists the effects of this player's own, and swaps them
 int CL_ShaderManager_Owner( const vec3_t org, int entNum ) {
-	if ( sm.mapped.empty() || !cl.snap.valid )
+	if ( !cl.snap.valid )
 		return -1;
 	if ( entNum >= 0 && entNum < ENTITYNUM_WORLD )
 		return entNum < MAX_CLIENTS ? entNum : -1;

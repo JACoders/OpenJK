@@ -879,6 +879,7 @@ void CL_ShaderManager_MineHook( char **argv, int argc, const char *message );
 void CL_EffectManager_Init( void );
 void CL_EffectManager_Shutdown( void );
 void CL_EffectManager_f( void );
+void CL_EffectReplacer_f( void );
 qboolean CL_EffectManager_Active( void );
 void CL_EffectManager_Close( void );
 void CL_EffectManager_OpenForStory( void );
@@ -1036,6 +1037,23 @@ void CL_Presets_Escape( void );
 void CL_Presets_Draw( void );
 
 // cl_specialmoves.cpp
+// cl_effectswap.cpp: a player's own effects played as others, the effect manager's Mine tab
+void CL_EffectSwap_Init( void );
+void CL_EffectSwap_Frame( void );
+void CL_EffectSwap_Reset( void );
+int CL_EffectSwap_Play( int owner, int id, const char *name );
+void CL_EffectSwap_Hook( char **argv, int argc, const char *message );
+int CL_EffectSwap_Count( void );
+qboolean CL_EffectSwap_Get( int i, const char **from, const char **to );
+int CL_EffectSwap_Find( const char *from );
+qboolean CL_EffectSwap_Set( const char *from, const char *to );
+void CL_EffectSwap_Remove( int i );
+void CL_EffectSwap_Clear( void );
+int CL_EffectSwap_NumRecent( void );
+const char *CL_EffectSwap_Recent( int i, int *count, int *msAgo );
+qboolean CL_EffectSwap_Shared( void );
+void CL_EffectSwap_SetShared( qboolean on );
+
 void CL_SpecialMoves_Init( void );
 void CL_SpecialMoves_Shutdown( void );
 void CL_SpecialMoves_Close( void );

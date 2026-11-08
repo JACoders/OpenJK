@@ -263,6 +263,15 @@ Browse every effect, watch it play live, put it exactly where you want (or on so
 - One-click presets: alarm, fade out / fade back in, and camera shake with intensity and duration
 - Several commands in a row are spaced out automatically, so the server's flood protection doesn't drop them
 
+### Your own effects as others (Effect Replacer, Mine tab)
+
+- `/effectreplacer` (or the Mine tab in the manager) plays the effects of your own force powers, saber and weapons as any other effect you have, e.g. your Drain as a blue fire from a pk3
+- Only yours change: someone else using the same power keeps the standard effect. Anyone can use it, not only admins
+- Use a power or your saber, and **Played as yours lately** lists the effects that just came from you: click one, pick the replacement on the left (it plays live in the window), and **Swap it**
+- An effect is yours when it's bolted to you, or starts nearer you than anyone else, as force powers come out of your hand; an effect that lands on you (someone's drain hitting you) counts as yours too
+- Kept in `effectmanager/mine.txt`, for every map and server, until removed
+- **Shared** *(experimental)*: everyone with this client sees yours on you, if they have the replacement in their own pk3s (if not, they see the standard one). Sent as you change them, as a map starts and when someone joins. It goes through C1B3R or `rpnotify`, so it needs an admin's rights
+
 ## Storyteller
 
 Assemble a mission out of steps, then play it: NPCs, models, effects, sounds, music, chat and cinematics, one after the other.
@@ -857,8 +866,8 @@ Features not listed here are not experimental.
   - Client required (Experimental): **Share with all** and **Reset for all** in the Sky tab, **Shared** in the Mine tab
   - Not required (everyone): finding and remapping shaders, overlays, the sky and your player shaders on your own screen
 - **Effect Manager**
-  - Client required (Experimental): sharing an effect's **Size** (with the toggle off it's drawn that size on your screen only)
-  - Not required (everyone): placing, bolting, moving and removing effects, sent with RPMod's own `rpeffect`
+  - Client required (Experimental): sharing an effect's **Size** (with the toggle off it's drawn that size on your screen only), **Shared** in the Mine tab (Effect Replacer)
+  - Not required (everyone): placing, bolting, moving and removing effects, sent with RPMod's own `rpeffect`; your own effects swapped on your screen
 - **Map Editor**
   - Client required (Experimental): **Share** and **Unshare** (`/mapedit share`, `/mapedit unshare`)
   - Not required (everyone): editing and layouts on your own screen

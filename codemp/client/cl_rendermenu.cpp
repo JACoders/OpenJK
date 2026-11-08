@@ -894,6 +894,7 @@ static const struct {
 	{ "Model Manager",		"modelmanager",		"Place models, move the map's (rpmodel)" },
 	{ "NPC Manager",		"npcmanager",		"Spawn NPCs and command them" },
 	{ "Effect Manager",		"effectmanager",	"Preview effects and play them (rpeffect)" },
+	{ "Effect Replacer",	"effectreplacer",	"Your own powers' and saber's effects as others" },
 	{ "Shader Manager",		"shadermanager",	"Remap shaders, overlays, the sky" },
 	{ "Map Editor",			"mapedit",			"Move, hide and retexture the map; lights, fog" },
 	{ "Storyteller",		"storyteller",		"Missions out of steps, played for everyone" },

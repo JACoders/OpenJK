@@ -59,6 +59,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //     they change, as the map starts and as someone joins. cmd:mine/<client number>/clear
 //     drops them. See cl_shadermanager.cpp.
 //
+//   cmd:fxmine/<client number>/<part>/<parts>: <effect>><effect>|...
+//     a player's effects swapped in the effect manager's Mine tab: their own played as the
+//     others on the screens of everyone with this client who has those; cmd:fxmine/<client
+//     number>/clear drops them. See cl_effectswap.cpp.
+//
 //   cmd:fxscale/<x y z>/<size>[/once]: <effect>
 //     the effect playing there drawn that much bigger or smaller, 1 as made; see
 //     cl_effectmanager.cpp.
@@ -505,6 +510,10 @@ static rhResult_t RH_Run( const char *text ) {
 	}
 	if ( !Q_stricmp( argv[0], "mine" ) ) {
 		CL_ShaderManager_MineHook( argv + 1, argc - 1, message );
+		return RH_DROP;
+	}
+	if ( !Q_stricmp( argv[0], "fxmine" ) ) {
+		CL_EffectSwap_Hook( argv + 1, argc - 1, message );
 		return RH_DROP;
 	}
 	if ( !Q_stricmp( argv[0], "story" ) ) {
