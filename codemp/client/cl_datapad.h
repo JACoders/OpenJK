@@ -52,6 +52,28 @@ qboolean	DP_InRect( float x, float y, float w, float h );
 qboolean	DP_Clicked( float x, float y, float w, float h );		// the click in it, taken
 qboolean	DP_Button( float x, float y, float w, const char *label, qboolean on );
 
+// web pages' blocks (cl_html.h) laid out to w from y; only what's between top and bottom drawn, a
+// picture cut to them. Their height, drawn or not
+#include <vector>
+#include "cl_html.h"
+float		DP_DrawBlocks( const std::vector<htmlBlock_t> &blocks, float x, float y, float w, float top, float bottom );
+// a scroll bar's look beside a scrolled view: how far down, of how much
+void		DP_ScrollBar( float x, float y, float h, float scroll, float content );
+
+// the datapad's apps in files of their own: what each is given
+void		CL_HoloNet_Draw( const dpRect_t *screen );
+void		CL_HoloNet_Shown( qboolean shown );
+qboolean	CL_HoloNet_Key( int key );
+void		CL_HoloNet_Frame( void );
+void		CL_Comport_Draw( const dpRect_t *screen );
+void		CL_Comport_Shown( qboolean shown );
+qboolean	CL_Comport_Key( int key );
+void		CL_Comport_Char( int ch );
+void		CL_Comport_Frame( void );
+void		CL_Comport_Init( void );
+void		CL_Comport_Open( const char *what );
+void		CL_HoloNet_Open( int n );
+
 // cl_pazaak.cpp: the Pazaak app
 void		CL_Pazaak_Draw( const dpRect_t *screen );
 void		CL_Pazaak_Shown( qboolean shown );		// on the datapad's screen, or not any more

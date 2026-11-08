@@ -2413,6 +2413,7 @@ void CL_Frame ( int msec ) {
 	CL_Presence_Frame();
 	CL_EffectSwap_Frame();
 	CL_Pazaak_Frame();
+	CL_DatapadWeb_Frame();
 	CL_AssetManager_Frame();
 	// the RENDERER page's effects, shown with Post Effects on
 	CL_RenderMenu_Frame();

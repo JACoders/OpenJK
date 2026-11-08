@@ -40,6 +40,27 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define HTTP_TIMEOUT_MS		10000
 
+// where the answer goes, and how much fits
+static char *HTTP_Buffer( httpRequest_t *req ) {
+	return req->big ? req->big : req->answer;
+}
+
+static int HTTP_Room( const httpRequest_t *req ) {
+	return req->big ? req->bigSize : HTTP_MAX_ANSWER;
+}
+
+const char *HTTP_Answer( const httpRequest_t *req ) {
+	return req->big ? req->big : req->answer;
+}
+
+void HTTP_Release( httpRequest_t *req ) {
+	if ( req->state == HTTP_BUSY )
+		return;
+	free( req->big );
+	req->big = NULL;
+	req->bigSize = 0;
+}
+
 static void HTTP_Finish( httpRequest_t *req ) {
 #if defined(_WIN32)
 	InterlockedExchange( &req->finished, 1 );
@@ -64,10 +85,21 @@ static DWORD WINAPI HTTP_Thread( LPVOID arg ) {
 	URL_COMPONENTSW parts;
 	wchar_t url[512], host[256], path[512];
 	DWORD code = 0, size = sizeof( code ), got = 0;
+	char *buf = HTTP_Buffer( req );
+	const int room = HTTP_Room( req );
+	wchar_t headers[HTTP_HEADERS_LEN + 128];
+	char narrow[HTTP_HEADERS_LEN + 128];
 
 	req->status = 0;
 	req->answerLen = 0;
-	req->answer[0] = '\0';
+	buf[0] = '\0';
+	req->respHeaders[0] = '\0';
+
+	// what's sent with it: the body's type, and the caller's own (cookies)
+	Com_sprintf( narrow, sizeof( narrow ), "%s%s", !req->send ? "" : req->form ? "Content-Type: application/x-www-form-urlencoded\r\n"
+		: "Content-Type: application/json\r\n", req->headers );
+	if ( !MultiByteToWideChar( CP_UTF8, 0, narrow, -1, headers, ARRAY_LEN( headers ) ) )
+		headers[0] = 0;
 
 	memset( &parts, 0, sizeof( parts ) );
 	parts.dwStructSize = sizeof( parts );
@@ -88,16 +120,33 @@ static DWORD WINAPI HTTP_Thread( LPVOID arg ) {
 	if ( connect )
 		request = WinHttpOpenRequest( connect, req->send ? L"POST" : L"GET", path[0] ? path : L"/", NULL, WINHTTP_NO_REFERER,
 			WINHTTP_DEFAULT_ACCEPT_TYPES, parts.nScheme == INTERNET_SCHEME_HTTPS ? WINHTTP_FLAG_SECURE : 0 );
+	if ( request ) {
+		// the cookies are the caller's, sent as it says: WinHTTP keeps none of its own
+		DWORD feature = WINHTTP_DISABLE_COOKIES;
+
+		WinHttpSetOption( request, WINHTTP_OPTION_DISABLE_FEATURE, &feature, sizeof( feature ) );
+		if ( req->noRedirect ) {
+			DWORD policy = WINHTTP_OPTION_REDIRECT_POLICY_NEVER;
+
+			WinHttpSetOption( request, WINHTTP_OPTION_REDIRECT_POLICY, &policy, sizeof( policy ) );
+		}
+	}
 	if ( request
-		&& WinHttpSendRequest( request, req->send ? L"Content-Type: application/json\r\n" : WINHTTP_NO_ADDITIONAL_HEADERS, req->send ? (DWORD)-1 : 0,
+		&& WinHttpSendRequest( request, headers[0] ? headers : WINHTTP_NO_ADDITIONAL_HEADERS, headers[0] ? (DWORD)-1 : 0,
 			req->send ? req->send : WINHTTP_NO_REQUEST_DATA, req->sendLen, req->sendLen, 0 )
 		&& WinHttpReceiveResponse( request, NULL ) ) {
+		wchar_t raw[HTTP_RESP_HEADERS];
+		DWORD rawSize = sizeof( raw );
+
 		if ( WinHttpQueryHeaders( request, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, WINHTTP_HEADER_NAME_BY_INDEX, &code, &size, WINHTTP_NO_HEADER_INDEX ) )
 			req->status = (int)code;
-		while ( req->answerLen < HTTP_MAX_ANSWER - 1
-			&& WinHttpReadData( request, req->answer + req->answerLen, HTTP_MAX_ANSWER - 1 - req->answerLen, &got ) && got )
+		if ( WinHttpQueryHeaders( request, WINHTTP_QUERY_RAW_HEADERS_CRLF, WINHTTP_HEADER_NAME_BY_INDEX, raw, &rawSize, WINHTTP_NO_HEADER_INDEX ) )
+			WideCharToMultiByte( CP_UTF8, 0, raw, -1, req->respHeaders, sizeof( req->respHeaders ), NULL, NULL );
+		req->respHeaders[sizeof( req->respHeaders ) - 1] = '\0';
+		while ( req->answerLen < room - 1
+			&& WinHttpReadData( request, buf + req->answerLen, room - 1 - req->answerLen, &got ) && got )
 			req->answerLen += (int)got;
-		req->answer[req->answerLen] = '\0';
+		buf[req->answerLen] = '\0';
 	}
 	if ( request )
 		WinHttpCloseHandle( request );
@@ -137,7 +186,12 @@ typedef size_t ( *curlWrite_t )( char *data, size_t size, size_t count, void *us
 #define HTTP_CURLOPT_TIMEOUT_MS			155
 #define HTTP_CURLOPT_CONNECTTIMEOUT_MS	156
 #define HTTP_CURLOPT_WRITEFUNCTION		20011
+#define HTTP_CURLOPT_HTTPHEADER			10023
+#define HTTP_CURLOPT_HEADERDATA			10029
+#define HTTP_CURLOPT_HEADERFUNCTION		20079
 #define HTTP_CURLINFO_RESPONSE_CODE		0x200002
+
+struct curl_slist;
 
 static struct {
 	void		*lib;
@@ -147,6 +201,8 @@ static struct {
 	int			( *easy_perform )( CURL *curl );
 	int			( *easy_getinfo )( CURL *curl, int info, ... );
 	void		( *easy_cleanup )( CURL *curl );
+	struct curl_slist *( *slist_append )( struct curl_slist *list, const char *text );
+	void		( *slist_free_all )( struct curl_slist *list );
 } curl;
 
 // libcurl, found once; qfalse when the computer hasn't got it
@@ -171,8 +227,10 @@ static qboolean HTTP_LoadCurl( void ) {
 	*(void **)&curl.easy_perform = dlsym( curl.lib, "curl_easy_perform" );
 	*(void **)&curl.easy_getinfo = dlsym( curl.lib, "curl_easy_getinfo" );
 	*(void **)&curl.easy_cleanup = dlsym( curl.lib, "curl_easy_cleanup" );
+	*(void **)&curl.slist_append = dlsym( curl.lib, "curl_slist_append" );
+	*(void **)&curl.slist_free_all = dlsym( curl.lib, "curl_slist_free_all" );
 	if ( !curl.global_init || !curl.easy_init || !curl.easy_setopt || !curl.easy_perform || !curl.easy_getinfo || !curl.easy_cleanup
-		|| curl.global_init( HTTP_CURL_GLOBAL_DEFAULT ) != 0 ) {
+		|| !curl.slist_append || !curl.slist_free_all || curl.global_init( HTTP_CURL_GLOBAL_DEFAULT ) != 0 ) {
 		dlclose( curl.lib );
 		memset( &curl, 0, sizeof( curl ) );
 		return qfalse;
@@ -184,13 +242,28 @@ static qboolean HTTP_LoadCurl( void ) {
 static size_t HTTP_Write( char *data, size_t size, size_t count, void *user ) {
 	httpRequest_t *req = (httpRequest_t *)user;
 	const size_t total = size * count;
-	const int room = HTTP_MAX_ANSWER - 1 - req->answerLen;
+	char *buf = HTTP_Buffer( req );
+	const int room = HTTP_Room( req ) - 1 - req->answerLen;
 	const int n = (int)Q_min( (size_t)Q_max( room, 0 ), total );
 
 	if ( n > 0 ) {
-		memcpy( req->answer + req->answerLen, data, n );
+		memcpy( buf + req->answerLen, data, n );
 		req->answerLen += n;
-		req->answer[req->answerLen] = '\0';
+		buf[req->answerLen] = '\0';
+	}
+	return total;
+}
+
+// the answer's headers, one line at a time, into respHeaders
+static size_t HTTP_Header( char *data, size_t size, size_t count, void *user ) {
+	httpRequest_t *req = (httpRequest_t *)user;
+	const size_t total = size * count;
+	const int len = (int)strlen( req->respHeaders );
+	const int n = (int)Q_min( total, (size_t)( sizeof( req->respHeaders ) - 1 - len ) );
+
+	if ( n > 0 ) {
+		memcpy( req->respHeaders + len, data, n );
+		req->respHeaders[len + n] = '\0';
 	}
 	return total;
 }
@@ -198,10 +271,12 @@ static size_t HTTP_Write( char *data, size_t size, size_t count, void *user ) {
 static void *HTTP_Thread( void *arg ) {
 	httpRequest_t *req = (httpRequest_t *)arg;
 	CURL *c = curl.easy_init();
+	struct curl_slist *list = NULL;
 
 	req->status = 0;
 	req->answerLen = 0;
-	req->answer[0] = '\0';
+	HTTP_Buffer( req )[0] = '\0';
+	req->respHeaders[0] = '\0';
 	if ( c ) {
 		long code = 0;
 
@@ -210,16 +285,35 @@ static void *HTTP_Thread( void *arg ) {
 		curl.easy_setopt( c, HTTP_CURLOPT_WRITEFUNCTION, (curlWrite_t)HTTP_Write );
 		curl.easy_setopt( c, HTTP_CURLOPT_WRITEDATA, (void *)req );
 		curl.easy_setopt( c, HTTP_CURLOPT_NOSIGNAL, 1L );
-		curl.easy_setopt( c, HTTP_CURLOPT_FOLLOWLOCATION, 1L );
+		curl.easy_setopt( c, HTTP_CURLOPT_FOLLOWLOCATION, req->noRedirect ? 0L : 1L );
+		curl.easy_setopt( c, HTTP_CURLOPT_HEADERFUNCTION, (curlWrite_t)HTTP_Header );
+		curl.easy_setopt( c, HTTP_CURLOPT_HEADERDATA, (void *)req );
 		curl.easy_setopt( c, HTTP_CURLOPT_CONNECTTIMEOUT_MS, (long)HTTP_TIMEOUT_MS );
 		curl.easy_setopt( c, HTTP_CURLOPT_TIMEOUT_MS, (long)( req->waitMs > 0 ? req->waitMs + HTTP_TIMEOUT_MS : HTTP_TIMEOUT_MS * 2 ) );
 		if ( req->send ) {
 			curl.easy_setopt( c, HTTP_CURLOPT_POSTFIELDS, req->send );
 			curl.easy_setopt( c, HTTP_CURLOPT_POSTFIELDSIZE, (long)req->sendLen );
+			list = curl.slist_append( list, req->form ? "Content-Type: application/x-www-form-urlencoded" : "Content-Type: application/json" );
 		}
+		// the caller's own headers (cookies), a line each
+		for ( const char *h = req->headers; *h; ) {
+			const char *end = strstr( h, "\r\n" );
+			char line[HTTP_HEADERS_LEN];
+			const int len = end ? (int)( end - h ) : (int)strlen( h );
+
+			if ( len > 0 ) {
+				Q_strncpyz( line, h, Q_min( len + 1, (int)sizeof( line ) ) );
+				list = curl.slist_append( list, line );
+			}
+			h += len + ( end ? 2 : 0 );
+		}
+		if ( list )
+			curl.easy_setopt( c, HTTP_CURLOPT_HTTPHEADER, list );
 		if ( curl.easy_perform( c ) == 0 && curl.easy_getinfo( c, HTTP_CURLINFO_RESPONSE_CODE, &code ) == 0 )
 			req->status = (int)code;
 		curl.easy_cleanup( c );
+		if ( list )
+			curl.slist_free_all( list );
 	}
 	HTTP_Finish( req );
 	return NULL;
@@ -249,6 +343,24 @@ qboolean HTTP_Start( httpRequest_t *req, const char *url, const char *body, char
 	Q_strncpyz( req->url, url, sizeof( req->url ) );
 	req->send = NULL;
 	req->sendLen = 0;
+	// a bigger answer: on the heap, kept from the last time when it's as big
+	if ( req->maxAnswer > HTTP_MAX_ANSWER ) {
+		const int want = Q_min( req->maxAnswer, HTTP_MAX_BIG );
+
+		if ( req->bigSize != want ) {
+			free( req->big );
+			req->big = (char *)malloc( want );
+			req->bigSize = req->big ? want : 0;
+		}
+		if ( !req->big ) {
+			Q_strncpyz( error, "out of memory", errorSize );
+			return qfalse;
+		}
+	} else if ( req->big ) {
+		free( req->big );
+		req->big = NULL;
+		req->bigSize = 0;
+	}
 	if ( body ) {
 		req->sendLen = (int)strlen( body );
 		req->send = (char *)malloc( req->sendLen + 1 );

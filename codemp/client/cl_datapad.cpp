@@ -39,6 +39,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "client.h"
 #include "cl_datapad.h"
+#include "cl_widgets.h"
 
 #define DP_CMD			"datapad"
 #define DP_OPEN_CMD		DP_CMD " open"
@@ -71,11 +72,23 @@ typedef enum {
 	DP_HOME,
 	DP_SETTINGS,
 	DP_PAZAAK,
+	DP_HOLONET,
+	DP_COMPORT,
 	DP_NUM_APPS
 } dpApp_t;
 
 // an app that needs the room has the datapad bigger while it's on its screen
-static const qboolean dpAppFull[DP_NUM_APPS] = { qfalse, qfalse, qtrue };
+static const qboolean dpAppFull[DP_NUM_APPS] = { qfalse, qfalse, qtrue, qtrue, qtrue };
+
+// the apps in files of their own: what each is told and given
+static void DP_AppShown( dpApp_t app, qboolean shown ) {
+	if ( app == DP_PAZAAK )
+		CL_Pazaak_Shown( shown );
+	else if ( app == DP_HOLONET )
+		CL_HoloNet_Shown( shown );
+	else if ( app == DP_COMPORT )
+		CL_Comport_Shown( shown );
+}
 
 typedef enum {
 	DP_BIND_NONE,
@@ -325,7 +338,7 @@ static void DP_Set( dpState_t state ) {
 	} else {
 		Key_SetCatcher( Key_GetCatcher() & ~KEYCATCH_DATAPAD );
 		DP_Emote( qfalse );
-		CL_Pazaak_Shown( qfalse );
+		DP_AppShown( dp.app, qfalse );
 		// put away: on the home screen next time
 		if ( state == DP_CLOSED )
 			dp.app = dp.appFrom = DP_HOME;
@@ -360,7 +373,8 @@ static void DP_SetApp( dpApp_t app ) {
 	dp.app = app;
 	dp.appTime = cls.realtime;
 	dp.binding = DP_BIND_NONE;
-	CL_Pazaak_Shown( (qboolean)( app == DP_PAZAAK ) );
+	DP_AppShown( dp.appFrom, qfalse );
+	DP_AppShown( app, qtrue );
 }
 
 /*
@@ -511,6 +525,106 @@ qboolean DP_Button( float x, float y, float w, const char *label, qboolean on ) 
 	return DP_Clicked( x, y, w, DP_CTRL_H );
 }
 
+/*
+===============================================================================
+
+Web pages' blocks, for the apps that read them (HoloNet, Comport)
+
+===============================================================================
+*/
+
+static void DP_BlockStyle( wgStyle_t *style, float scale ) {
+	memset( style, 0, sizeof( *style ) );
+	style->font = dp.font;
+	style->scale = scale;
+	style->lineH = 11.0f * scale / 0.6f;
+	style->text = dpText;
+	style->dim = dpDim;
+}
+
+// a picture's height drawn w wide, at its own shape on the screen
+static float DP_PictureHeight( float w, int pw, int ph ) {
+	const float sx = cls.glconfig.vidWidth / (float)SCREEN_WIDTH, sy = cls.glconfig.vidHeight / (float)SCREEN_HEIGHT;
+
+	if ( pw <= 0 || ph <= 0 || sy <= 0 )
+		return 60.0f;
+	return Q_min( 280.0f, w * sx / sy * ph / pw );
+}
+
+float DP_DrawBlocks( const std::vector<htmlBlock_t> &blocks, float x, float y, float w, float top, float bottom ) {
+	const float start = y;
+	wgStyle_t body, head;
+
+	DP_BlockStyle( &body, 0.6f );
+	DP_BlockStyle( &head, 0.72f );
+	for ( size_t i = 0; i < blocks.size(); i++ ) {
+		const htmlBlock_t &b = blocks[i];
+		const float indent = DP_Wide( 10.0f ) * b.depth, bx = x + indent, bw = w - indent;
+		float h = 0;
+
+		switch ( b.kind ) {
+		case HB_IMAGE: {
+			int pw, ph;
+			const qhandle_t pic = HTML_Picture( b.src.c_str(), &pw, &ph );
+			const float ih = pic ? DP_PictureHeight( bw, pw, ph ) : 40.0f;
+			const float y0 = Q_max( y, top ), y1 = Q_min( y + ih, bottom );
+
+			if ( y1 > y0 ) {
+				if ( pic ) {
+					re->SetColor( NULL );
+					re->DrawStretchPic( bx, y0, bw, y1 - y0, 0, ( y0 - y ) / ih, 1, ( y1 - y ) / ih, pic );
+				} else {
+					DP_Fill( bx, y0, bw, y1 - y0, dpButton );
+					if ( y + 14 <= bottom && y >= top )
+						DP_Text( bx, y + 14, bw, b.text.empty() ? "[picture]" : va( "[picture: %s]", b.text.c_str() ), dpDim, dp.font, 0.55f, qtrue );
+				}
+			}
+			h = ih + 6;
+			break;
+		}
+		case HB_RULE:
+			if ( y + 3 >= top && y + 3 <= bottom )
+				DP_Fill( bx, y + 3, bw, 1, dpGlow );
+			h = 8;
+			break;
+		default: {
+			const wgStyle_t *st = b.kind == HB_HEADING ? &head : &body;
+			const char *prefix = b.kind == HB_LIST ? "- " : "";
+			const std::string text = prefix + b.text;
+			const float *color = b.kind == HB_HEADING ? dpWhite : b.kind == HB_QUOTE_HEAD || b.kind == HB_CODE ? dpDim : dpText;
+			const int lines = WG_TextLines( st, text.c_str(), bw );
+			int first = 0, count = lines;
+
+			// only the lines on the screen
+			while ( first < lines && y + first * st->lineH < top )
+				first++;
+			while ( count > first && y + count * st->lineH > bottom )
+				count--;
+			if ( count > first )
+				WG_DrawText( st, bx, y + first * st->lineH, bw, text.c_str(), first, count - first, color );
+			h = lines * st->lineH + ( b.kind == HB_HEADING ? 6 : b.kind == HB_LIST ? 1 : 5 );
+			break;
+		}
+		}
+		// the quote's bars beside it
+		for ( int d = 0; d < b.depth; d++ ) {
+			const float qx = x + DP_Wide( 10.0f ) * d + DP_Wide( 3 ), y0 = Q_max( y, top ), y1 = Q_min( y + h - 2, bottom );
+
+			if ( y1 > y0 )
+				DP_Fill( qx, y0, DP_Wide( 2 ), y1 - y0, dpDim );
+		}
+		y += h;
+	}
+	return y - start;
+}
+
+void DP_ScrollBar( float x, float y, float h, float scroll, float content ) {
+	if ( content <= h || content <= 0 )
+		return;
+	DP_Fill( x, y, DP_Wide( 3 ), h, dpButton );
+	DP_Fill( x, y + h * scroll / content, DP_Wide( 3 ), Q_max( 8.0f, h * h / content ), dpGlow );
+}
+
 // the device: a case with a header and its lights, and the screen's place in it
 static void DP_DrawCase( const dpRect_t *r, float big, dpRect_t *screen ) {
 	const float head = 14.0f + 6.0f * big, side = DP_Wide( 6.0f );
@@ -631,15 +745,46 @@ static void DP_PazaakPicture( float x, float y, float w, float h ) {
 	DP_Frame( x + w * 0.42f, y + h * 0.28f, w * 0.36f, h * 0.56f, dpWhite );
 }
 
+// the HoloNet's picture: an antenna sending
+static void DP_HoloNetPicture( float x, float y, float w, float h ) {
+	DP_Fill( x + w * 0.47f, y + h * 0.35f, w * 0.06f, h * 0.45f, dpWhite );
+	DP_Fill( x + w * 0.32f, y + h * 0.78f, w * 0.36f, h * 0.06f, dpWhite );
+	for ( int i = 1; i <= 3; i++ ) {
+		const float r = 0.08f * i;
+
+		DP_Fill( x + w * ( 0.5f - r - 0.04f ), y + h * ( 0.32f - r * 0.6f ), w * 0.04f, h * ( 0.1f + r * 0.8f ), dpText );
+		DP_Fill( x + w * ( 0.5f + r ), y + h * ( 0.32f - r * 0.6f ), w * 0.04f, h * ( 0.1f + r * 0.8f ), dpText );
+	}
+}
+
+// the Comport's picture: two speech bubbles
+static void DP_ComportPicture( float x, float y, float w, float h ) {
+	DP_Fill( x + w * 0.16f, y + h * 0.2f, w * 0.48f, h * 0.32f, dpText );
+	DP_Fill( x + w * 0.22f, y + h * 0.52f, w * 0.1f, h * 0.1f, dpText );
+	DP_Fill( x + w * 0.38f, y + h * 0.48f, w * 0.46f, h * 0.3f, dpWhite );
+	DP_Fill( x + w * 0.7f, y + h * 0.78f, w * 0.1f, h * 0.1f, dpWhite );
+}
+
 static void DP_DrawHome( const dpRect_t *s ) {
 	const float size = 34.0f;
 	const float x = s->x + DP_Wide( 10 ), y = s->y + DP_STATUS_H + 10;
 
-	// the apps, a row at a time as there come more
-	if ( DP_AppIcon( x, y, size, "Pazaak", DP_PazaakPicture ) )
-		DP_SetApp( DP_PAZAAK );
-	if ( DP_AppIcon( x + DP_Wide( size + 16 ), y, size, "Settings", DP_SettingsPicture ) )
-		DP_SetApp( DP_SETTINGS );
+	// the apps in their order, three to a row
+	static const struct {
+		dpApp_t		app;
+		const char	*name;
+		void		( *picture )( float, float, float, float );
+	} apps[] = {
+		{ DP_HOLONET,	"HoloNet",	DP_HoloNetPicture },
+		{ DP_COMPORT,	"Comport",	DP_ComportPicture },
+		{ DP_PAZAAK,	"Pazaak",	DP_PazaakPicture },
+		{ DP_SETTINGS,	"Settings",	DP_SettingsPicture },
+	};
+
+	for ( int i = 0; i < (int)ARRAY_LEN( apps ); i++ ) {
+		if ( DP_AppIcon( x + DP_Wide( size + 16 ) * ( i % 3 ), y + ( size + 26 ) * ( i / 3 ), size, apps[i].name, apps[i].picture ) )
+			DP_SetApp( apps[i].app );
+	}
 }
 
 // a key bound to the command, or "none"
@@ -720,12 +865,16 @@ static void DP_DrawApps( const dpRect_t *s ) {
 	dpRect_t in, out;
 
 	DP_StatusBar( s, 0.62f );
-	// Pazaak draws itself, once the datapad has grown to it
-	if ( dp.app == DP_PAZAAK || ( dp.appFrom == DP_PAZAAK && t < 1.0f ) ) {
-		if ( dp.app == DP_PAZAAK && t >= 1.0f )
-			CL_Pazaak_Draw( s );
-		else
+	// the apps in files of their own draw themselves, once the datapad has grown to them
+	if ( dpAppFull[dp.app] || ( dpAppFull[dp.appFrom] && t < 1.0f ) ) {
+		if ( t < 1.0f )
 			dp.click = qfalse;
+		else if ( dp.app == DP_PAZAAK )
+			CL_Pazaak_Draw( s );
+		else if ( dp.app == DP_HOLONET )
+			CL_HoloNet_Draw( s );
+		else if ( dp.app == DP_COMPORT )
+			CL_Comport_Draw( s );
 		return;
 	}
 	if ( t >= 1.0f || dp.app == dp.appFrom ) {
@@ -828,7 +977,8 @@ void CL_Datapad_KeyEvent( int key, qboolean down ) {
 		dp.clickY = dp.cursorY;
 		return;
 	}
-	if ( dp.app == DP_PAZAAK && CL_Pazaak_Key( key ) )
+	if ( ( dp.app == DP_PAZAAK && CL_Pazaak_Key( key ) ) || ( dp.app == DP_HOLONET && CL_HoloNet_Key( key ) )
+		|| ( dp.app == DP_COMPORT && CL_Comport_Key( key ) ) )
 		return;
 	// its keys work while it's open, as they do in the game
 	binding = Key_GetBinding( key );
@@ -839,6 +989,8 @@ void CL_Datapad_KeyEvent( int key, qboolean down ) {
 void CL_Datapad_CharEvent( int ch ) {
 	if ( dp.state == DP_OPEN && dp.app == DP_PAZAAK )
 		CL_Pazaak_Char( ch );
+	else if ( dp.state == DP_OPEN && dp.app == DP_COMPORT )
+		CL_Comport_Char( ch );
 }
 
 void CL_Datapad_MouseEvent( int dx, int dy ) {
@@ -870,10 +1022,18 @@ static void DP_Datapad_f( void ) {
 		DP_Set( dp.state == DP_OPEN ? DP_CLOSED : DP_OPEN );
 	} else if ( !Q_stricmp( arg, "open" ) ) {
 		DP_Set( DP_OPEN );
-	} else if ( !Q_stricmp( arg, "settings" ) || !Q_stricmp( arg, "pazaak" ) ) {
+	} else if ( !Q_stricmp( arg, "settings" ) || !Q_stricmp( arg, "pazaak" ) || !Q_stricmp( arg, "holonet" ) || !Q_stricmp( arg, "comport" ) ) {
 		DP_Set( DP_OPEN );
 		if ( dp.state == DP_OPEN )
-			DP_SetApp( !Q_stricmp( arg, "pazaak" ) ? DP_PAZAAK : DP_SETTINGS );
+			DP_SetApp( !Q_stricmp( arg, "pazaak" ) ? DP_PAZAAK : !Q_stricmp( arg, "holonet" ) ? DP_HOLONET
+				: !Q_stricmp( arg, "comport" ) ? DP_COMPORT : DP_SETTINGS );
+		// straight to an article, or a forum
+		if ( dp.state == DP_OPEN && Cmd_Argc() > 2 ) {
+			if ( !Q_stricmp( arg, "holonet" ) )
+				CL_HoloNet_Open( atoi( Cmd_Argv( 2 ) ) );
+			else if ( !Q_stricmp( arg, "comport" ) )
+				CL_Comport_Open( Cmd_Argv( 2 ) );
+		}
 	} else if ( !Q_stricmp( arg, "fold" ) ) {
 		DP_Set( DP_FOLDED );
 	} else if ( !Q_stricmp( arg, "close" ) ) {
@@ -891,7 +1051,7 @@ static void DP_Datapad_f( void ) {
 		Com_Printf( "usage: " DP_CMD "                opens the datapad, or puts it away\n" );
 		Com_Printf( "       " DP_CMD " open|close\n" );
 		Com_Printf( "       " DP_CMD " settings       open on its Settings\n" );
-		Com_Printf( "       " DP_CMD " pazaak         open on Pazaak\n" );
+		Com_Printf( "       " DP_CMD " pazaak|holonet|comport   open on that app\n" );
 		Com_Printf( "       " DP_CMD " pos <x> <y>    where it opens, on the 640x480 screen (its top left)\n" );
 		Com_Printf( "       " DP_CMD " pos            back in the bottom right corner, above the HUD\n" );
 	}
@@ -905,4 +1065,5 @@ void CL_Datapad_Init( void ) {
 	cl_datapadEmote = Cvar_Get( "cl_datapadEmote", "0", CVAR_ARCHIVE_ND, "Your character holds a datapad (RPMod's /emlift) while yours is open" );
 	Cmd_AddCommand( DP_CMD, DP_Datapad_f, "The datapad: open like a phone, folded in the corner, or put away" );
 	CL_Pazaak_Init();
+	CL_Comport_Init();
 }

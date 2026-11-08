@@ -628,7 +628,12 @@ A datapad on your screen, used like a phone. `/datapad`, or **TOOLS** in the in-
   - **Side decks:** build 10-card decks from every card, name them and **Save** them on C1B3R (they follow your game everywhere); **Play with it** picks the one you play with
   - **Rules** on the datapad. C1B3R deals and checks every move: nobody sees your hand or plays a card they don't have
   - The cards are the datapad's own; Jedi Academy's sounds. Art of your own in a pk3 is used instead: `pazaak/cards/main`, `plus`, `minus`, `either`, `special`, `back` (.png, .tga or .jpg) and `pazaak/sounds/click`, `deal`, `play`, `turn`, `stand`, `win`, `lose` (.wav)
-- `/datapad open`, `/datapad close`, `/datapad settings` and `/datapad pazaak` go straight there
+- **HoloNet:** JEDI's news from jediholo.net, read by your game straight from the site: the latest articles listed (title, date, author, category), one opened whole with its pictures, scrolled with the wheel, and **Open on the web**. Read again every 10 minutes, or with **Refresh**
+- **Comport:** JEDI's forum, as datapad pages: the forums by category, a forum's topics (pinned ones first, with their replies and views, page by page), a topic's posts with their quotes and pictures, and **On the web**
+  - **Log in** with your Comport name and password to read what needs an account, and to **Reply** to a topic (Enter starts a new paragraph; BBCode as on the site). The forum's own messages show if something's refused (posting too soon, too short...)
+  - Your password goes to the Comport alone, over HTTPS, and is never kept. **Stay logged in** keeps only the forum's cookies, in `datapad/comport.cookies` in your game folder (keep that file to yourself); **Log out** removes them. Without logging in, **Read as a guest** shows what the forum shows visitors
+- Pictures (HoloNet, Comport) are kept in `datapad/cache/`, emptied by itself past 64 MB. JPEG and PNG show; WebP pictures show as a placeholder
+- `/datapad open`, `/datapad close`, `/datapad settings`, `/datapad pazaak`, `/datapad holonet` and `/datapad comport` go straight there
 - `/datapad pos <x> <y>` opens it elsewhere, on the 640x480 screen; `/datapad pos` puts it back above the HUD
 
 ## Long Chat in Parts
