@@ -497,6 +497,15 @@ qboolean CL_GetServerCommand( int serverCommandNumber ) {
 				CL_ConfigstringModified();
 				Cmd_TokenizeString( clOwnCmds[own].text );
 			}
+			// NPC talk come through C1B3R: chat as it is from the server, in a language, kept in the log
+			if ( !strcmp( Cmd_Argv( 0 ), "chat" ) ) {
+				if ( CL_Storyteller_ChatLine() ) {
+					Cmd_TokenizeString( "print \"\"" );
+					return qtrue;
+				}
+				CL_Languages_ServerCommand();
+				CL_ChatLog_ServerCommand();
+			}
 			return qtrue;
 		}
 		clLastCgameCommand = serverCommandNumber;

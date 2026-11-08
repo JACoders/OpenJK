@@ -457,6 +457,25 @@ void CL_Feedback_Disconnect( void ) {
 	memset( &fbAcc, 0, sizeof( fbAcc ) );
 }
 
+// for C1B3R's login (cl_presence.cpp): the account, its reply kept out of the console.
+// 1 with the account in *name, 0 logged out, -2 being asked, -3 the server didn't answer (at
+// *answerTime), -1 not asked yet
+int CL_Feedback_Account( const char **name, int *answerTime ) {
+	*name = fbAcc.name;
+	*answerTime = fbAcc.answerTime;
+	switch ( fbAcc.state ) {
+	case FB_ACC_IN:			return 1;
+	case FB_ACC_OUT:		return 0;
+	case FB_ACC_ASKING:		return -2;
+	case FB_ACC_NO_ANSWER:	return -3;
+	default:				return -1;
+	}
+}
+
+void CL_Feedback_AskAccount( void ) {
+	FB_AskAccount();
+}
+
 // the reply over, and the account asked for while a report is being written
 static void FB_AccountFrame( qboolean wanted ) {
 	if ( fbAcc.state == FB_ACC_ASKING ) {

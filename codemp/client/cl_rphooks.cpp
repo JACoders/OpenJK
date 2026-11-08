@@ -18,14 +18,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-// cl_rphooks.cpp -- client hooks carried in RPMod's prints
+// cl_rphooks.cpp -- client hooks: what the tools share with everyone with this client
 //
-// Until the server can send them itself, an admin's
+// A hook is a line of text, cmd:<hook>/<args...>: <message>. The tools still make them as
 //   rpnotify -1 1 cmd:<hook>/<args...>: <message>
-// reaches clients as a "print" and an "info" (RPMod's banner) whose text starts with
-// "cmd:" (rpcentersay's "cp" works too, but the server crashes on its long words). These
-// are never shown, in the console, the banner or the middle of the screen: the first one
-// goes to the hook named instead.
+// but that never reaches the server: C1B3R carries it to everyone with this client on the server
+// (see cl_presence.cpp), and the sender runs it at once. Hooks the server sends in prints, from
+// clients from before that still use rpnotify, are hidden and not run.
 //
 //   cmd:npc/talk/<npc>/<display name>/<name colour>/<emote|none>: <message>
 //     (cmd:npc/<npc>/talk/... too, say for talk, and spaces around the parts)
@@ -76,10 +75,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 //   cmd:emote/<client number>/<part>/<parts>: <emote>, cmd:emote/<client number>/stop
 //     an admin's custom emote from the animation manager, played on them; see cl_animmanager.cpp.
-//
-//   cmd:c1b3r/<code>
-//     a C1B3R session's proof that its player may send hooks, as only an admin can rpnotify;
-//     told to C1B3R, see cl_presence.cpp.
 //
 //   cmd:npcnames/<part>/<parts>: <entity number>=<name>|...
 //     the NPCs' targetnames, from an admin's npc list, shown when the crosshair is on one; see
@@ -478,12 +473,6 @@ static rhResult_t RH_Run( const char *text ) {
 		p = end + 1;
 	}
 
-	// a C1B3R session's proof, come through the server: an admin's, told to C1B3R, never shown
-	if ( !Q_stricmp( argv[0], "c1b3r" ) ) {
-		if ( argc >= 2 )
-			CL_Presence_Seen( argv[1] );
-		return RH_DROP;
-	}
 	if ( !Q_stricmp( argv[0], "npc" ) && argc >= 2 && !Q_stricmp( argv[1], "walk" ) ) {
 		CL_NpcWalk_Hook( argv + 2, argc - 2 );
 		return RH_DROP;
@@ -942,27 +931,27 @@ void CL_RpHooks_Disconnect( void ) {
 	memset( &rhSubs, 0, sizeof( rhSubs ) );
 }
 
-// a hook that came from C1B3R rather than the server, run as one from the server would be
+// a hook come through C1B3R, or our own sent: run; one that hands the cgame another command (NPC
+// talk's chat) gives it to the cgame as if the server had sent it
 void CL_RpHooks_Deliver( const char *text ) {
-	RH_Run( text );
+	if ( RH_Run( text ) == RH_REPLACED && cls.state == CA_ACTIVE )
+		CL_QueueCgameCommand( Cmd_Cmd() );
 }
 
 // the server command just tokenized: qfalse keeps it from the cgame
 qboolean CL_RpHooks_ServerCommand( qboolean *replaced ) {
 	const char *cmd = Cmd_Argv( 0 );
-	rhResult_t result;
 
 	*replaced = qfalse;
 	// rpnotify sends its text to the console (print) and to RPMod's banner (info), rpcentersay
 	// to the middle of the screen (cp); the first to arrive runs the hook, the copies are hidden
 	if ( strcmp( cmd, "print" ) && strcmp( cmd, "cp" ) && strcmp( cmd, "cps" ) && strcmp( cmd, "info" ) )
 		return qtrue;
+	// hooks come through C1B3R now: one the server brings, a client from before's rpnotify, is
+	// only hidden
 	for ( int i = 1; i < Cmd_Argc(); i++ ) {
-		if ( !RH_HookText( Cmd_Argv( i ) ) )
-			continue;
-		result = RH_Run( Cmd_Argv( i ) );
-		*replaced = (qboolean)( result == RH_REPLACED );
-		return (qboolean)( result != RH_DROP );
+		if ( RH_HookText( Cmd_Argv( i ) ) )
+			return qfalse;
 	}
 	return qtrue;
 }

@@ -247,7 +247,11 @@ The console commands, keys and settings this client adds. What each feature does
 
 - `/toolaccess` shows whether the admin tools open for you on this server, and on Temple whether your rank may turn experimental features on; `/toolaccess check` asks again
 - `/feedback` sends a bug report or an idea for the OpenJK-RPMod project, with your RPMod account, and shows the answers; `/feedback mine` opens on your reports, `/feedback close` closes it
-- `/clientusers` lists who on this server has this client, their version, whether C1B3R carries hooks to them, and who may send hooks through it: the players the tools' hooks go to
+- `/c1b3r` shows your link to C1B3R: connected, linked, approved by staff, and the RPMod account you're on
+- `/c1b3r link` links this game, logged in to your RPMod account: your browser opens, you log in with Discord there, and staff approve it. Then you send what the tools share. The code it shows also works as `/link <code>` in Discord
+- `/c1b3r discord` opens the page to add C1B3R to your Discord account, so `/link` works in a DM without being in the project's Discord
+- `/c1b3r unlink` ends the link
+- `/clientusers` shows who on this server has this client, who's linked and who sends: the players the tools' hooks go to
 - `/version` shows your OpenJK-rpmod version and whether it's the newest, with the link to a newer one; `/version check` asks GitHub again
 - `/rpexperimental [on|off]` turns the experimental features on or off, and keeps them so every time the game starts; on Temple only for Department Head, Council and God, and turned off for anyone else
 - `/emotepreview` lists the emotes the Help menu can preview; `/emotepreview forget <emote>` learns one again; `/emotepreview watch` prints your animation's changes after an emote
@@ -268,8 +272,8 @@ The console commands, keys and settings this client adds. What each feature does
 - `rpc_chatRangeConsole_mode <0-3>`, `rpc_chatRangeConsole_min`, `rpc_chatRangeConsole_max`, `rpc_chatRangeConsole_alpha` set the chat range in the console
 - `cl_updateCheck 0` never asks GitHub whether there's a newer OpenJK-rpmod
 - `cl_feedbackUrl` is where /feedback sends reports and asks for their answers
-- `cl_presenceUrl` is C1B3R's address: where the game says it's on a server with this client, and through which hooks go to those who have it; empty, nothing is said and hooks go to everyone
-- `cl_hookGap <ms>` the time between the hooks sent to each player with this client; 0 (the default) as the server's flood protection lets them
+- `cl_c1b3rToken` is this game's link, made by `/c1b3r link`: keep it to yourself
+- `cl_presenceUrl` is C1B3R's address: the link to everyone with this client, through which the tools' hooks go; empty, nothing is shared and hooks show on your screen only
 - `renderersettings sync` / `apply`: what Setup's RENDERER page uses to show the renderer settings and to set them at the next `vid_restart`
 - `cl_renderer rd-vulkan` then `vid_restart` draws the game with the Vulkan renderer *(experimental)*, `cl_renderer rd-vanilla` with the usual one; the Vulkan one's own settings (`r_fbo`, `r_bloom`, `r_ext_multisample`, `r_vbo`, `r_ext_supersample`, `r_ssao`, `r_softParticles`, `r_fxaa`, `r_sharpen`, `r_sunShafts`, `r_tonemap`, `r_motionBlur` and more) are in [FEATURES.md](FEATURES.md#vulkan-renderer-experimental)
 - `cl_whisper 1` shows whispers (chat in ^k) only to those close by, `cl_whisperHear` and `cl_whisperNotice` set how close

@@ -18,33 +18,24 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-// cl_presence.cpp -- the hooks (rpnotify -1 1 cmd:..., see cl_rphooks.cpp) only to the players with
-// this client
+// cl_presence.cpp -- the link to C1B3R: everyone with this client on a server, and what they share
 //
-// Sent to everyone, a hook shows as a "cmd:" line to the players without this client. So who has
-// it is kept by the feedback bot (cl_presenceUrl, the same bot as cl_feedbackUrl): each player's
-// client tells it, once loaded into a server, which server and client number it is, its name and
-// version, again when the map, the number or the name changes and every few minutes, and that it's
-// gone as it disconnects. Nothing in the game shows it.
+// Once loaded into a server the game opens a session with C1B3R (cl_presenceUrl, the same as
+// cl_feedbackUrl), which is also who's playing with the client, and keeps a poll open that brings
+// what the others send as soon as it's sent: the tools' hooks (cl_rphooks.cpp). Everyone with the
+// client is connected, and receives.
 //
-// A hook going out is held here: the bot is asked who on the server has the client, and the hook
-// goes to them alone, the sender first. A player counts only while the name in their slot is the one
-// they told the bot, so a number taken over by someone else gets nothing.
+// Sending is for admins, and staff say who: /c1b3r link, logged in to an RPMod account, gets a code
+// from C1B3R; /link <code> in Discord ties the game to that Discord account, and staff approve or deny
+// it there. The game is handed a token it keeps (cl_c1b3rToken, in the .cfg), which every session
+// carries from then on. It sends once approved, while logged in to the RPMod account it was linked
+// with: the game reads the account from rpinfo, its reply kept out of the console. /c1b3r unlink, or
+// /unlink in Discord, ends it.
 //
-//   rpnotify <client number> 1 cmd:...   once for each, one a gap apart (the server's flood
-//                                        protection, or cl_hookGap)
-//
-// While hooks are going out, the other commands wait behind them, so the order stays and the flood
-// protection lets each through. A hook that can't be sent to the right players (the bot doesn't
-// answer) isn't sent. On a local server, or with cl_presenceUrl empty, hooks go to everyone as before.
-//
-// C1B3R (the bot, made bigger) carries the hooks itself (/v2): the game opens a session once it's on
-// a server, which is also who's playing with the client, and keeps a poll open that brings the hooks
-// the others send as soon as they're sent. A hook goes to C1B3R once, not to the server once for each
-// player. Only an admin may send hooks, as only an admin may rpnotify: a session proves it by one
-// rpnotify of its proof code to another player with the client (cmd:c1b3r/<code>), whose game tells
-// C1B3R it saw it. Until then, with games from before (/v1 in the list), for NPC talk (the cgame needs
-// it from the server, as chat) and when C1B3R doesn't answer, hooks go by rpnotify as above.
+// The tools still make their hooks as RPMod's rpnotify (rpnotify -1 1 cmd:...). Taken here from
+// CL_AddReliableCommand, a hook never reaches the server: it runs here at once, as the server's echo
+// did, and goes to C1B3R once, for everyone or the one player it names. With nobody to send it to
+// (a local server, no C1B3R) it only runs here.
 
 #include "client.h"
 #include "cl_http.h"
@@ -53,86 +44,72 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <string>
 
 #define PS_DEFAULT_URL		"https://c1b3r.keztor.tech"	// the feedback bot, as cl_feedbackUrl
-#define PS_HOOK				"rpnotify -1 1 cmd:"
-#define PS_HOOK_TO			"rpnotify -1 1 "	// what the players to send it to go in place of
-#define PS_BEAT_MS			( 5 * 60 * 1000 )	// the bot told again this often (it forgets after 6 minutes)
-#define PS_RETRY_MS			30000				// after the bot didn't answer
-#define PS_LIST_FRESH_MS	30000				// the list asked again past this, while hooks go out
-#define PS_LIST_USABLE_MS	( 2 * 60 * 1000 )	// a hook sent with a list this old at most
-#define PS_WAIT_MS			5000				// a hook waits this long for the list, then isn't sent
-#define PS_JOINED_MS		8000				// after someone joins: time for their client to tell the bot
-#define PS_NOTE_MS			60000				// "not sent" said at most this often
-#define PS_QUEUE_MAX		4096
+#define PS_RETRY_MS			30000				// after C1B3R didn't answer
+#define PS_NOTE_MS			30000				// "not sent" said at most this often
+#define PS_RELAY_MAX		1024				// hooks waiting to go to C1B3R
 #define PS_NAME_LEN			128
 #define PS_POLL_WAIT_MS		40000				// a poll's answer may take this long: C1B3R holds it 25 s
 #define PS_POLL_RETRY_MS	5000				// after a poll that failed
-#define PS_HELLO_RETRY_MS	30000
-#define PS_PROOF_EVERY_MS	30000				// the proof sent again at most this often
-#define PS_PROOF_LIST_MS	3000				// the list asked this long after, to see it's proven
+#define PS_HELLO_RETRY_MS	15000
+#define PS_ACCOUNT_WAIT_MS	6000				// in game this long before the account is asked: the welcome prints first
+#define PS_ACCOUNT_RETRY_MS	30000				// the server didn't answer rpinfo: asked again
+#define PS_LINK_WAIT_MS		3000				// a link's code asked about this often, till it's used in Discord
 
 typedef struct {
 	int			num;
 	char		name[PS_NAME_LEN];
 	char		version[32];
-	qboolean	relay;				// on a C1B3R session: hooks reach them through it
-	qboolean	proven;
+	qboolean	linked;
+	qboolean	sends;
 } psPlayer_t;
 
 typedef struct {
-	std::string	cmd;
-	int			time;
-	qboolean	hook;
-} psWaiting_t;
+	std::string	text;
+	int			to;					// a player, -1 everyone
+} psHook_t;
 
 static struct {
 	char		server[64];			// the server all this is about
+	int			joinTime;
 
-	// what the bot was told
-	char		beatKey[512];
-	int			beatTime;
-	int			beatNext;			// not before this, after a failure
-	qboolean	beatOn;				// the bot knows of us: told when we go
-	char		beatServer[64];
-	int			beatClient;
-
-	// what the bot said
+	// who has the client here
 	qboolean	known;
-	int			listTime;
 	psPlayer_t	players[MAX_CLIENTS];
 	int			numPlayers;
-	int			askAt;				// the list asked again then (0: not)
 	int			askNext;			// not before this, after a failure
 	qboolean	print;				// /clientusers is waiting for it
-
-	char		slots[MAX_CLIENTS][PS_NAME_LEN];	// the names in the player slots, to see who joins
-	int			lastHook;
 	int			noteTime;
-	qboolean	sending;			// our own command going out: let through
 } ps;
 
-// the C1B3R session
+// the session
 static struct {
-	qboolean	on;					// a session: hooks come through C1B3R
-	qboolean	none;				// C1B3R has no /v2 (one from before): /v1 alone on this server
+	qboolean	on;
 	char		id[64];
-	char		proof[32];
+	char		pollId[64];			// the session the open poll is for: one replaced since says nothing
 	int			seq;				// the last hook seen
-	char		key[512];			// the server, client number and name it's for
+	char		key[512];			// the server, client number, name and token it's for
 	char		asked[512];			// a hello going out for these
 	int			helloNext;
 	int			pollNext;
-	qboolean	proven;				// may send hooks through it
-	int			proofTime;
+	qboolean	linked;				// its token is for a link that's pending or approved
+	qboolean	approved;
+	qboolean	sends;
 	int			helloStatus;		// C1B3R's last answer to a hello, for /clientusers
-	char		seen[32];			// someone's proof code to tell C1B3R about
 } psv;
 
-static std::deque<psWaiting_t>	psWaiting;	// waiting for the list, in order
-static std::deque<std::string>	psQueue;	// going out, one a gap apart
-static std::deque<std::string>	psRelayOut;	// hooks going to C1B3R, one at a time
-static std::string				psRelaySending;
-static httpRequest_t			psBeatHttp, psListHttp, psLeaveHttp, psHelloHttp, psPollHttp, psHookHttp, psSeenHttp;
-static cvar_t					*cl_presenceUrl, *cl_hookGap, *cl_presenceLocal;
+// the RPMod account we're logged in to, and linking this game
+static struct {
+	char		account[64];		// "" logged out, or not known
+	qboolean	known;
+	qboolean	wanted;				// /c1b3r link waits for the account
+	char		code[16];			// the code shown, waited on till it's used in Discord
+	int			codeUntil;
+	int			waitNext;
+} psa;
+
+static std::deque<psHook_t>		psRelayOut;	// hooks going to C1B3R, one at a time
+static httpRequest_t			psListHttp, psHelloHttp, psPollHttp, psHookHttp, psLinkHttp, psWaitHttp, psByeHttp;
+static cvar_t					*cl_presenceUrl, *cl_presenceLocal, *cl_c1b3rToken;
 
 /*
 ===============================================================================
@@ -142,32 +119,14 @@ What's around
 ===============================================================================
 */
 
+// trying it on a server of this computer's: logged in to an account "local"
+static qboolean PS_LocalTest( void ) {
+	return (qboolean)( com_sv_running && com_sv_running->integer && cl_presenceLocal->integer );
+}
+
 static qboolean PS_Active( void ) {
 	return (qboolean)( cl_presenceUrl && cl_presenceUrl->string[0] && cls.state == CA_ACTIVE && !clc.demoplaying
 		&& ( !( com_sv_running && com_sv_running->integer ) || cl_presenceLocal->integer ) );
-}
-
-// a name as it's compared: no colours, spaces as one, lower case (the bot keeps it as sent, its
-// spaces as one)
-static void PS_Normalize( const char *in, char *out, int size ) {
-	int len = 0;
-	qboolean space = qfalse;
-
-	for ( ; *in && len < size - 1; in++ ) {
-		if ( Q_IsColorString( in ) ) {
-			in++;
-			continue;
-		}
-		if ( (unsigned char)*in <= ' ' ) {
-			space = (qboolean)( len > 0 );
-			continue;
-		}
-		if ( space && len < size - 2 )
-			out[len++] = ' ';
-		space = qfalse;
-		out[len++] = (char)tolower( (unsigned char)*in );
-	}
-	out[len] = '\0';
 }
 
 // the name in a player slot, as the server has it; "" when nobody's there
@@ -179,27 +138,16 @@ static const char *PS_SlotName( int num ) {
 	return Info_ValueForKey( cl.gameState.stringData + ofs, "n" );
 }
 
-// what the server lets through: one command a second, unless it says otherwise
-static int PS_Gap( void ) {
-	const char *info, *flood;
-	int value;
+static const char *PS_MyName( void ) {
+	const char *name = PS_SlotName( clc.clientNum );
 
-	if ( cl_hookGap->integer > 0 )
-		return cl_hookGap->integer;
-	info = cl.gameState.stringData + cl.gameState.stringOffsets[CS_SERVERINFO];
-	flood = Info_ValueForKey( info, "sv_floodProtect" );
-	if ( !flood[0] )
-		return 1100;
-	value = atoi( flood );
-	if ( value <= 0 )
-		return 0;
-	return ( value == 1 ? 1000 : value ) + 100;
+	return name[0] ? name : Cvar_VariableString( "name" );
 }
 
 /*
 ===============================================================================
 
-Talking to the bot
+Talking to C1B3R
 
 ===============================================================================
 */
@@ -246,294 +194,17 @@ static qboolean PS_Send( httpRequest_t *req, const char *path, const std::string
 	return qtrue;
 }
 
-// the bot told who we are: as we come in, when something changes, and every few minutes; not while
-// a C1B3R session says it
-static void PS_Beat( void ) {
-	const char *name = PS_SlotName( clc.clientNum );
-	char key[512];
-	std::string body;
-
-	if ( psBeatHttp.state == HTTP_BUSY || cls.realtime < ps.beatNext || psv.on )
-		return;
-	if ( !name[0] )
-		name = Cvar_VariableString( "name" );
-	Com_sprintf( key, sizeof( key ), "%s|%i|%s|%s", ps.server, clc.clientNum, name, cl.mapname );
-	if ( !strcmp( key, ps.beatKey ) && cls.realtime - ps.beatTime < PS_BEAT_MS )
-		return;
-	body = "{\"server\":";
-	PS_Json( body, ps.server );
-	body += va( ",\"client\":%i,\"name\":", clc.clientNum );
-	PS_Json( body, name );
-	body += ",\"version\":";
-	PS_Json( body, GIT_TAG );
-	body += "}";
-	if ( !PS_Send( &psBeatHttp, "/v1/presence", body ) ) {
-		ps.beatNext = cls.realtime + PS_RETRY_MS;
-		return;
-	}
-	Q_strncpyz( ps.beatKey, key, sizeof( ps.beatKey ) );
-	ps.beatTime = cls.realtime;
-	Q_strncpyz( ps.beatServer, ps.server, sizeof( ps.beatServer ) );
-	ps.beatClient = clc.clientNum;
-	ps.beatOn = qtrue;
-}
-
-static void PS_AskList( void ) {
-	std::string body = psv.on ? "{\"session\":" : "{\"server\":";
-
-	if ( psListHttp.state == HTTP_BUSY || cls.realtime < ps.askNext )
-		return;
-	PS_Json( body, psv.on ? psv.id : ps.server );
-	body += "}";
-	if ( !PS_Send( &psListHttp, psv.on ? "/v2/list" : "/v1/presence/list", body ) )
-		ps.askNext = cls.realtime + PS_RETRY_MS;
-}
-
-static void PS_PrintList( void ) {
-	Com_Printf( "C1B3R: %s\n", psv.on ? ( psv.proven ? "session open, you may send hooks through it" : "session open, not proven an admin yet" )
-		: psv.none ? "doesn't carry hooks (one from before)" : va( "no session yet (last answer %i)", psv.helloStatus ) );
-	Com_Printf( "Players with this client on %s: %s\n", ps.server,
-		!ps.known ? "not known (the bot didn't answer)" : psv.on && psv.proven ? "your hooks go through C1B3R"
-		: psv.on ? "C1B3R carries their hooks to you; yours go by rpnotify until you're proven an admin" : "hooks go to each of them, one after the other" );
-	for ( int i = 0; ps.known && i < ps.numPlayers; i++ ) {
-		const psPlayer_t *p = &ps.players[i];
-		char inSlot[PS_NAME_LEN], told[PS_NAME_LEN];
-
-		PS_Normalize( PS_SlotName( p->num ), inSlot, sizeof( inSlot ) );
-		PS_Normalize( p->name, told, sizeof( told ) );
-		Com_Printf( "  %2i  %s^7  %s%s%s%s\n", p->num, p->name, p->version, p->relay ? S_COLOR_GREY "  C1B3R" : S_COLOR_GREY "  rpnotify",
-			p->proven ? S_COLOR_GREEN "  sends hooks" : "", strcmp( inSlot, told ) ? S_COLOR_YELLOW "  (not in that slot now: left out)" : "" );
-	}
-}
-
-// ok
-// player <tab> client number <tab> version <tab> name                                   (/v1)
-// player <tab> client number <tab> version <tab> v2|v1 <tab> proven 0|1 <tab> name      (/v2)
-static void PS_ReadList( const char *answer ) {
-	char line[512];
-	const char *at = answer, *end;
-	qboolean first = qtrue;
-
-	ps.numPlayers = 0;
-	for ( ; *at; at = *end ? end + 1 : end ) {
-		char *field[6];
-		int n = 0;
-
-		end = strchr( at, '\n' );
-		if ( !end )
-			end = at + strlen( at );
-		Q_strncpyz( line, at, Q_min( (int)sizeof( line ), (int)( end - at ) + 1 ) );
-		for ( char *f = line; f && n < 6; n++ ) {
-			field[n] = f;
-			f = strchr( f, '\t' );
-			if ( f )
-				*f++ = '\0';
-		}
-		if ( first ) {
-			first = qfalse;
-			if ( n < 1 || strcmp( field[0], "ok" ) )
-				return;
-			ps.known = qtrue;
-			ps.listTime = cls.realtime;
-			continue;
-		}
-		if ( ( n == 4 || n == 6 ) && !strcmp( field[0], "player" ) && ps.numPlayers < MAX_CLIENTS ) {
-			psPlayer_t *p = &ps.players[ps.numPlayers];
-
-			p->num = atoi( field[1] );
-			if ( p->num < 0 || p->num >= MAX_CLIENTS )
-				continue;
-			Q_strncpyz( p->version, field[2], sizeof( p->version ) );
-			Q_strncpyz( p->name, field[n - 1], sizeof( p->name ) );
-			p->relay = (qboolean)( n == 6 && !strcmp( field[3], "v2" ) );
-			p->proven = (qboolean)( n == 6 && !strcmp( field[4], "1" ) );
-			if ( p->num == clc.clientNum && p->relay )
-				psv.proven = p->proven;
-			ps.numPlayers++;
-		}
-	}
-}
-
-static void PS_PollRequests( void ) {
-	if ( HTTP_Poll( &psBeatHttp ) && psBeatHttp.status != 200 ) {
-		// try again in a while
-		Com_DPrintf( "clientusers: the bot didn't take who we are (%i)\n", psBeatHttp.status );
-		ps.beatKey[0] = '\0';
-		ps.beatNext = cls.realtime + PS_RETRY_MS;
-	}
-	if ( HTTP_Poll( &psListHttp ) ) {
-		if ( psListHttp.status == 200 ) {
-			PS_ReadList( psListHttp.answer );
-		} else {
-			Com_DPrintf( "clientusers: the bot didn't say who has the client (%i)\n", psListHttp.status );
-			ps.askNext = cls.realtime + PS_RETRY_MS;
-		}
-		if ( ps.print ) {
-			ps.print = qfalse;
-			PS_PrintList();
-		}
-	}
-	HTTP_Poll( &psLeaveHttp );
-}
-
-/*
-===============================================================================
-
-Hooks going out
-
-===============================================================================
-*/
-
-static qboolean PS_ListUsable( void ) {
-	return (qboolean)( ps.known && cls.realtime - ps.listTime < PS_LIST_USABLE_MS );
-}
-
-// who a hook goes to: us first, then each with the client whose slot still has the name they told;
-// skipSelf: not us (we've run it already); oldOnly: only those C1B3R doesn't reach
-static int PS_Targets( int *out, qboolean skipSelf, qboolean oldOnly ) {
-	char inSlot[PS_NAME_LEN], told[PS_NAME_LEN];
+// the fields of an answer line, split at its tabs; how many
+static int PS_Fields( char *line, char **field, int max ) {
 	int n = 0;
 
-	if ( !skipSelf )
-		out[n++] = clc.clientNum;
-	for ( int i = 0; i < ps.numPlayers; i++ ) {
-		const psPlayer_t *p = &ps.players[i];
-		int k;
-
-		if ( p->num == clc.clientNum || ( oldOnly && p->relay ) )
-			continue;
-		for ( k = 0; k < n && out[k] != p->num; k++ )
-			;
-		if ( k < n )
-			continue;
-		PS_Normalize( PS_SlotName( p->num ), inSlot, sizeof( inSlot ) );
-		PS_Normalize( p->name, told, sizeof( told ) );
-		if ( inSlot[0] && !strcmp( inSlot, told ) )
-			out[n++] = p->num;
+	for ( char *f = line; f && n < max; n++ ) {
+		field[n] = f;
+		f = strpbrk( f, "\t\n" );
+		if ( f )
+			*f++ = '\0';
 	}
 	return n;
-}
-
-static void PS_Queue( const std::string &cmd ) {
-	if ( (int)psQueue.size() >= PS_QUEUE_MAX ) {
-		Com_Printf( S_COLOR_YELLOW "Hooks: too many waiting to go out; one left out\n" );
-		return;
-	}
-	psQueue.push_back( cmd );
-}
-
-// a hook made into what goes to the server: one for each player
-static void PS_ExpandTo( const std::string &cmd, qboolean skipSelf, qboolean oldOnly ) {
-	const std::string rest = cmd.substr( strlen( PS_HOOK_TO ) );
-	int targets[MAX_CLIENTS + 1];
-	const int count = PS_Targets( targets, skipSelf, oldOnly );
-
-	for ( int i = 0; i < count; i++ )
-		PS_Queue( va( "rpnotify %i 1 ", targets[i] ) + rest );
-}
-
-static void PS_Expand( const std::string &cmd ) {
-	PS_ExpandTo( cmd, qfalse, qfalse );
-}
-
-// the hooks waiting for the list: sent once it's known, not sent if it doesn't come
-static void PS_FlushWaiting( qboolean send ) {
-	int dropped = 0;
-
-	while ( !psWaiting.empty() ) {
-		const psWaiting_t &w = psWaiting.front();
-
-		if ( !w.hook )
-			PS_Queue( w.cmd );
-		else if ( send )
-			PS_Expand( w.cmd );
-		else
-			dropped++;
-		psWaiting.pop_front();
-	}
-	if ( dropped && ( !ps.noteTime || cls.realtime - ps.noteTime >= PS_NOTE_MS ) ) {
-		ps.noteTime = cls.realtime;
-		Com_Printf( S_COLOR_YELLOW "Hooks: %i not sent, as who has this client isn't known (the feedback bot didn't answer)\n", dropped );
-	}
-}
-
-// everything about the server forgotten: a new one, or none
-static void PS_Reset( void ) {
-	psWaiting.clear();
-	psQueue.clear();
-	psRelayOut.clear();
-	ps.known = qfalse;
-	ps.numPlayers = 0;
-	ps.askAt = 0;
-	ps.askNext = 0;
-	memset( ps.slots, 0, sizeof( ps.slots ) );
-}
-
-// someone in a slot who wasn't: the list asked again once their client has had time to tell the bot
-static void PS_WatchJoins( void ) {
-	char name[PS_NAME_LEN];
-
-	for ( int i = 0; i < MAX_CLIENTS; i++ ) {
-		PS_Normalize( PS_SlotName( i ), name, sizeof( name ) );
-		if ( !strcmp( name, ps.slots[i] ) )
-			continue;
-		Q_strncpyz( ps.slots[i], name, sizeof( ps.slots[i] ) );
-		if ( name[0] && i != clc.clientNum && ps.known )
-			ps.askAt = cls.realtime + PS_JOINED_MS;
-	}
-}
-
-/*
-===============================================================================
-
-C1B3R: the session, the poll, hooks through it
-
-===============================================================================
-*/
-
-static const char *PS_MyName( void ) {
-	const char *name = PS_SlotName( clc.clientNum );
-
-	return name[0] ? name : Cvar_VariableString( "name" );
-}
-
-// a session for where we are: made when there's none, or the server, number or name changed
-static void PS_Hello( void ) {
-	char key[512];
-	std::string body;
-
-	if ( psv.none || psHelloHttp.state == HTTP_BUSY || cls.realtime < psv.helloNext )
-		return;
-	Com_sprintf( key, sizeof( key ), "%s|%i|%s", ps.server, clc.clientNum, PS_MyName() );
-	if ( psv.on && !strcmp( key, psv.key ) )
-		return;
-	body = "{\"key\":";
-	PS_Json( body, CL_Feedback_Key() );
-	body += ",\"server\":";
-	PS_Json( body, ps.server );
-	body += va( ",\"client\":%i,\"name\":", clc.clientNum );
-	PS_Json( body, PS_MyName() );
-	body += ",\"version\":";
-	PS_Json( body, GIT_TAG );
-	body += "}";
-	if ( !PS_Send( &psHelloHttp, "/v2/hello", body ) ) {
-		psv.helloNext = cls.realtime + PS_HELLO_RETRY_MS;
-		return;
-	}
-	Q_strncpyz( psv.asked, key, sizeof( psv.asked ) );
-}
-
-// the poll kept open: C1B3R answers it when there's a hook for us, or after a while with none
-static void PS_Poll( void ) {
-	std::string body = "{\"session\":";
-
-	if ( !psv.on || psPollHttp.state == HTTP_BUSY || cls.realtime < psv.pollNext )
-		return;
-	PS_Json( body, psv.id );
-	body += va( ",\"after\":%i}", psv.seq );
-	psPollHttp.waitMs = PS_POLL_WAIT_MS;
-	if ( !PS_Send( &psPollHttp, "/v2/poll", body ) )
-		psv.pollNext = cls.realtime + PS_POLL_RETRY_MS;
 }
 
 // a field of C1B3R's answer as it was sent: \t \n \\ back, and its UTF-8 back to the game's Latin-1
@@ -554,6 +225,161 @@ static std::string PS_Unfield( const char *in ) {
 		}
 	}
 	return out;
+}
+
+/*
+===============================================================================
+
+Who has the client here
+
+===============================================================================
+*/
+
+static void PS_AskList( void ) {
+	std::string body = "{\"session\":";
+
+	if ( !psv.on || psListHttp.state == HTTP_BUSY || cls.realtime < ps.askNext )
+		return;
+	PS_Json( body, psv.id );
+	body += "}";
+	if ( !PS_Send( &psListHttp, "/v2/list", body ) )
+		ps.askNext = cls.realtime + PS_RETRY_MS;
+}
+
+static const char *PS_State( void ) {
+	if ( !psv.on )
+		return va( S_COLOR_YELLOW "not connected" S_COLOR_WHITE " (%s)", psv.helloStatus ? va( "C1B3R answered %i", psv.helloStatus ) : "C1B3R didn't answer" );
+	if ( psv.sends )
+		return S_COLOR_GREEN "connected and approved: you may send" S_COLOR_WHITE;
+	if ( psv.approved )
+		return va( "connected and approved, but you send only logged in to the RPMod account you linked%s",
+			psa.account[0] ? va( " (now: %s)", psa.account ) : " (now: logged out)" );
+	if ( psv.linked )
+		return "connected and linked: you receive; you send once staff approve your link in Discord";
+	return "connected: you receive (admins: /c1b3r link to send)";
+}
+
+static void PS_PrintList( void ) {
+	Com_Printf( "C1B3R: %s\n", PS_State() );
+	if ( !ps.known ) {
+		Com_Printf( "Players with this client on %s: not known\n", ps.server );
+		return;
+	}
+	Com_Printf( "Players with this client on %s:\n", ps.server );
+	for ( int i = 0; i < ps.numPlayers; i++ ) {
+		const psPlayer_t *p = &ps.players[i];
+
+		Com_Printf( "  %2i  %s^7  %s%s%s\n", p->num, p->name, p->version,
+			p->linked ? S_COLOR_GREY "  linked" : "", p->sends ? S_COLOR_GREEN "  sends" : "" );
+	}
+}
+
+// ok, then: player <tab> client <tab> version <tab> linked 0|1 <tab> sends 0|1 <tab> name
+static void PS_ReadList( const char *answer ) {
+	char line[512];
+	const char *at = answer, *end;
+	qboolean first = qtrue;
+
+	ps.numPlayers = 0;
+	for ( ; *at; at = *end ? end + 1 : end ) {
+		char *field[6];
+		int n;
+
+		end = strchr( at, '\n' );
+		if ( !end )
+			end = at + strlen( at );
+		Q_strncpyz( line, at, Q_min( (int)sizeof( line ), (int)( end - at ) + 1 ) );
+		n = PS_Fields( line, field, 6 );
+		if ( first ) {
+			first = qfalse;
+			if ( n < 1 || strcmp( field[0], "ok" ) )
+				return;
+			ps.known = qtrue;
+			continue;
+		}
+		if ( n == 6 && !strcmp( field[0], "player" ) && ps.numPlayers < MAX_CLIENTS ) {
+			psPlayer_t *p = &ps.players[ps.numPlayers];
+
+			p->num = atoi( field[1] );
+			if ( p->num < 0 || p->num >= MAX_CLIENTS )
+				continue;
+			Q_strncpyz( p->version, field[2], sizeof( p->version ) );
+			p->linked = (qboolean)!strcmp( field[3], "1" );
+			p->sends = (qboolean)!strcmp( field[4], "1" );
+			Q_strncpyz( p->name, PS_Unfield( field[5] ).c_str(), sizeof( p->name ) );
+			ps.numPlayers++;
+		}
+	}
+}
+
+/*
+===============================================================================
+
+The session and the poll
+
+===============================================================================
+*/
+
+static const char *PS_Token( void ) {
+	return cl_c1b3rToken->string;
+}
+
+// what C1B3R says this session may do: linked, approved, sends
+static void PS_SetState( const char *linked, const char *approved, const char *sends ) {
+	const qboolean wasSending = psv.sends;
+
+	psv.linked = (qboolean)!strcmp( linked, "1" );
+	psv.approved = (qboolean)!strcmp( approved, "1" );
+	psv.sends = (qboolean)!strcmp( sends, "1" );
+	if ( psv.sends && !wasSending && PS_Token()[0] )
+		Com_Printf( S_COLOR_GREEN "C1B3R: " S_COLOR_WHITE "you may send what the tools share\n" );
+}
+
+// a session for where we are: made when there's none, or the server, number, name, account or link changed
+static void PS_Hello( void ) {
+	char key[512];
+	std::string body;
+
+	if ( psHelloHttp.state == HTTP_BUSY || cls.realtime < psv.helloNext )
+		return;
+	Com_sprintf( key, sizeof( key ), "%s|%i|%s|%s|%s", ps.server, clc.clientNum, PS_MyName(), PS_Token(), psa.account );
+	if ( psv.on && !strcmp( key, psv.key ) )
+		return;
+	body = "{\"key\":";
+	PS_Json( body, CL_Feedback_Key() );
+	body += ",\"server\":";
+	PS_Json( body, ps.server );
+	body += va( ",\"client\":%i,\"name\":", clc.clientNum );
+	PS_Json( body, PS_MyName() );
+	body += ",\"version\":";
+	PS_Json( body, GIT_TAG );
+	if ( PS_Token()[0] ) {
+		body += ",\"token\":";
+		PS_Json( body, PS_Token() );
+	}
+	body += ",\"account\":";
+	PS_Json( body, psa.account );
+	body += "}";
+	if ( !PS_Send( &psHelloHttp, "/v2/hello", body ) ) {
+		psv.helloNext = cls.realtime + PS_HELLO_RETRY_MS;
+		return;
+	}
+	Q_strncpyz( psv.asked, key, sizeof( psv.asked ) );
+}
+
+// the poll kept open: C1B3R answers it when there's a hook for us, or after a while with none
+static void PS_Poll( void ) {
+	std::string body = "{\"session\":";
+
+	if ( !psv.on || psPollHttp.state == HTTP_BUSY || cls.realtime < psv.pollNext )
+		return;
+	PS_Json( body, psv.id );
+	body += va( ",\"after\":%i}", psv.seq );
+	psPollHttp.waitMs = PS_POLL_WAIT_MS;
+	if ( !PS_Send( &psPollHttp, "/v2/poll", body ) )
+		psv.pollNext = cls.realtime + PS_POLL_RETRY_MS;
+	else
+		Q_strncpyz( psv.pollId, psv.id, sizeof( psv.pollId ) );
 }
 
 // ok <tab> seq, then: hook <tab> seq <tab> from client <tab> text
@@ -578,6 +404,15 @@ static void PS_ReadPoll( const char *answer ) {
 			last = Q_max( last, atoi( line.c_str() + 3 ) );
 			continue;
 		}
+		// what we may do now: staff may have approved or taken it back since
+		if ( !line.compare( 0, 6, "state\t" ) ) {
+			char buf[64], *field[4];
+
+			Q_strncpyz( buf, line.c_str(), sizeof( buf ) );
+			if ( PS_Fields( buf, field, 4 ) == 4 )
+				PS_SetState( field[1], field[2], field[3] );
+			continue;
+		}
 		if ( !line.compare( 0, 5, "hook\t" ) ) {
 			const size_t a = line.find( '\t', 5 ), b = a == std::string::npos ? a : line.find( '\t', a + 1 );
 			const int seq = atoi( line.c_str() + 5 );
@@ -591,199 +426,312 @@ static void PS_ReadPoll( const char *answer ) {
 	psv.seq = Q_max( psv.seq, last );
 }
 
-// someone's proof, come through the server as an rpnotify: told to C1B3R
-void CL_Presence_Seen( const char *code ) {
-	Q_strncpyz( psv.seen, code, sizeof( psv.seen ) );
+// the session gone at C1B3R (restarted, or let go): a new one
+static void PS_Lost( void ) {
+	psv.on = qfalse;
+	psv.key[0] = '\0';
+	psv.linked = psv.approved = psv.sends = qfalse;
 }
 
-// our proof, sent by rpnotify to another player whose game has a session: the server lets only an
-// admin's through, and C1B3R hears of it from theirs
-static void PS_SendProof( void ) {
-	char inSlot[PS_NAME_LEN], told[PS_NAME_LEN];
+/*
+===============================================================================
 
-	if ( !psv.on || psv.proven || !psv.proof[0] || cls.realtime - psv.proofTime < PS_PROOF_EVERY_MS || !PS_ListUsable() )
+The RPMod account, and linking this game in Discord
+
+===============================================================================
+*/
+
+// the account read from RPMod now and then: as we come in and when we log in or out
+static void PS_AccountFrame( void ) {
+	const char *account;
+	int state, answerTime;
+
+	if ( PS_LocalTest() ) {
+		Q_strncpyz( psa.account, "local", sizeof( psa.account ) );
+		psa.known = qtrue;
 		return;
-	for ( int i = 0; i < ps.numPlayers; i++ ) {
-		const psPlayer_t *p = &ps.players[i];
-
-		if ( !p->relay || p->num == clc.clientNum )
-			continue;
-		PS_Normalize( PS_SlotName( p->num ), inSlot, sizeof( inSlot ) );
-		PS_Normalize( p->name, told, sizeof( told ) );
-		if ( !inSlot[0] || strcmp( inSlot, told ) )
-			continue;
-		psv.proofTime = cls.realtime;
-		PS_Queue( va( "rpnotify %i 1 cmd:c1b3r/%s", p->num, psv.proof ) );
-		ps.askAt = cls.realtime + PS_PROOF_LIST_MS;
+	}
+	if ( cls.realtime - ps.joinTime < PS_ACCOUNT_WAIT_MS )
+		return;
+	state = CL_Feedback_Account( &account, &answerTime );
+	if ( state == 1 || state == 0 ) {
+		Q_strncpyz( psa.account, state == 1 ? account : "", sizeof( psa.account ) );
+		psa.known = qtrue;
 		return;
 	}
+	psa.known = qfalse;
+	// not asked yet, or the server didn't answer a while ago: rpinfo, its reply kept out of the console
+	if ( state == -1 || ( state == -3 && cls.realtime - answerTime >= PS_ACCOUNT_RETRY_MS ) )
+		CL_Feedback_AskAccount();
 }
 
-// NPC talk the cgame needs from the server, as the chat it's turned into: it goes by rpnotify
-static qboolean PS_NeedsServer( const char *text ) {
-	char head[64], *part[3];
-	int n = 0;
+static void PS_LinkFrame( void ) {
+	std::string body;
 
-	Q_strncpyz( head, text + strlen( "cmd:" ), sizeof( head ) );
-	for ( char *p = head; p && n < 3; n++ ) {
-		while ( *p == ' ' )
-			p++;
-		part[n] = p;
-		p = strpbrk( p, "/:" );
-		if ( p )
-			*p++ = '\0';
-		for ( char *t = part[n] + strlen( part[n] ); t > part[n] && t[-1] == ' '; )
-			*--t = '\0';
+	// /c1b3r link, once the account's known
+	if ( psa.wanted && psa.known && psLinkHttp.state != HTTP_BUSY ) {
+		psa.wanted = qfalse;
+		if ( !psa.account[0] ) {
+			Com_Printf( S_COLOR_YELLOW "C1B3R: log in to your RPMod account first, then /c1b3r link\n" );
+		} else {
+			body = "{\"key\":";
+			PS_Json( body, CL_Feedback_Key() );
+			body += ",\"account\":";
+			PS_Json( body, psa.account );
+			body += ",\"name\":";
+			PS_Json( body, PS_MyName() );
+			body += "}";
+			if ( !PS_Send( &psLinkHttp, "/v2/link", body ) )
+				Com_Printf( S_COLOR_YELLOW "C1B3R: couldn't ask for a code; try again in a moment\n" );
+		}
 	}
-	if ( n < 2 || Q_stricmp( part[0], "npc" ) )
-		return qfalse;
-	for ( int i = 1; i < n; i++ ) {
-		if ( !Q_stricmp( part[i], "talk" ) || !Q_stricmp( part[i], "say" ) )
-			return qtrue;
+	// the code shown: asked about until it's used in Discord, or runs out
+	if ( !psa.code[0] || psWaitHttp.state == HTTP_BUSY || cls.realtime < psa.waitNext )
+		return;
+	if ( cls.realtime >= psa.codeUntil ) {
+		psa.code[0] = '\0';
+		Com_Printf( S_COLOR_YELLOW "C1B3R: the code ran out; /c1b3r link for another\n" );
+		return;
 	}
-	return qfalse;
+	body = "{\"key\":";
+	PS_Json( body, CL_Feedback_Key() );
+	body += ",\"code\":";
+	PS_Json( body, psa.code );
+	body += "}";
+	PS_Send( &psWaitHttp, "/v2/link/wait", body );
+	psa.waitNext = cls.realtime + PS_LINK_WAIT_MS;
 }
 
-// what C1B3R didn't take, or wasn't asked, goes by rpnotify to the others (we've run it already)
-static void PS_RelayFallback( void ) {
-	if ( !psRelaySending.empty() )
-		PS_ExpandTo( PS_HOOK_TO + psRelaySending, qtrue, qfalse );
-	psRelaySending.clear();
-	while ( !psRelayOut.empty() ) {
-		PS_ExpandTo( PS_HOOK_TO + psRelayOut.front(), qtrue, qfalse );
-		psRelayOut.pop_front();
+static void PS_Unlink( void ) {
+	std::string body = "{\"key\":";
+
+	if ( !PS_Token()[0] ) {
+		Com_Printf( "C1B3R: this game isn't linked\n" );
+		return;
 	}
+	PS_Json( body, CL_Feedback_Key() );
+	body += ",\"token\":";
+	PS_Json( body, PS_Token() );
+	body += "}";
+	PS_Send( &psByeHttp, "/v2/unlink", body );
+	Cvar_Set( "cl_c1b3rToken", "" );
+	psv.key[0] = '\0';	// a hello without it
+	psv.linked = psv.approved = psv.sends = qfalse;
+	Com_Printf( "C1B3R: unlinked; this game receives only\n" );
+}
+
+/*
+===============================================================================
+
+Hooks going out
+
+===============================================================================
+*/
+
+static void PS_Note( const char *why ) {
+	if ( ps.noteTime && cls.realtime - ps.noteTime < PS_NOTE_MS )
+		return;
+	ps.noteTime = cls.realtime;
+	Com_Printf( S_COLOR_YELLOW "Hooks: shown only here, %s\n", why );
 }
 
 static void PS_RelayFrame( void ) {
 	std::string body = "{\"session\":";
+	psHook_t h;
 
 	if ( !psv.on || psHookHttp.state == HTTP_BUSY || psRelayOut.empty() )
 		return;
-	psRelaySending = psRelayOut.front();
-	psRelayOut.pop_front();
+	h = psRelayOut.front();
 	PS_Json( body, psv.id );
 	body += ",\"text\":";
-	PS_Json( body, psRelaySending.c_str() );
+	PS_Json( body, h.text.c_str() );
+	if ( h.to >= 0 )
+		body += va( ",\"to\":[%i]", h.to );
 	body += "}";
-	if ( !PS_Send( &psHookHttp, "/v2/hook", body ) )
-		PS_RelayFallback();
+	if ( PS_Send( &psHookHttp, "/v2/hook", body ) )
+		psRelayOut.pop_front();
 }
 
-static void PS_SeenFrame( void ) {
-	std::string body = "{\"session\":";
+// rpnotify <who> <seconds> cmd:...: the hook, and who it's for (-1 everyone); NULL if it isn't one
+static const char *PS_HookCommand( const char *cmd, int *to ) {
+	char who[32];
+	const char *p = cmd;
 
-	if ( !psv.seen[0] || !psv.on || psSeenHttp.state == HTTP_BUSY )
-		return;
-	PS_Json( body, psv.id );
-	body += ",\"code\":";
-	PS_Json( body, psv.seen );
-	body += "}";
-	PS_Send( &psSeenHttp, "/v2/seen", body );
-	psv.seen[0] = '\0';
+	if ( Q_stricmpn( p, "rpnotify ", 9 ) )
+		return NULL;
+	p += 9;
+	while ( *p == ' ' )
+		p++;
+	Q_strncpyz( who, p, sizeof( who ) );
+	for ( char *c = who; *c; c++ ) {
+		if ( *c == ' ' ) {
+			*c = '\0';
+			break;
+		}
+	}
+	// past who and the seconds
+	for ( int i = 0; i < 2; i++ ) {
+		while ( *p && *p != ' ' )
+			p++;
+		while ( *p == ' ' )
+			p++;
+	}
+	if ( Q_stricmpn( p, "cmd:", 4 ) )
+		return NULL;
+	*to = Q_isanumber( who ) && atoi( who ) >= 0 ? atoi( who ) : -1;
+	return p;
 }
 
-// C1B3R's answers: the session made, hooks come, a hook taken or not
-static void PS_PollRelay( void ) {
+// from CL_AddReliableCommand: qtrue for a hook, taken here and never sent to the server
+qboolean CL_Presence_Outgoing( const char *cmd ) {
+	int to;
+	const char *text = PS_HookCommand( cmd, &to );
+
+	if ( !text )
+		return qfalse;
+	// run here, as the server's echo of an rpnotify used to
+	if ( to < 0 || to == clc.clientNum )
+		CL_RpHooks_Deliver( text );
+	if ( to == clc.clientNum || !PS_Active() )
+		return qtrue;
+	if ( !psv.on ) {
+		PS_Note( "not sent: not connected to C1B3R" );
+		return qtrue;
+	}
+	if ( !psv.sends ) {
+		PS_Note( psv.approved ? "not sent: log in to the RPMod account you linked"
+			: psv.linked ? "not sent: staff haven't approved your link in Discord yet"
+			: "not sent: sending is for admins whose game is linked (/c1b3r link)" );
+		return qtrue;
+	}
+	if ( (int)psRelayOut.size() >= PS_RELAY_MAX ) {
+		PS_Note( "not sent: too many waiting to go to C1B3R" );
+		return qtrue;
+	}
+	psRelayOut.push_back( psHook_t{ text, to } );
+	return qtrue;
+}
+
+/*
+===============================================================================
+
+Each frame
+
+===============================================================================
+*/
+
+// C1B3R's answers
+static void PS_PollRequests( void ) {
 	if ( HTTP_Poll( &psHelloHttp ) ) {
-		char *field[4], *f = psHelloHttp.answer;
-		int n = 0;
+		char *field[6];
+		const int n = PS_Fields( psHelloHttp.answer, field, 6 );
 
 		psv.helloStatus = psHelloHttp.status;
-		Com_DPrintf( "clientusers: C1B3R hello %i: %s\n", psHelloHttp.status, psHelloHttp.answer );
-		for ( ; f && n < 4; n++ ) {
-			field[n] = f;
-			f = strpbrk( f, "\t\n" );
-			if ( f )
-				*f++ = '\0';
-		}
-		if ( psHelloHttp.status == 200 && n == 4 && !strcmp( field[0], "ok" ) && !Q_stricmpn( psv.asked, ps.server, strlen( ps.server ) ) ) {
+		Com_DPrintf( "clientusers: C1B3R hello %i\n", psHelloHttp.status );
+		if ( psHelloHttp.status == 200 && n == 6 && !strcmp( field[0], "ok" ) && !Q_stricmpn( psv.asked, ps.server, strlen( ps.server ) ) ) {
 			psv.on = qtrue;
 			Q_strncpyz( psv.id, field[1], sizeof( psv.id ) );
-			Q_strncpyz( psv.proof, field[2], sizeof( psv.proof ) );
-			psv.seq = atoi( field[3] );
+			psv.seq = atoi( field[2] );
+			PS_SetState( field[3], field[4], field[5] );
+			// a token C1B3R no longer knows (unlinked in Discord, denied): forgotten
+			if ( PS_Token()[0] && !psv.linked ) {
+				Com_Printf( S_COLOR_YELLOW "C1B3R: " S_COLOR_WHITE "this game's link was ended (denied, revoked or unlinked); /c1b3r link to link it again\n" );
+				Cvar_Set( "cl_c1b3rToken", "" );
+				Q_strncpyz( psv.asked, va( "%s|%i|%s||%s", ps.server, clc.clientNum, PS_MyName(), psa.account ), sizeof( psv.asked ) );
+			}
 			Q_strncpyz( psv.key, psv.asked, sizeof( psv.key ) );
-			psv.proven = qfalse;
-			psv.proofTime = 0;
 			psv.pollNext = 0;
-			// who's here, and whether we're proven already (the same player in the same slot)
 			ps.askNext = 0;
 			PS_AskList();
-		} else if ( psHelloHttp.status == 404 ) {
-			// a C1B3R from before carrying hooks: who's here as before, hooks by rpnotify
-			psv.none = qtrue;
-			Com_DPrintf( "clientusers: C1B3R doesn't carry hooks; they go by rpnotify\n" );
 		} else {
 			psv.helloNext = cls.realtime + PS_HELLO_RETRY_MS;
 		}
 	}
 	if ( HTTP_Poll( &psPollHttp ) ) {
-		if ( psPollHttp.status == 200 ) {
+		if ( !psv.on || strcmp( psv.pollId, psv.id ) ) {
+			// for a session replaced since (a new map, a link): the new one polls now
+			psv.pollNext = 0;
+		} else if ( psPollHttp.status == 200 ) {
 			PS_ReadPoll( psPollHttp.answer );
 			psv.pollNext = 0;
 		} else if ( psPollHttp.status == 404 ) {
-			// the session's gone (C1B3R restarted): a new one
-			psv.on = qfalse;
-			psv.key[0] = '\0';
+			PS_Lost();
 		} else {
 			psv.pollNext = cls.realtime + PS_POLL_RETRY_MS;
 		}
 	}
-	if ( HTTP_Poll( &psHookHttp ) ) {
-		if ( psHookHttp.status == 200 ) {
-			psRelaySending.clear();
-		} else {
-			// not proven (any more), or C1B3R not there: by rpnotify, as before
-			if ( psHookHttp.status == 403 )
-				psv.proven = qfalse;
-			if ( psHookHttp.status == 404 ) {
-				psv.on = qfalse;
-				psv.key[0] = '\0';
-			}
-			PS_RelayFallback();
+	if ( HTTP_Poll( &psHookHttp ) && psHookHttp.status != 200 ) {
+		Com_DPrintf( "clientusers: C1B3R didn't take a hook (%i)\n", psHookHttp.status );
+		if ( psHookHttp.status == 403 ) {
+			psv.sends = qfalse;
+			psRelayOut.clear();
+			PS_Note( "not sent: C1B3R says this game may not send now (/c1b3r shows why)" );
+		} else if ( psHookHttp.status == 404 ) {
+			PS_Lost();
 		}
 	}
-	HTTP_Poll( &psSeenHttp );
+	if ( HTTP_Poll( &psLinkHttp ) ) {
+		char *field[3];
+		const int n = PS_Fields( psLinkHttp.answer, field, 3 );
+
+		if ( psLinkHttp.status == 200 && n == 3 && !strcmp( field[0], "ok" ) ) {
+			Q_strncpyz( psa.code, field[1], sizeof( psa.code ) );
+			psa.codeUntil = cls.realtime + atoi( field[2] ) * 1000;
+			psa.waitNext = cls.realtime + PS_LINK_WAIT_MS;
+			// the browser: log in with Discord there, nothing to type; /link <code> in Discord otherwise
+			{
+				const char *page = PS_Url( va( "/link?code=%s", psa.code ) );
+				const qboolean opened = (qboolean)( ( !Q_stricmpn( page, "https://", 8 ) || !Q_stricmpn( page, "http://", 7 ) ) && Sys_OpenPath( page ) );
+
+				if ( opened )
+					Com_Printf( S_COLOR_GREEN "C1B3R: " S_COLOR_WHITE "your browser opened: press " S_COLOR_CYAN "Continue with Discord" S_COLOR_WHITE
+						" there; staff then approve it\n" );
+				else
+					Com_Printf( S_COLOR_GREEN "C1B3R: " S_COLOR_WHITE "open %s in your browser and log in with Discord; staff then approve it\n", page );
+				Com_Printf( "C1B3R: or, in Discord, type " S_COLOR_CYAN "/link %s" S_COLOR_WHITE " within %i minutes\n", psa.code, atoi( field[2] ) / 60 );
+			}
+		} else {
+			Com_Printf( S_COLOR_YELLOW "C1B3R: no code (%i): %s\n", psLinkHttp.status, psLinkHttp.answer );
+		}
+	}
+	if ( HTTP_Poll( &psWaitHttp ) && psa.code[0] ) {
+		char *field[2];
+		const int n = PS_Fields( psWaitHttp.answer, field, 2 );
+
+		if ( psWaitHttp.status == 200 && n == 2 && !strcmp( field[0], "ok" ) && strlen( field[1] ) == 32 ) {
+			// kept in the .cfg: every session from now on carries it
+			Cvar_Set( "cl_c1b3rToken", field[1] );
+			psa.code[0] = '\0';
+			psv.key[0] = '\0';
+			Com_Printf( S_COLOR_GREEN "C1B3R: " S_COLOR_WHITE "linked with your Discord; you'll send once staff approve it there\n" );
+		} else if ( psWaitHttp.status == 404 ) {
+			psa.code[0] = '\0';
+			Com_Printf( S_COLOR_YELLOW "C1B3R: the code ran out; /c1b3r link for another\n" );
+		}
+	}
+	if ( HTTP_Poll( &psListHttp ) ) {
+		if ( psListHttp.status == 200 ) {
+			PS_ReadList( psListHttp.answer );
+		} else {
+			Com_DPrintf( "clientusers: C1B3R didn't say who has the client (%i)\n", psListHttp.status );
+			ps.askNext = cls.realtime + PS_RETRY_MS;
+		}
+		if ( ps.print ) {
+			ps.print = qfalse;
+			PS_PrintList();
+		}
+	}
+	HTTP_Poll( &psByeHttp );
 }
 
-// from CL_AddReliableCommand: qtrue when it's taken here, to go out later
-qboolean CL_Presence_Outgoing( const char *cmd ) {
-	psWaiting_t w;
-
-	if ( ps.sending || !PS_Active() )
-		return qfalse;
-	w.hook = (qboolean)!Q_stricmpn( cmd, PS_HOOK, strlen( PS_HOOK ) );
-	// through C1B3R, once proven: run here as the server's echo would have, sent to it once, and to
-	// those it doesn't reach by rpnotify
-	if ( w.hook && psv.on ) {
-		const char *text = cmd + strlen( PS_HOOK_TO );
-
-		if ( psv.proven && !PS_NeedsServer( text ) ) {
-			ps.lastHook = cls.realtime;
-			CL_RpHooks_Deliver( text );
-			psRelayOut.push_back( text );
-			if ( PS_ListUsable() )
-				PS_ExpandTo( cmd, qtrue, qtrue );
-			return qtrue;
-		}
-		PS_SendProof();
-	}
-	if ( !w.hook && psWaiting.empty() && psQueue.empty() )
-		return qfalse;	// nothing going out: as it always went
-	if ( w.hook )
-		ps.lastHook = cls.realtime;
-	if ( w.hook && psWaiting.empty() && PS_ListUsable() ) {
-		PS_Expand( cmd );
-		return qtrue;
-	}
-	if ( !w.hook && psWaiting.empty() ) {
-		PS_Queue( cmd );
-		return qtrue;
-	}
-	w.cmd = cmd;
-	w.time = cls.realtime;
-	psWaiting.push_back( w );
-	return qtrue;
+// everything about the server forgotten: a new one, or none
+static void PS_Reset( void ) {
+	psRelayOut.clear();
+	ps.known = qfalse;
+	ps.numPlayers = 0;
+	ps.askNext = 0;
+	psa.known = qfalse;
+	psa.account[0] = '\0';
 }
 
 void CL_Presence_Frame( void ) {
@@ -792,9 +740,8 @@ void CL_Presence_Frame( void ) {
 	if ( !cl_presenceUrl )
 		return;
 	PS_PollRequests();
-	PS_PollRelay();
 	if ( !PS_Active() ) {
-		if ( !psWaiting.empty() || !psQueue.empty() || ps.server[0] )
+		if ( ps.server[0] )
 			PS_Reset();
 		ps.server[0] = '\0';
 		return;
@@ -803,74 +750,30 @@ void CL_Presence_Frame( void ) {
 	if ( Q_stricmp( server, ps.server ) ) {
 		PS_Reset();
 		Q_strncpyz( ps.server, server, sizeof( ps.server ) );
+		ps.joinTime = cls.realtime;
 		// a session is for one server: another, made when it's known
-		psv.on = qfalse;
-		psv.none = qfalse;
-		psv.proven = qfalse;
-		psv.key[0] = '\0';
+		PS_Lost();
 		psv.helloNext = 0;
 	}
-	PS_Hello();
+	PS_AccountFrame();
+	// the session waits for the account the first time, so it says it at once
+	if ( psa.known || psv.on || cls.realtime - ps.joinTime >= PS_ACCOUNT_WAIT_MS * 3 )
+		PS_Hello();
 	PS_Poll();
+	PS_LinkFrame();
 	PS_RelayFrame();
-	PS_SeenFrame();
-	// proven before our hooks need it, once we've sent one lately
-	if ( psv.on && !psv.proven && ps.lastHook && cls.realtime - ps.lastHook < PS_LIST_USABLE_MS )
-		PS_SendProof();
-	PS_Beat();
-	PS_WatchJoins();
-
-	// the list: asked when a hook needs it, when it's getting old while hooks go out, and after a join
-	if ( !psWaiting.empty() && !PS_ListUsable() )
-		PS_AskList();
-	else if ( ps.known && cls.realtime - ps.listTime >= PS_LIST_FRESH_MS && cls.realtime - ps.lastHook < PS_LIST_USABLE_MS )
-		PS_AskList();
-	if ( ps.askAt && cls.realtime >= ps.askAt ) {
-		ps.askAt = 0;
-		PS_AskList();
-	}
-	if ( !psWaiting.empty() ) {
-		if ( PS_ListUsable() )
-			PS_FlushWaiting( qtrue );
-		else if ( cls.realtime - psWaiting.front().time >= PS_WAIT_MS )
-			PS_FlushWaiting( qfalse );
-	}
-
-	// one out, once the flood protection lets it through
-	if ( !psQueue.empty() && cls.realtime - CL_LastCommandTime() >= PS_Gap() ) {
-		const std::string cmd = psQueue.front();
-
-		psQueue.pop_front();
-		ps.sending = qtrue;
-		CL_AddReliableCommand( cmd.c_str(), qfalse );
-		ps.sending = qfalse;
-	}
 }
 
-// leaving the server: the bot told, if it knew of us
+// leaving the server: the session ended, rather than left to run out
 void CL_Presence_Disconnect( void ) {
-	std::string body = "{\"server\":";
-
-	// the session ended, rather than left to run out
 	if ( psv.on && cl_presenceUrl && cl_presenceUrl->string[0] ) {
 		std::string bye = "{\"session\":";
 
 		PS_Json( bye, psv.id );
 		bye += "}";
-		PS_Send( &psSeenHttp, "/v2/bye", bye );
+		PS_Send( &psByeHttp, "/v2/bye", bye );
 	}
-	psv.on = qfalse;
-	psv.none = qfalse;
-	psv.proven = qfalse;
-	psv.key[0] = '\0';
-	if ( ps.beatOn && cl_presenceUrl && cl_presenceUrl->string[0] ) {
-		PS_Json( body, ps.beatServer );
-		body += va( ",\"client\":%i,\"leaving\":true}", ps.beatClient );
-		PS_Send( &psLeaveHttp, "/v1/presence", body );
-	}
-	ps.beatOn = qfalse;
-	ps.beatKey[0] = '\0';
-	ps.beatNext = 0;
+	PS_Lost();
 	PS_Reset();
 	ps.server[0] = '\0';
 }
@@ -880,6 +783,10 @@ static void PS_ClientUsers_f( void ) {
 		Com_Printf( "clientusers: only on a server, with cl_presenceUrl set\n" );
 		return;
 	}
+	if ( !psv.on ) {
+		Com_Printf( "C1B3R: %s\n", PS_State() );
+		return;
+	}
 	ps.print = qtrue;
 	ps.askNext = 0;
 	if ( psListHttp.state == HTTP_BUSY )
@@ -887,15 +794,58 @@ static void PS_ClientUsers_f( void ) {
 	PS_AskList();
 }
 
+// /c1b3r: your link; /c1b3r link: link this game in Discord; /c1b3r unlink
+static void PS_C1b3r_f( void ) {
+	const char *arg = Cmd_Argv( 1 );
+
+	if ( !Q_stricmp( arg, "link" ) ) {
+		if ( !PS_Active() || !psv.on ) {
+			Com_Printf( "C1B3R: join a server first, connected to C1B3R\n" );
+			return;
+		}
+		psa.wanted = qtrue;
+		if ( !psa.known )
+			Com_Printf( "C1B3R: checking your RPMod account...\n" );
+		return;
+	}
+	if ( !Q_stricmp( arg, "unlink" ) ) {
+		PS_Unlink();
+		return;
+	}
+	// Discord's page to add C1B3R to your account, so /link works in a DM without its server
+	if ( !Q_stricmp( arg, "discord" ) ) {
+		const char *url = PS_Url( "/discord" );
+
+		if ( Q_stricmpn( url, "https://", 8 ) && Q_stricmpn( url, "http://", 7 ) ) {
+			Com_Printf( "C1B3R: cl_presenceUrl isn't a web address\n" );
+		} else if ( !Sys_OpenPath( url ) ) {
+			Com_Printf( "C1B3R: couldn't open a browser; go to %s\n", url );
+		} else {
+			Com_Printf( "C1B3R: opened %s\n", url );
+		}
+		return;
+	}
+	Com_Printf( "C1B3R: %s\n", PS_Active() ? PS_State() : "not on a server" );
+	Com_Printf( "This game: %s\n", PS_Token()[0] ? "linked in Discord" : "not linked" );
+	if ( psa.code[0] )
+		Com_Printf( "Waiting for " S_COLOR_CYAN "/link %s" S_COLOR_WHITE " in Discord\n", psa.code );
+	Com_Printf( "RPMod account: %s\n", !psa.known ? "not known yet" : psa.account[0] ? psa.account : "logged out" );
+	Com_Printf( "c1b3r link : link this game (logged in to your RPMod account), then /link <code> in Discord\n"
+		"c1b3r discord : add C1B3R to your Discord account, for /link in any DM\n"
+		"c1b3r unlink : end the link\n" );
+}
+
 void CL_Presence_Init( void ) {
 	cl_presenceUrl = Cvar_Get( "cl_presenceUrl", PS_DEFAULT_URL, CVAR_ARCHIVE_ND | CVAR_PROTECTED,
-		"Where the game says it's on a server with this client, so the tools' hooks reach only those who have it; empty: not said, hooks go to everyone" );
-	cl_presenceLocal = Cvar_Get( "cl_presenceLocal", "0", CVAR_TEMP | CVAR_INTERNAL, "Talk to C1B3R on a server of your own too, to try it" );
-	cl_hookGap = Cvar_Get( "cl_hookGap", "0", CVAR_ARCHIVE_ND,
-		"Milliseconds between the hooks sent to each player with this client; 0: as the server's flood protection lets them" );
-	Cmd_AddCommand( "clientusers", PS_ClientUsers_f, "Who on this server has this client, as the feedback bot knows" );
+		"C1B3R's address: the link to everyone with this client on the server, and what the tools share with them" );
+	cl_presenceLocal = Cvar_Get( "cl_presenceLocal", "0", CVAR_TEMP | CVAR_INTERNAL, "Talk to C1B3R on a server of your own too, logged in as a test admin, to try it" );
+	cl_c1b3rToken = Cvar_Get( "cl_c1b3rToken", "", CVAR_ARCHIVE_ND | CVAR_PROTECTED | CVAR_NORESTART,
+		"This game's link to C1B3R, made with /c1b3r link: keep it to yourself" );
+	Cmd_AddCommand( "clientusers", PS_ClientUsers_f, "Your link to C1B3R, and who on this server has this client" );
+	Cmd_AddCommand( "c1b3r", PS_C1b3r_f, "Your link to C1B3R; c1b3r link links this game in Discord, for admins to send; c1b3r discord adds C1B3R to your Discord account; c1b3r unlink ends it" );
 }
 
 void CL_Presence_Shutdown( void ) {
 	Cmd_RemoveCommand( "clientusers" );
+	Cmd_RemoveCommand( "c1b3r" );
 }

@@ -199,7 +199,7 @@ static const stActionDef_t stActions[ST_NUM_ACTIONS] = {
 		{ "Name", ST_K_TEXT, "", NULL } } },
 	{ "command", "Run a command", "Flow", "Runs it as if typed in the console, e.g. rpcinematic intro, or exec mission.cfg. Separate several with ;", -1, -1, 1, {
 		{ "Command", ST_K_TEXT, "", NULL } } },
-	{ "say", "Say", "Speech", "Says this in chat, as you, or as one of the players on the server: by their number or a part of their name. As a player it shows in chat as theirs for everyone with this client (sent hidden in an rpnotify; others see the raw line in their console).", -1, -1, 3, {
+	{ "say", "Say", "Speech", "Says this in chat, as you, or as one of the players on the server: by their number or a part of their name. As a player it shows in chat as theirs for everyone with this client (sent through C1B3R).", -1, -1, 3, {
 		{ "Text", ST_K_TEXT, "", NULL },
 		{ "As", ST_K_CHOICE, "me", "me|a player" },
 		{ "Player", ST_K_TEXT, "", NULL } } },
@@ -217,13 +217,13 @@ static const stActionDef_t stActions[ST_NUM_ACTIONS] = {
 		{ "Seconds", ST_K_NUMBER, "10", NULL },
 		{ "Text", ST_K_TEXT, "", NULL },
 		{ "Countdown", ST_K_CHOICE, "no", "no|after the text|before the text" } } },
-	{ "npctalk", "NPC talk", "Speech", "The NPC says it in chat, as a player would, for everyone with this client (sent hidden in an rpnotify; others see the raw line in their console). The emote is played on the NPC with npc emote.", -1, -1, 5, {
+	{ "npctalk", "NPC talk", "Speech", "The NPC says it in chat, as a player would, for everyone with this client (sent through C1B3R). The emote is played on the NPC with npc emote.", -1, -1, 5, {
 		{ "NPC", ST_K_TEXT, "", NULL },
 		{ "Name", ST_K_TEXT, "", NULL },
 		{ "Name color", ST_K_TEXT, "^7", NULL },
 		{ "Emote", ST_K_TEXT, "none", NULL },
 		{ "Text", ST_K_TEXT, "", NULL } } },
-	{ "objective", "Objective", "Speech", "Adds to the mission's objectives, listed on the left while Esc is up, for everyone with this client (sent hidden in an rpnotify). Done strikes one through; it and undone and remove take its number or its text. Clear takes them all, or with done only the struck ones.", -1, -1, 2, {
+	{ "objective", "Objective", "Speech", "Adds to the mission's objectives, listed on the left while Esc is up, for everyone with this client (sent through C1B3R). Done strikes one through; it and undone and remove take its number or its text. Clear takes them all, or with done only the struck ones.", -1, -1, 2, {
 		{ "Do", ST_K_CHOICE, "add", "add|done|undone|remove|clear|title" },
 		{ "Text", ST_K_TEXT, "", NULL } } },
 	{ "npcspawn", "Spawn NPC", "NPCs", "Spawns an NPC at the spot, as the NPC manager does. Give it a targetname to command it in later steps.", 6, 9, 10, {
@@ -287,7 +287,7 @@ static const stActionDef_t stActions[ST_NUM_ACTIONS] = {
 		{ "Y", ST_K_NUMBER, "", NULL },
 		{ "Width", ST_K_NUMBER, "", NULL },
 		{ "Height", ST_K_NUMBER, "", NULL } } },
-	{ "sky", "Sky look", "World", "Tints the map's sky (red green blue, 255 as it is), spins it round (degrees a second) and turns it, as the shader manager's Sky tab does; a 3D skybox's view also moves. For everyone with this client, until the map changes (sent hidden in an rpnotify).", -1, -1, 7, {
+	{ "sky", "Sky look", "World", "Tints the map's sky (red green blue, 255 as it is), spins it round (degrees a second) and turns it, as the shader manager's Sky tab does; a 3D skybox's view also moves. For everyone with this client, until the map changes (sent through C1B3R).", -1, -1, 7, {
 		{ "Do", ST_K_CHOICE, "set", "set|reset" },
 		{ "Colour", ST_K_TEXT, "255 255 255", NULL },
 		{ "Spin", ST_K_NUMBER, "0", NULL },

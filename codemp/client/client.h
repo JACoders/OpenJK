@@ -946,7 +946,8 @@ int CL_MapEditor_LightStyle( int style, int color );
 // cl_rphooks.cpp
 qboolean CL_RpHooks_ServerCommand( qboolean *replaced );
 void CL_RpHooks_Deliver( const char *text );
-void CL_Presence_Seen( const char *code );
+int CL_Feedback_Account( const char **name, int *answerTime );	// 1 in, 0 logged out, -2 asking, -3 no answer, -1 not asked
+void CL_Feedback_AskAccount( void );
 const char *CL_Feedback_Key( void );
 qboolean CL_RpHooks_AllowCommand( const char *cmd );
 int CL_RpHooks_LongestWord( const char *text );

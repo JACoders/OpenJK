@@ -46,7 +46,7 @@ Some features reach other players through workarounds only this client understan
 - [Model Safeguards](#model-safeguards)
 - [Update Check](#update-check)
 - [Feedback](#feedback)
-- [Hooks Only for Players with the Client](#hooks-only-for-players-with-the-client)
+- [C1B3R: Everyone with the Client Connected](#c1b3r-everyone-with-the-client-connected)
 - [Vulkan Renderer](#vulkan-renderer-experimental)
 - [Experimental features](#experimental-features)
 
@@ -197,7 +197,7 @@ Click any surface, see what it's made of, and swap its texture for everyone on t
 - Only yours change: someone else using the same power keeps the standard look on your screen. No command is sent
 - Live shows the new one on your own as you pick it; they're kept for every map and server
 - Click a player effect in the free camera and *Only mine...* takes you there
-- **Shared** *(experimental)*: everyone with this client sees yours on you, sent as you change them, as a map starts and when someone joins. It uses `rpnotify`, so it needs an admin's rights
+- **Shared** *(experimental)*: everyone with this client sees yours on you, sent as you change them, as a map starts and when someone joins. It goes through C1B3R, so it needs a game linked in Discord and approved by staff (`/c1b3r link`)
 
 ## Effect Manager
 
@@ -219,7 +219,7 @@ Browse every effect, watch it play live, put it exactly where you want (or on so
 
 - Fly a free camera around the map while the effect plays where your crosshair points
 - Lock it in place, then fine-tune it with the arrow keys and Page Up/Down, or press J for move arrows and drag the X, Y or Z one with the mouse
-- **Size** *(experimental)*: [ and ] (or - and +) make the effect bigger or smaller before you send it, from 0.1x to 8x, also next to Once/Loop in the manager. Everyone with this client sees it that size (sent hidden in an rpnotify, again a little after someone joins); others see it as made
+- **Size** *(experimental)*: [ and ] (or - and +) make the effect bigger or smaller before you send it, from 0.1x to 8x, also next to Once/Loop in the manager. Everyone with this client sees it that size (sent through C1B3R, again a little after someone joins); others see it as made
 - Rotate it (pitch, yaw, roll), or let it face away from the wall or floor you aim at
 - Send each effect as you place it, or put down several and send them all together
 - Click and it's done: the manager sends the matching `rpeffect once/add` command for you, so your usual RPMod permissions apply
@@ -270,7 +270,7 @@ Browse every effect, watch it play live, put it exactly where you want (or on so
 - Use a power or your saber, and **Played as yours lately** lists the effects that just came from you: click one, pick the replacement on the left (it plays live in the window), and **Swap it**
 - An effect is yours when it's bolted to you, or starts nearer you than anyone else, as force powers come out of your hand; an effect that lands on you (someone's drain hitting you) counts as yours too
 - Kept in `effectmanager/mine.txt`, for every map and server, until removed
-- **Shared** *(experimental)*: everyone with this client sees yours on you, if they have the replacement in their own pk3s (if not, they see the standard one). Sent as you change them, as a map starts and when someone joins. It goes through C1B3R or `rpnotify`, so it needs an admin's rights
+- **Shared** *(experimental)*: everyone with this client sees yours on you, if they have the replacement in their own pk3s (if not, they see the standard one). Sent as you change them, as a map starts and when someone joins. It goes through C1B3R, so it needs a game linked in Discord and approved by staff (`/c1b3r link`)
 
 ## Storyteller
 
@@ -794,20 +794,20 @@ Send a bug or an idea for the OpenJK-RPMod project, and read the answers, withou
 - One bug or idea a report, please: each is answered on its own. A few reports an hour at most
 - On Linux and macOS it needs libcurl, as the update check does
 
-## Hooks Only for Players with the Client
+## C1B3R: Everyone with the Client Connected
 
-The tools share what they do with everyone with this client through hidden `rpnotify` messages ("hooks": NPC walks and talk, cinematics, objectives, map edits, the sky, emotes...). Sent to everyone, a hook shows as a `cmd:` line to the players without the client. Now it goes only to those who have it.
+The tools share what they do with everyone with this client ("hooks": NPC walks and talk, cinematics, objectives, map edits, the sky, emotes, shared shaders and effects...). They go through C1B3R, the project's service (the feedback bot made bigger), and never through the server: players without the client see nothing of them.
 
-- Once loaded into a server, your game tells the project's feedback bot which server you're on, your client number, your name and your client's version. It says it again when the map, your number or your name changes and every few minutes, and that you've left as you disconnect. The bot keeps it in memory only and forgets it 6 minutes later. Nothing in the game shows it
-- A hook you send goes to you, then to each player on the server the bot says has the client, one after the other, as the server's flood protection lets them through. A player counts only while their slot still has the name they told the bot
-- While hooks are going out, your other commands wait their turn behind them, so nothing comes out of order or is dropped by the flood protection. With several players with the client, a long cinematic or map edit takes longer to reach the last of them
-- If the bot doesn't answer, a hook waits up to 5 seconds and then isn't sent, rather than showing to everyone; the console says so
-- **Through C1B3R** (the project's service, the feedback bot made bigger): with a C1B3R that carries hooks, your game opens a session with it on each server and keeps a line open, and the hooks the others send reach you through it as soon as they're sent. A hook you send goes to C1B3R once, and on to everyone with the client at the same moment, instead of one `rpnotify` a second for each player: a long cinematic or map edit reaches 20 players as fast as one
-  - Only an admin may send hooks, as only an admin may use `rpnotify`: once a session, your game proves it by one `rpnotify` with a code to another player with the client, whose game tells C1B3R it saw it. Until then, and for players whose client is from before, and for NPC talk (the chat box needs it from the server), hooks go by `rpnotify` as above
-  - If C1B3R doesn't answer, hooks go by `rpnotify` too
-- `/clientusers` lists who on the server has the client, their version, whether C1B3R reaches them, and who may send hooks through it
-- `cl_hookGap` sets the milliseconds between the hooks to each player (0, the default: the server's flood protection)
-- `cl_presenceUrl` is the bot's address; empty, the game tells it nothing, and hooks go to everyone as before. On a server of your own (`/devmap`), hooks go to everyone
+- Once loaded into a server, your game opens a session with C1B3R and keeps a line open: what the others send reaches you as soon as it's sent. Everyone with the client is connected and receives, logged in or not
+- **Sending is for admins, and staff say who:** a hook you send goes to C1B3R once, and on to everyone with the client at the same moment, so a long cinematic or map edit reaches 20 players as fast as one. To send, link your game once:
+  1. In game, logged in to your RPMod account: `/c1b3r link`. Your browser opens C1B3R's page for it, showing your game and account
+  2. Press **Continue with Discord** and authorize on Discord's own page (it only tells C1B3R who you are). Staff are asked to approve it, with Approve and Deny buttons
+     - Or, without a browser, type `/link <code>` in Discord with the code the console shows (good for 10 minutes), in the project's server or in a DM with C1B3R; `/c1b3r discord` adds C1B3R to your Discord account for that if you're not in the server
+  3. Your game keeps a token from then on (`cl_c1b3rToken`, in your `.cfg`: keep it to yourself) and connects with it on every server. Once staff approve, it sends, while you're logged in to the RPMod account you linked; the console says when
+- Not linked, waiting for approval, or logged in to another account, your hooks show on your screen only, and the console says why. Staff can revoke a link with the button under it; `/unlink` in Discord or `/c1b3r unlink` in game ends it too. C1B3R keeps only the token's fingerprint, and the token works only with your game's own private key; it never shows your account to other players
+- Hooks don't go through `rpnotify` any more: a client from before, still using it, neither reaches this one nor hears from it
+- `/c1b3r` shows your link (connected, linked, approved, the RPMod account you're on); `/clientusers` shows who on the server has the client: linked, and who sends
+- `cl_presenceUrl` is C1B3R's address; empty, nothing is shared and hooks show on your screen only. On a server of your own (`/devmap`) hooks show on your screen only
 
 ## Vulkan Renderer *(experimental)*
 
@@ -835,7 +835,7 @@ The tools share what they do with everyone with this client through hidden `rpno
 
 Some features reach other players through workarounds that are only available to those that use this client. These 'workarounds' will eventually be removed in favor of server support.
 
-- Client required (Experimental): reaches other players hidden in an `rpnotify`, so only those with this client see it, and it needs **TOGGLE EXPERIMENTAL** on
+- Client required (Experimental): reaches other players through C1B3R, so only those with this client see it; it needs **TOGGLE EXPERIMENTAL** on, and a game linked in Discord and approved by staff to send it (`/c1b3r link`)
 - Not required (everyone): works with the toggle off
 
 On JEDI Temple only the admin ranks Department Head, Council and God may turn the toggle on. Your rank is asked with `rpstatus` a few seconds after you join; until it's in, the toggle stays off, and for any other rank it's turned off, `/rpexperimental` too. Seeing what others share doesn't need the toggle.
