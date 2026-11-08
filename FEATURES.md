@@ -553,6 +553,16 @@ Your Discord profile shows what you're playing: "Playing ::JEDI::", the server (
 - Spoken straight to the Discord app on your computer: nothing to install, and nothing happens when Discord isn't running
 - Off until you turn it on: **Setup > Game Options > Discord Status**, or `cl_discord 1`; `cl_discordPrivate 1` leaves out the server and your character's name
 
+## Esc Menu
+
+A menu drawn by this client, with room for everything, in two looks: **Modern** or **KOTOR**. Esc still opens the game's own bar (below, **Classic**) until you pick one of them in **Setup > Game Options > Esc Menu** (or `cl_escMenu`); `/escmenu` opens it anytime.
+
+- **Modern:** the categories down the left (Game, Character, Abilities, Messages, Tools, Settings) and the picked one's entries as cards on the right, scrolled with the wheel or the bar. Type anywhere to search every entry; Esc clears the search. **Resume** and **Leave** stay at the bottom left
+- **KOTOR:** as KOTOR's in-game screens: a framed panel with tabs along the top (Character, Equipment, Inventory, Abilities, Messages, Journal, Map, Options), the tab's entries on the left and the picked one told about on the right, with **Open**. A click picks an entry, a second click (or Enter) opens it. The Character tab shows you, turning, with your name and model
+- **What's in it:** joining the game or spectating, JEDI's servers (their maps and players, **Connect**), Leave and Quit (each asks first), your Profile, Presets, Skin Select, Languages, the Effect Replacer, Special Moves, the Animation Manager, Radial Menus, the Chat Log, your datapad and its HoloNet, Comport and Pazaak, Feedback, every tool under Tools (Inventory in KOTOR), and Settings: Controls, Setup and the Renderer page (the game's own pages, opened straight there), the Camera (the same settings as the classic menu's camera panel, with **Back to defaults**), Console Settings and **Menu Style**
+- Keys: Up and Down pick, Enter opens, Tab or Left and Right change category or tab, Backspace leaves a panel, Esc closes (a panel first)
+- **Menu Style**, in its Settings or **Setup > Game Options > Esc Menu**, picks Modern, KOTOR or Classic (`cl_escMenu` 1, 2, 0). `/escmenu` opens it whichever is picked, so Classic players can still reach it
+
 ## In-game Menu and Camera Settings
 
 - The in-game menu (Esc) has no Vote, Call Vote or Add Bot, and a **PRESETS** button between Profile and Controls

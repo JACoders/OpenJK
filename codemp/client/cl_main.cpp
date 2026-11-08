@@ -2959,6 +2959,7 @@ void CL_Init( void ) {
 	CL_EffectSwap_Init ();
 	CL_ChatLog_Init ();
 	CL_Datapad_Init ();
+	CL_EscMenu_Init ();
 	CL_AssetManager_Init ();
 	CL_AdminFlags_Init ();
 	CL_QuickConnect_Init ();

@@ -88,6 +88,7 @@ static prPreset_t	prPresets[PR_MAX];
 static int			prNumPresets;
 static prView_t		prViews[PR_MAX];
 static prView_t		prSlotViews[8];		// a model's or a skin's card, by its place on the page
+static prView_t		prPortrait;			// you, for the Esc menu's KOTOR Character tab
 
 static char			prSkins[PR_MAX_SKINS][MAX_QPATH];	// a model's: model_<this>.skin
 static int			prNumSkins;
@@ -154,6 +155,9 @@ static void PR_FreeViews( void ) {
 			re->G2API_CleanGhoul2Models( &prSlotViews[i].g2 );
 		memset( &prSlotViews[i], 0, sizeof( prSlotViews[i] ) );
 	}
+	if ( prPortrait.g2 )
+		re->G2API_CleanGhoul2Models( &prPortrait.g2 );
+	memset( &prPortrait, 0, sizeof( prPortrait ) );
 }
 
 static void PR_Save( void ) {
@@ -506,6 +510,17 @@ static void PR_RenderView( prView_t *v, const char *red, const char *green, cons
 	re->ClearScene();
 	re->AddRefEntityToScene( &ent );
 	re->RenderScene( &refdef );
+}
+
+// you as you are now (your model, sabers and colours), turned yaw, in the box: the Esc menu's KOTOR
+// Character tab
+void CL_Presets_DrawPortrait( float x, float y, float w, float h, float yaw ) {
+	if ( cls.state != CA_ACTIVE )
+		return;
+	PR_BuildView( &prPortrait, Cvar_VariableString( "model" ), Cvar_VariableString( "saber1" ), Cvar_VariableString( "saber2" ) );
+	if ( prPortrait.g2 )
+		PR_RenderView( &prPortrait, Cvar_VariableString( "char_color_red" ), Cvar_VariableString( "char_color_green" ),
+			Cvar_VariableString( "char_color_blue" ), x, y, w, h, yaw );
 }
 
 /*

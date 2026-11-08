@@ -693,7 +693,8 @@ void CL_ModelManager_Draw( void );
 #define KEYCATCH_SPECIALMOVES	0x80000	// engine only, the special moves menu owns keyboard and mouse
 #define KEYCATCH_CHATLOG		0x100000	// engine only, the chat log window owns keyboard and mouse
 #define KEYCATCH_DATAPAD		0x200000	// engine only, the datapad, open, owns keyboard and mouse
-#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER | KEYCATCH_PRESETS | KEYCATCH_FEEDBACK | KEYCATCH_ASSETMANAGER | KEYCATCH_SPECIALMOVES | KEYCATCH_CHATLOG | KEYCATCH_DATAPAD )	// mods never see or clear these
+#define KEYCATCH_ESCMENU		0x400000	// engine only, the Esc menu (Modern or KOTOR) owns keyboard and mouse
+#define KEYCATCH_ENGINETOOLS	( KEYCATCH_MODELMANAGER | KEYCATCH_NPCMANAGER | KEYCATCH_SHADERMANAGER | KEYCATCH_EFFECTMANAGER | KEYCATCH_MAPEDITOR | KEYCATCH_STORYTELLER | KEYCATCH_CINEDITOR | KEYCATCH_SOUNDMANAGER | KEYCATCH_RADIALMENU | KEYCATCH_LANGUAGES | KEYCATCH_CONSETTINGS | KEYCATCH_ANIMMANAGER | KEYCATCH_PRESETS | KEYCATCH_FEEDBACK | KEYCATCH_ASSETMANAGER | KEYCATCH_SPECIALMOVES | KEYCATCH_CHATLOG | KEYCATCH_DATAPAD | KEYCATCH_ESCMENU )	// mods never see or clear these
 
 void CL_NpcManager_Init( void );
 void CL_NpcManager_Shutdown( void );
@@ -1250,6 +1251,22 @@ void CL_Update_Init( void );
 void CL_Update_Shutdown( void );
 // cl_rendermenu.cpp: the RENDERER page in the Setup menu
 void CL_RenderMenu_Init( void );
+qboolean CL_RenderMenu_Route( const char *page );	// controls, setup or renderer: that page of JKA's own menus
+// the camera panel's rows, i from 0: the cvar (NULL past the last), its label, default and range, or an on/off
+const char *CL_RenderMenu_CameraRow( int i, const char **label, float *def, float *min, float *max, qboolean *toggle );
+
+// cl_escmenu.cpp: the menu Esc opens in game, Modern or KOTOR
+void CL_EscMenu_Init( void );
+qboolean CL_EscMenu_OpenFromEscape( void );	// Esc in game: qfalse when Classic is picked (JKA's own then)
+void CL_EscMenu_Close( void );
+void CL_EscMenu_Draw( void );
+void CL_EscMenu_KeyEvent( int key, qboolean down );
+void CL_EscMenu_CharEvent( int ch );
+void CL_EscMenu_MouseEvent( int dx, int dy );
+void CL_EscMenu_Escape( void );
+int CL_QuickConnect_Count( void );			// cl_quickconnect.cpp: JEDI's servers
+const char *CL_QuickConnect_Name( int i );
+void CL_Presets_DrawPortrait( float x, float y, float w, float h, float yaw );	// cl_presets.cpp: you, as you are
 void CL_RenderMenu_Shutdown( void );
 void CL_Update_Frame( void );
 void CL_Update_Draw( void );

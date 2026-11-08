@@ -42,6 +42,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // opens, and the video restart's Yes runs "renderersettings apply" before its vid_restart.
 
 #include "client.h"
+#include "cl_uiapi.h"
+#include "cl_escmenu.h"
 #include <string>
 #include <vector>
 
@@ -54,6 +56,25 @@ extern const char *( *LoadScriptFile_Patch )( const char *filename, const char *
 #define RM_GLOW			"rendererbutton_glow"
 #define RM_VULKAN		"rd-vulkan"
 #define RM_POSTFX		"ui_rd_postfx"	// 1 while the page has Vulkan picked and Post Effects on
+
+// The router: the Esc menus open JKA's own pages (Controls, Setup, its RENDERER page) through the
+// in-game menu, as RPMod's UI can be told to open only that. Its onOpen ends with a gate: past it
+// only while the engine routes (ui_escNotRouting 0), each route's hidden item is focused, and its
+// onFocus passes its own gate (ui_escNot_<route> 0) to open its page. A gate is JKA's own defer
+// RulesBackout: what follows runs only with ui_rules_backout 0, which setcvartocvar copies in
+#define IM_ROUTE_GATE	"ui_escNotRouting"
+#define IM_ROUTE_CVAR	"ui_escNot_"
+#define IM_GATE( cvar )	"setcvartocvar ui_rules_backout " cvar " ; defer RulesBackout ;"
+
+static const struct {
+	const char	*route;
+	const char	*open;		// the page it opens
+	qboolean	keepGate;	// its gate's passed on to the page (the RENDERER page, in Setup's onOpen)
+} imRoutes[] = {
+	{ "controls",	"ingame_controls",	qfalse },
+	{ "setup",		"ingame_setup",		qfalse },
+	{ "renderer",	"ingame_setup",		qtrue },
+};
 
 typedef enum {
 	RM_SHOW_ALWAYS,
@@ -528,6 +549,17 @@ static const char *RM_Patch( const char *filename, const char *text, int *length
 			RM_SetRectY( item, crossY + rowStep * ( at + 1 ) );
 			RM_ReplaceWord( item, "highlight1", va( "highlight%i", at + 2 ) );
 			add += "\n" + item + "\n";
+
+			// Esc Menu, under that: the menu Esc opens in game (cl_escmenu.cpp)
+			item = s.substr( cross->start, cross->end - cross->start );
+			RM_SetValue( item, "name", "escmenustyle" );
+			RM_SetValue( item, "text", RM_Quote( "Esc Menu:" ) );
+			RM_SetValue( item, "cvar", RM_Quote( "cl_escMenu" ) );
+			RM_SetValue( item, "descText", RM_Quote( "The menu Esc opens in game: Modern, KOTOR's look, or the game's own" ) );
+			RM_ReplaceBlock( item, "cvarFloatList", "cvarFloatList { \"Classic\" 0 \"Modern\" 1 \"KOTOR\" 2 }" );
+			RM_SetRectY( item, crossY + rowStep * ( at + 2 ) );
+			RM_ReplaceWord( item, "highlight1", va( "highlight%i", at + 3 ) );
+			add += "\n" + item + "\n";
 		}
 	}
 
@@ -583,6 +615,22 @@ static const char *RM_Patch( const char *filename, const char *text, int *length
 		return NULL;
 	s.insert( menuEnd - 1, add );
 
+	// opened by the Esc menus' router for the RENDERER page: its onOpen ends with what the button
+	// does, past the route's gate (see imRoutes). Done last, as it moves what follows; kept short, as
+	// JKA's menus keep 2048 characters of a script
+	if ( !Q_stricmp( base, "ingame_setup.menu" ) ) {
+		const size_t firstItem = RM_FindWord( s, "itemDef", menuOpen );
+		const size_t onOpen = RM_FindWord( s, "onOpen", menuOpen, firstItem );
+		const size_t open = onOpen != RM_NONE ? RM_SkipSpace( s, onOpen + 6 ) : RM_NONE;
+		const size_t openEnd = open != RM_NONE && s[open] == '{' ? RM_BlockEnd( s, open ) : RM_NONE;
+
+		if ( openEnd != RM_NONE ) {
+			s.insert( openEnd - 1, "\n" IM_GATE( IM_ROUTE_CVAR "renderer" ) " setcvar " IM_ROUTE_CVAR "renderer 1 ; hide video ; "
+				"show " RM_GROUP " ; exec \"renderersettings sync\" ; setitemcolor videomenubutton forecolor 1 .682 0 1 ; "
+				"setitemcolor " RM_BUTTON " forecolor 1 1 1 1\n" );
+		}
+	}
+
 	rmPatched.swap( s );
 	*length = (int)rmPatched.size();
 	return rmPatched.c_str();
@@ -624,6 +672,17 @@ static const imCamRow_t imCamRows[] = {
 	{ "cg_draw2D",					"HUD",			1, 0, 0,		"cvarFloatList { \"Off\" 0 \"On\" 1 }" },
 };
 
+const char *CL_RenderMenu_CameraRow( int i, const char **label, float *def, float *min, float *max, qboolean *toggle ) {
+	if ( i < 0 || i >= (int)ARRAY_LEN( imCamRows ) )
+		return NULL;
+	*label = imCamRows[i].label;
+	*def = imCamRows[i].def;
+	*min = imCamRows[i].min;
+	*max = imCamRows[i].max;
+	*toggle = (qboolean)( imCamRows[i].list != NULL );
+	return imCamRows[i].cvar;
+}
+
 #define IM_CAM_X		436.0f
 #define IM_CAM_Y		40.0f
 #define IM_CAM_W		198.0f
@@ -634,6 +693,7 @@ static const imCamRow_t imCamRows[] = {
 // as an item tests one cvar only
 #define IM_CAM_CVAR		"ui_camPanel"
 #define IM_LEAVE_CVAR	"ui_leaveOpen"	// Exit's menu is open, set by its own onOpen and onClose
+
 #define IM_CAM_SHOW		"cvarTest \"" IM_CAM_CVAR "\" showCvar { \"1\" }\n"
 
 /*
@@ -886,34 +946,9 @@ static void IM_SetRect( std::string &item, float x, float y, float w, float h ) 
 #define TL_ENTRY	30.0f
 #define TL_PER_PAGE	5
 
-static const struct {
-	const char	*name;
-	const char	*command;
-	const char	*desc;
-} imTools[] = {
-	{ "Model Manager",		"modelmanager",		"Place models, move the map's (rpmodel)" },
-	{ "NPC Manager",		"npcmanager",		"Spawn NPCs and command them" },
-	{ "Effect Manager",		"effectmanager",	"Preview effects and play them (rpeffect)" },
-	{ "Effect Replacer",	"effectreplacer",	"Your own powers' and saber's effects as others" },
-	{ "Shader Manager",		"shadermanager",	"Remap shaders, overlays, the sky" },
-	{ "Map Editor",			"mapedit",			"Move, hide and retexture the map; lights, fog" },
-	{ "Storyteller",		"storyteller",		"Missions out of steps, played for everyone" },
-	{ "Cinematic Manager",	"cinematicmanager",	"Camera shots and what everyone does in them" },
-	{ "Sound Manager",		"soundmanager",		"Hear sounds and play them (rpsound)" },
-	{ "Music Manager",		"musicmanager",		"Hear music and play it for everyone" },
-	{ "Animation Manager",	"animationmanager",	"Every animation; emote chains, custom emotes" },
-	{ "Asset Manager",		"assetmanager",		"What's on the map, its pk3s, packed in one" },
-	{ "Presets",			"presets",			"Characters saved, swapped to in a click" },
-	{ "Skin Select",		"skinselect",		"Every skin and model, worn in a click" },
-	{ "Special Moves",		"specialmoves",		"Saber moves explained, played from a key" },
-	{ "Chat Log",			"chatlog",			"The chat kept as text and a console-like page" },
-	{ "Datapad",			"datapad",			"Your datapad: in the corner, or open on the right" },
-	{ "Languages",			"languages",		"Your characters' languages" },
-	{ "Radial Menus",		"radialsettings",	"Make radial menus and bind keys to them" },
-	{ "Console Settings",	"consolesettings",	"How the console looks" },
-	{ "Feedback",			"feedback",			"Report a bug or send an idea" },
-};
-#define TL_NUM		( (int)ARRAY_LEN( imTools ) )
+// the tools: the Esc menus' list (cl_escmenu.cpp)
+#define imTools		escTools
+#define TL_NUM		escNumTools
 #define TL_PAGES	( ( TL_NUM + TL_PER_PAGE - 1 ) / TL_PER_PAGE )
 
 // every part of the tools panel put away
@@ -1094,6 +1129,14 @@ static const char *IM_Patch( const char *filename, const char *text, int *length
 	}
 	add += IM_ToolsPanel();
 
+	// the router's hidden items: the first only takes the focus off the others, so each is focused anew
+	add += "itemDef {\nname escroute_reset\ntype ITEM_TYPE_BUTTON\nrect 0 0 0 0\nvisible 0\n}\n";
+	for ( size_t r = 0; r < ARRAY_LEN( imRoutes ); r++ ) {
+		add += va( "itemDef {\nname escroute_%s\ntype ITEM_TYPE_BUTTON\nrect 0 0 0 0\nvisible 0\n"
+			"onFocus { " IM_GATE( IM_ROUTE_CVAR "%s" ) "%s open %s }\n}\n", imRoutes[r].route, imRoutes[r].route,
+			imRoutes[r].keepGate ? "" : va( " setcvar " IM_ROUTE_CVAR "%s 1 ;", imRoutes[r].route ), imRoutes[r].open );
+	}
+
 	// the ones that go, last first so the places stay right
 	for ( int i = (int)items.size() - 1; i >= 0; i-- ) {
 		for ( size_t k = 0; k < ARRAY_LEN( drop ); k++ ) {
@@ -1161,6 +1204,19 @@ static const char *IM_Patch( const char *filename, const char *text, int *length
 			s.insert( open + 1, reset );
 		else
 			s.insert( menuOpen + 1, va( "\nonOpen {%s }\n", reset ) );
+	}
+	// and ends with the router: past its gate only while routing (a defer stops all that follows)
+	{
+		const size_t firstItem = RM_FindWord( s, "itemDef", menuOpen );
+		const size_t onOpen = RM_FindWord( s, "onOpen", menuOpen, firstItem );
+		const size_t open = onOpen != RM_NONE ? RM_SkipSpace( s, onOpen + 6 ) : RM_NONE;
+		const size_t openEnd = open != RM_NONE && s[open] == '{' ? RM_BlockEnd( s, open ) : RM_NONE;
+		std::string route = " " IM_GATE( IM_ROUTE_GATE ) " setfocus escroute_reset ;";
+
+		for ( size_t r = 0; r < ARRAY_LEN( imRoutes ); r++ )
+			route += va( " setfocus escroute_%s ;", imRoutes[r].route );
+		if ( openEnd != RM_NONE )
+			s.insert( openEnd - 1, route + "\n" );
 	}
 
 	imPatched.swap( s );
@@ -1239,7 +1295,37 @@ void CL_RenderMenu_Frame( void ) {
 		Cvar_Set( RM_POSTFX, on ? "1" : "0" );
 }
 
+// one of JKA's own pages opened through the in-game menu (see imRoutes): controls, setup or renderer.
+// The gates are let down as the menu opens, and up again at once: its scripts run as it opens
+qboolean CL_RenderMenu_Route( const char *page ) {
+	qboolean known = qfalse;
+
+	for ( size_t r = 0; r < ARRAY_LEN( imRoutes ); r++ ) {
+		const qboolean it = (qboolean)!Q_stricmp( page, imRoutes[r].route );
+
+		Cvar_Set( va( IM_ROUTE_CVAR "%s", imRoutes[r].route ), it ? "0" : "1" );
+		known = (qboolean)( known || it );
+	}
+	if ( !known || cls.state != CA_ACTIVE )
+		return qfalse;
+	Cvar_Set( IM_ROUTE_GATE, "0" );
+	UIVM_SetActiveMenu( UIMENU_INGAME );
+	Cvar_Set( IM_ROUTE_GATE, "1" );
+	for ( size_t r = 0; r < ARRAY_LEN( imRoutes ); r++ )
+		Cvar_Set( va( IM_ROUTE_CVAR "%s", imRoutes[r].route ), "1" );
+	return qtrue;
+}
+
+static void IM_Route_f( void ) {
+	if ( !CL_RenderMenu_Route( Cmd_Argv( 1 ) ) )
+		Com_Printf( "escroute controls|setup|renderer : opens that page of the game's own menus\n" );
+}
+
 void CL_RenderMenu_Init( void ) {
+	Cvar_Get( IM_ROUTE_GATE, "1", 0, "The Esc menus' router into JKA's own pages: 0 while it routes" );
+	for ( size_t r = 0; r < ARRAY_LEN( imRoutes ); r++ )
+		Cvar_Get( va( IM_ROUTE_CVAR "%s", imRoutes[r].route ), "1", 0, "The Esc menus' router: 0 for the page it opens" );
+	Cmd_AddCommand( "escroute", IM_Route_f, "Opens a page of the game's own menus: controls, setup or renderer" );
 	for ( int i = 0; i < rmNumRows; i++ ) {
 		if ( rmRows[i].ui )
 			Cvar_Get( rmRows[i].ui, rmRows[i].def, 0, "The Setup menu's RENDERER page: renderersettings apply sets it" );

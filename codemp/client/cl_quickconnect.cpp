@@ -135,6 +135,10 @@ const char *CL_QuickConnect_Name( int i ) {
 	return i >= 0 && i < QC_NUM ? qcServers[i].name : NULL;
 }
 
+int CL_QuickConnect_Count( void ) {
+	return QC_NUM;
+}
+
 void CL_QuickConnect_Init( void ) {
 	for ( int i = 0; i < QC_NUM; i++ ) {
 		Cvar_Get( va( "ui_qc%i_server", i + 1 ), "", 0, "Quick connect: the server's address" );

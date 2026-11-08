@@ -730,6 +730,7 @@ void CL_ShutdownCGame( void ) {
 	CL_SoundManager_Shutdown();
 	CL_AnimManager_Shutdown();
 	CL_Presets_Shutdown();
+	CL_EscMenu_Close();
 	CL_SpecialMoves_Shutdown();
 	CL_AssetManager_Shutdown();
 	CL_RadialMenu_Shutdown();

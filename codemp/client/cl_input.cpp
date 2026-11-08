@@ -1114,6 +1114,8 @@ void CL_MouseEvent( int dx, int dy, int time ) {
 		CL_AnimManager_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_PRESETS ) {
 		CL_Presets_MouseEvent( dx, dy );
+	} else if ( Key_GetCatcher( ) & KEYCATCH_ESCMENU ) {
+		CL_EscMenu_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_SPECIALMOVES ) {
 		CL_SpecialMoves_MouseEvent( dx, dy );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CHATLOG ) {

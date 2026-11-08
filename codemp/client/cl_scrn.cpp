@@ -503,6 +503,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			CL_RadialMenu_DrawSettings();
 			CL_Languages_Draw();
 			CL_RadialMenu_Draw();
+			CL_EscMenu_Draw();
 			break;
 		}
 	}
