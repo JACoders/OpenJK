@@ -2057,10 +2057,13 @@ static void CM_PlanSpawned( void ) {
 	}
 }
 
+static void CM_VideoDone( void );
+
 static void CM_StopPlaying( void ) {
 	if ( !cmp.playing )
 		return;
 	cmp.playing = qfalse;
+	CM_VideoDone();
 	if ( cmp.driver )
 		CM_DriverTeles( cls.realtime - cmp.start, qtrue );
 	CM_Unapply();
@@ -2665,9 +2668,27 @@ static void CM_Message( const char *text ) {
 	cm.messageTime = cls.realtime;
 }
 
+// undo and redo: the cinematic as its file's text, kept once a change has settled (the mouse let
+// go and nothing else changed for a moment), so a drag or a run of clicks goes back in one
+#define CM_UNDO_MAX			60
+#define CM_UNDO_SETTLE_MS	400
+
+static std::vector<std::string> cmUndo, cmRedo;
+static std::string cmUndoBase;			// as it was when last kept
+static qboolean cmUndoPending;
+static int cmUndoTime;
+
 static void CM_Changed( void ) {
 	cm.dirty = qtrue;
+	cmUndoPending = qtrue;
+	cmUndoTime = cls.realtime;
 }
+
+static void CM_UndoReset( void );
+static void CM_UndoFrame( void );
+static void CM_Undo( qboolean redo );
+static void CM_Copy( void );
+static void CM_Paste( void );
 
 static rcShot_t *CM_Shot( void ) {
 	if ( cm.cur < 0 || cm.cur >= cm.cine.numShots )
@@ -3333,6 +3354,7 @@ static void CM_New( void ) {
 	cm.tlScroll = 0;
 	cm.planTime = 0;
 	cm.seenShots = -1;
+	CM_UndoReset();
 }
 
 static void CM_AfterLoad( const char *name ) {
@@ -3340,6 +3362,7 @@ static void CM_AfterLoad( const char *name ) {
 
 	CM_New();
 	cm.cine = c;
+	CM_UndoReset();
 	Q_strncpyz( cm.name, name, sizeof( cm.name ) );
 	cm.cur = -1;
 	CM_SelectShot( 0 );
@@ -3491,6 +3514,59 @@ static void CM_TlPin( void ) {
 static void CM_TlLetGo( void ) {
 	cm.tlPinned = qfalse;
 	cm.tlDrag = CM_DRAG_NONE;
+}
+
+// a video of it: played from the start on this screen, every frame kept at cl_aviFrameRate, into
+// videos/<name>-<n>.avi in the game folder, until it ends or is stopped
+static qboolean cmVideo;
+static char cmVideoPath[MAX_QPATH];
+
+static qboolean CM_VideoPlay( const cmCine_t *c, const char *name ) {
+	char path[MAX_QPATH];
+	int n;
+
+	if ( CL_VideoRecording() || !c->numShots )
+		return qfalse;
+	for ( n = 1; n < 1000; n++ ) {
+		Com_sprintf( path, sizeof( path ), "videos/%s-%03i.avi", name[0] ? name : "cinematic", n );
+		if ( !FS_FileExists( path ) )
+			break;
+	}
+	if ( !CM_Play( c, 0, qtrue ) )
+		return qfalse;
+	if ( !CL_OpenAVIForWriting( path ) ) {
+		CM_StopPlaying();
+		Com_Printf( S_COLOR_RED "Couldn't make the video file %s\n", path );
+		return qfalse;
+	}
+	cmVideo = qtrue;
+	Q_strncpyz( cmVideoPath, path, sizeof( cmVideoPath ) );
+	return qtrue;
+}
+
+static void CM_RecordVideo( void ) {
+	if ( cm.preview || CL_VideoRecording() )
+		return;
+	if ( !cm.cine.numShots ) {
+		CM_Message( S_COLOR_YELLOW "Add a shot first: fly where it starts and press Enter" );
+		return;
+	}
+	CM_Unapply();
+	cm.applied = qfalse;
+	cm.flying = qfalse;
+	cm.through = qfalse;
+	cm.typing = CM_TYPE_NONE;
+	if ( CM_VideoPlay( &cm.cine, cm.name ) )
+		cm.preview = qtrue;
+}
+
+static void CM_VideoDone( void ) {
+	if ( !cmVideo )
+		return;
+	cmVideo = qfalse;
+	CL_CloseAVI();
+	Com_Printf( "Cinematic video saved: %s\n", cmVideoPath );
+	CM_Message( va( S_COLOR_GREEN "Saved %s in the game folder", cmVideoPath ) );
 }
 
 static void CM_StopPreview( void ) {
@@ -3888,6 +3964,30 @@ void CL_RpCinematic_EditorKeyEvent( int key, qboolean down ) {
 			cm.typing = CM_TYPE_NONE;
 		}
 		return;
+	}
+
+	// Ctrl+Z, Ctrl+Y or Ctrl+Shift+Z, Ctrl+C, Ctrl+V
+	if ( CM_CtrlDown() ) {
+		switch ( key ) {
+		case A_CAP_Z:
+		case A_LOW_Z:
+			CM_Undo( (qboolean)( cm.held[A_SHIFT] || cm.held[A_SHIFT2] ) );
+			return;
+		case A_CAP_Y:
+		case A_LOW_Y:
+			CM_Undo( qtrue );
+			return;
+		case A_CAP_C:
+		case A_LOW_C:
+			CM_Copy();
+			return;
+		case A_CAP_V:
+		case A_LOW_V:
+			CM_Paste();
+			return;
+		default:
+			break;
+		}
 	}
 
 	clip = CM_Clip();
@@ -8414,7 +8514,9 @@ static void CM_DrawEditor( void ) {
 	float y = 8;
 
 	if ( cm.preview ) {
-		CM_Text( 8, SCREEN_HEIGHT - 16, S_COLOR_GREY "Preview: Esc, P or a click stops it", cmWhite );
+		// nothing of the manager's in a video
+		if ( !cmVideo )
+			CM_Text( 8, SCREEN_HEIGHT - 16, S_COLOR_GREY "Preview: Esc, P or a click stops it", cmWhite );
 		return;
 	}
 
@@ -8498,7 +8600,8 @@ static void CM_DrawEditor( void ) {
 				: cm.tab == CM_TAB_WORLD ? "Click a prop's key or a light to pick it, drag it over walls and floors   J move arrows   Del deletes it   P preview"
 				: "Enter add a spot   Del delete   Up/Down pick   F look through it   P preview",
 			cm.tlHidden ? "T shows the timeline" : "Timeline: click or drag a moment, drag bars to retime   P plays from it   T hides it",
-			cm.tlPinned ? "Esc lets go of the moment" : "Esc back"
+			cm.tlPinned ? "Ctrl+Z undo   Ctrl+Y redo   Ctrl+C copy what's picked   Ctrl+V paste it at the moment   Esc lets go of the moment"
+				: "Ctrl+Z undo   Ctrl+Y redo   Ctrl+C copy what's picked   Ctrl+V paste it   Esc back"
 		};
 
 		for ( int i = 0; i < CM_HELP_LINES; i++ )
@@ -8573,8 +8676,10 @@ static void CM_DrawEditor( void ) {
 		CM_Text( x, y, CL_RpHooks_Experimental() ? va( S_COLOR_GREY "%.1f s, %i shot%s, %i in it", total / 1000.0f, cm.cine.numShots, cm.cine.numShots == 1 ? "" : "s", cm.cine.numEnts )
 			: S_COLOR_GREY "For everyone: " RP_EXPERIMENTAL_LABEL, cmWhite );
 		y += CM_ROW_H;
-		if ( CM_Button( x, y, w, cm.tlPinned && cm.tlMs < total ? va( "Preview from %.1f s (P)", cm.tlMs / 1000.0f ) : "Preview (P)", qfalse, (qboolean)( total > 0 ) ) )
+		if ( CM_Button( x, y, half, cm.tlPinned && cm.tlMs < total ? va( "Preview from %.1f s", cm.tlMs / 1000.0f ) : "Preview (P)", qfalse, (qboolean)( total > 0 ) ) )
 			CM_Preview();
+		if ( CM_Button( x + half + 4, y, half, va( "Video, %i fps", cl_aviFrameRate->integer ), qfalse, (qboolean)( total > 0 && !CL_VideoRecording() ) ) )
+			CM_RecordVideo();
 		y += CM_CTRL_H + CM_GAP;
 		if ( CM_PartsLeft() ) {
 			CM_Text( x, y + 2, va( S_COLOR_GREEN "Sending it, %i part%s to go", CM_PartsLeft(), CM_PartsLeft() == 1 ? "" : "s" ), cmWhite );
@@ -9420,6 +9525,322 @@ Every frame, and the command
 /*
 ===============================================================================
 
+Undo, redo; copy and paste
+
+===============================================================================
+*/
+
+static std::string CM_CineText( void ) {
+	char *buf = (char *)Z_Malloc( CM_TEXT_MAX, TAG_GENERAL, qfalse );
+	std::string text;
+
+	CM_ToText( &cm.cine, buf, CM_TEXT_MAX );
+	text = buf;
+	Z_Free( buf );
+	return text;
+}
+
+// a cinematic opened or begun: nothing to go back to
+static void CM_UndoReset( void ) {
+	cmUndo.clear();
+	cmRedo.clear();
+	cmUndoBase = CM_CineText();
+	cmUndoPending = qfalse;
+}
+
+// a change kept once it's settled, or at once with force
+static void CM_UndoKeep( qboolean force ) {
+	std::string now;
+
+	if ( !cmUndoPending )
+		return;
+	if ( !force && ( cm.held[A_MOUSE1] || cls.realtime - cmUndoTime < CM_UNDO_SETTLE_MS ) )
+		return;
+	cmUndoPending = qfalse;
+	now = CM_CineText();
+	if ( now == cmUndoBase )
+		return;
+	cmUndo.push_back( cmUndoBase );
+	if ( (int)cmUndo.size() > CM_UNDO_MAX )
+		cmUndo.erase( cmUndo.begin() );
+	cmRedo.clear();
+	cmUndoBase = now;
+}
+
+static void CM_UndoFrame( void ) {
+	CM_UndoKeep( qfalse );
+}
+
+// the cinematic as it was, or as it was again; what's picked kept where it still can be
+static void CM_Undo( qboolean redo ) {
+	std::vector<std::string> &from = redo ? cmRedo : cmUndo, &to = redo ? cmUndo : cmRedo;
+	char *buf;
+
+	CM_UndoKeep( qtrue );
+	if ( from.empty() ) {
+		CM_Message( redo ? S_COLOR_YELLOW "Nothing to redo" : S_COLOR_YELLOW "Nothing to undo" );
+		return;
+	}
+	to.push_back( cmUndoBase );
+	cmUndoBase = from.back();
+	from.pop_back();
+	buf = (char *)Z_Malloc( cmUndoBase.size() + 1, TAG_GENERAL, qfalse );
+	memcpy( buf, cmUndoBase.c_str(), cmUndoBase.size() + 1 );
+	CM_Parse( buf, &cm.cine );
+	Z_Free( buf );
+	cmUndoPending = qfalse;
+	cm.dirty = qtrue;
+	cm.typing = CM_TYPE_NONE;
+	cm.tlDrag = CM_DRAG_NONE;
+	cm.cur = Com_Clampi( 0, Q_max( 0, cm.cine.numShots - 1 ), cm.cur );
+	cm.sel = -1;
+	if ( cm.ent >= cm.cine.numEnts )
+		cm.ent = -1;
+	if ( cm.clip >= cm.cine.numClips )
+		cm.clip = -1;
+	cm.seenShots = -1;
+	CM_SeeShots();
+	CM_Message( va( "%s: %i more to %s, %i to %s", redo ? "Redone" : "Undone", (int)from.size(), redo ? "redo" : "undo", (int)to.size(), redo ? "undo" : "redo" ) );
+}
+
+// what Ctrl+C keeps
+typedef enum {
+	CM_BOARD_NONE,
+	CM_BOARD_SHOT,
+	CM_BOARD_CLIPS,			// an action, or all someone's
+	CM_BOARD_FX,
+	CM_BOARD_SND,
+	CM_BOARD_TXT,
+	CM_BOARD_PROP,
+	CM_BOARD_LIGHT
+} cmBoardKind_t;
+
+static struct {
+	int			kind;
+	char		what[64];
+	rcShot_t	shot;
+	int			numClips;
+	cmClip_t	clips[CM_MAX_CLIPS];
+	int			recOf[CM_MAX_CLIPS];	// a recording's in recs, -1 none
+	cmRec_t		recs[CM_MAX_RECS];
+	int			numRecs;
+	cmFx_t		fx;
+	cmSnd_t		snd;
+	cmTxt_t		txt;
+	cmProp_t	prop;
+	cmLight_t	light;
+} cmBoard;
+
+static void CM_BoardClip( const cmClip_t *clip ) {
+	const cmRec_t *r;
+
+	if ( cmBoard.numClips >= CM_MAX_CLIPS )
+		return;
+	cmBoard.clips[cmBoard.numClips] = *clip;
+	cmBoard.recOf[cmBoard.numClips] = -1;
+	// a recording goes with its moments, for another cinematic too
+	if ( clip->kind == CM_CLIP_RECORD && ( r = CM_Rec( &cm.cine, clip ) ) != NULL && cmBoard.numRecs < CM_MAX_RECS ) {
+		cmBoard.recs[cmBoard.numRecs] = *r;
+		cmBoard.recOf[cmBoard.numClips] = cmBoard.numRecs++;
+	}
+	cmBoard.numClips++;
+}
+
+// the shot, the action (or all of someone's), the effect, sound, text, prop or light picked
+static void CM_Copy( void ) {
+	cmClip_t *clip = CM_Clip();
+
+	cmBoard.kind = CM_BOARD_NONE;
+	cmBoard.numClips = cmBoard.numRecs = 0;
+	switch ( cm.tab ) {
+	case CM_TAB_CAMERA:
+		if ( CM_Shot() ) {
+			cmBoard.kind = CM_BOARD_SHOT;
+			cmBoard.shot = *CM_Shot();
+			Com_sprintf( cmBoard.what, sizeof( cmBoard.what ), "shot %i", cm.cur + 1 );
+		}
+		break;
+	case CM_TAB_ENTITIES:
+		if ( clip && cm.ent >= 0 && clip->ent == cm.ent ) {
+			CM_BoardClip( clip );
+			Q_strncpyz( cmBoard.what, "the action", sizeof( cmBoard.what ) );
+		} else if ( cm.ent >= 0 && cm.ent < cm.cine.numEnts ) {
+			for ( int i = 0; i < cm.cine.numClips; i++ ) {
+				if ( cm.cine.clips[i].ent == cm.ent )
+					CM_BoardClip( &cm.cine.clips[i] );
+			}
+			Com_sprintf( cmBoard.what, sizeof( cmBoard.what ), "all %s does", cm.cine.ents[cm.ent].who );
+		}
+		if ( cmBoard.numClips )
+			cmBoard.kind = CM_BOARD_CLIPS;
+		break;
+	case CM_TAB_EFFECTS:
+		if ( CM_Fx() ) {
+			cmBoard.kind = CM_BOARD_FX;
+			cmBoard.fx = *CM_Fx();
+			Q_strncpyz( cmBoard.what, "the effect", sizeof( cmBoard.what ) );
+		}
+		break;
+	case CM_TAB_SOUNDS:
+		if ( CM_Snd() ) {
+			cmBoard.kind = CM_BOARD_SND;
+			cmBoard.snd = *CM_Snd();
+			Q_strncpyz( cmBoard.what, "the sound", sizeof( cmBoard.what ) );
+		}
+		break;
+	case CM_TAB_TEXT:
+		if ( CM_Txt() ) {
+			cmBoard.kind = CM_BOARD_TXT;
+			cmBoard.txt = *CM_Txt();
+			Q_strncpyz( cmBoard.what, "the text", sizeof( cmBoard.what ) );
+		}
+		break;
+	case CM_TAB_WORLD:
+		if ( cm.worldPage == 0 && CM_Prop() ) {
+			cmBoard.kind = CM_BOARD_PROP;
+			cmBoard.prop = *CM_Prop();
+			Q_strncpyz( cmBoard.what, "the prop", sizeof( cmBoard.what ) );
+		} else if ( cm.worldPage == 1 && CM_Light() ) {
+			cmBoard.kind = CM_BOARD_LIGHT;
+			cmBoard.light = *CM_Light();
+			Q_strncpyz( cmBoard.what, "the light", sizeof( cmBoard.what ) );
+		}
+		break;
+	default:
+		break;
+	}
+	if ( cmBoard.kind == CM_BOARD_NONE )
+		CM_Message( S_COLOR_YELLOW "Nothing picked to copy here" );
+	else
+		CM_Message( va( "Copied %s: Ctrl+V puts it in at the moment picked", cmBoard.what ) );
+}
+
+// a recording slot no action uses, -1 none
+static int CM_FreeRec( const cmCine_t *c ) {
+	for ( int r = 0; r < CM_MAX_RECS; r++ ) {
+		qboolean used = qfalse;
+
+		for ( int i = 0; i < c->numClips && !used; i++ )
+			used = (qboolean)( c->clips[i].kind == CM_CLIP_RECORD && c->clips[i].rec == r );
+		if ( !used )
+			return r;
+	}
+	return -1;
+}
+
+// a moment for something pasted: the one picked on the timeline, else when it was
+static int CM_PasteAt( int was ) {
+	return cm.tlPinned ? cm.tlMs : was;
+}
+
+static void CM_Paste( void ) {
+	cmCine_t *c = &cm.cine;
+
+	switch ( cmBoard.kind ) {
+	case CM_BOARD_SHOT: {
+		const int at = c->numShots ? cm.cur + 1 : 0;
+
+		if ( c->numShots >= CM_MAX_SHOTS ) {
+			CM_Message( S_COLOR_YELLOW "A cinematic has 16 shots at most" );
+			return;
+		}
+		CM_ShiftClips( CM_ShotStart( c, at ), CM_ShotLen( &cmBoard.shot ) );
+		memmove( &c->shots[at + 1], &c->shots[at], ( c->numShots - at ) * sizeof( c->shots[0] ) );
+		c->shots[at] = cmBoard.shot;
+		c->numShots++;
+		CM_SeeShots();
+		cm.cur = -1;
+		CM_SelectShot( at );
+		cm.tab = CM_TAB_CAMERA;
+		break;
+	}
+	case CM_BOARD_CLIPS: {
+		int first = cmBoard.clips[0].start, pasted = 0;
+
+		if ( cm.ent < 0 || cm.ent >= c->numEnts ) {
+			CM_Message( S_COLOR_YELLOW "Pick who it's for first, someone in the cinematic" );
+			return;
+		}
+		for ( int i = 1; i < cmBoard.numClips; i++ )
+			first = Q_min( first, cmBoard.clips[i].start );
+		for ( int i = 0; i < cmBoard.numClips && c->numClips < CM_MAX_CLIPS; i++ ) {
+			cmClip_t *clip = &c->clips[c->numClips];
+
+			*clip = cmBoard.clips[i];
+			clip->ent = cm.ent;
+			clip->start = Q_max( 0, clip->start - first + CM_PasteAt( first ) );
+			if ( clip->kind == CM_CLIP_RECORD ) {
+				const int r = cmBoard.recOf[i] >= 0 ? CM_FreeRec( c ) : -1;
+
+				if ( r < 0 )
+					continue;
+				c->recs[r] = cmBoard.recs[cmBoard.recOf[i]];
+				clip->rec = r;
+			}
+			cm.clip = c->numClips++;
+			pasted++;
+		}
+		if ( pasted > 1 )
+			cm.clip = -1;
+		cm.tab = CM_TAB_ENTITIES;
+		if ( pasted < cmBoard.numClips )
+			CM_Message( S_COLOR_YELLOW "Not all of it fitted: 64 actions and 6 recordings at most" );
+		break;
+	}
+	case CM_BOARD_FX:
+		if ( c->numFx >= CM_MAX_FX )
+			return;
+		c->fx[c->numFx] = cmBoard.fx;
+		c->fx[c->numFx].start = CM_PasteAt( cmBoard.fx.start );
+		cm.fx = c->numFx++;
+		cm.tab = CM_TAB_EFFECTS;
+		break;
+	case CM_BOARD_SND:
+		if ( c->numSnd >= CM_MAX_SND )
+			return;
+		c->snd[c->numSnd] = cmBoard.snd;
+		c->snd[c->numSnd].start = CM_PasteAt( cmBoard.snd.start );
+		cm.snd = c->numSnd++;
+		cm.tab = CM_TAB_SOUNDS;
+		break;
+	case CM_BOARD_TXT:
+		if ( c->numTxt >= CM_MAX_TXT )
+			return;
+		c->txt[c->numTxt] = cmBoard.txt;
+		c->txt[c->numTxt].start = CM_PasteAt( cmBoard.txt.start );
+		cm.txt = c->numTxt++;
+		cm.tab = CM_TAB_TEXT;
+		break;
+	case CM_BOARD_PROP:
+		if ( c->numProps >= CM_MAX_PROPS )
+			return;
+		c->props[c->numProps] = cmBoard.prop;
+		c->props[c->numProps].start = CM_PasteAt( cmBoard.prop.start );
+		cm.prop = c->numProps++;
+		cm.propKey = 0;
+		cm.tab = CM_TAB_WORLD;
+		cm.worldPage = 0;
+		break;
+	case CM_BOARD_LIGHT:
+		if ( c->numLights >= CM_MAX_LIGHTS )
+			return;
+		c->lights[c->numLights] = cmBoard.light;
+		c->lights[c->numLights].start = CM_PasteAt( cmBoard.light.start );
+		cm.light = c->numLights++;
+		cm.tab = CM_TAB_WORLD;
+		cm.worldPage = 1;
+		break;
+	default:
+		CM_Message( S_COLOR_YELLOW "Nothing copied yet: Ctrl+C copies what's picked" );
+		return;
+	}
+	CM_Changed();
+	CM_Message( va( "Pasted %s%s", cmBoard.what, cm.tlPinned ? va( " at %.1f s", cm.tlMs / 1000.0f ) : "" ) );
+}
+
+/*
+===============================================================================
+
 Props and lights: in the scene while they last, on this screen
 
 ===============================================================================
@@ -9530,6 +9951,8 @@ static void CM_SyncExtras( void ) {
 
 void CM_Frame( void ) {
 	CM_SyncExtras();
+	if ( cm.open )
+		CM_UndoFrame();
 	CM_PickFxFrame();
 	CM_PickSndFrame();
 	CM_PreviewFx();
@@ -9548,7 +9971,8 @@ void CM_Draw( void ) {
 		CM_DrawRecording();
 }
 
-// cinematicmanager [name]: the manager; play <name>: on this screen; send <name>: for everyone;
+// cinematicmanager [name]: the manager; play <name>: on this screen; video <name>: on this screen
+// into a video; send <name>: for everyone;
 // stop [all]
 static void CM_Cinematic_f( void ) {
 	const char *arg = Cmd_Argv( 1 );
@@ -9560,6 +9984,18 @@ static void CM_Cinematic_f( void ) {
 			Com_Printf( "No cinematic called \"%s\" in %s/\n", Cmd_Argv( 2 ), CM_DIR );
 		else
 			CM_Send( c );
+		Z_Free( c );
+		return;
+	}
+	if ( !Q_stricmp( arg, "video" ) ) {
+		cmCine_t *c = (cmCine_t *)Z_Malloc( sizeof( cmCine_t ), TAG_GENERAL, qtrue );
+
+		if ( cls.state != CA_ACTIVE )
+			Com_Printf( "Not connected to a server.\n" );
+		else if ( !CM_Load( Cmd_Argv( 2 ), c ) )
+			Com_Printf( "No cinematic called \"%s\" in %s/\n", Cmd_Argv( 2 ), CM_DIR );
+		else if ( !CM_VideoPlay( c, Cmd_Argv( 2 ) ) )
+			Com_Printf( "Couldn't record it: already recording, or it has no shots\n" );
 		Z_Free( c );
 		return;
 	}
@@ -9586,6 +10022,7 @@ static void CM_Cinematic_f( void ) {
 	if ( !Q_stricmp( arg, "help" ) || !Q_stricmp( arg, "?" ) ) {
 		Com_Printf( "cinematicmanager [name] : the cinematic manager, to make cinematics in\n"
 			"cinematicmanager play <name> : plays one on your screen only\n"
+			"cinematicmanager video <name> : plays one on your screen, kept as videos/<name>-<n>.avi (cl_aviFrameRate)\n"
 			"cinematicmanager send <name> : plays one for everyone with this client\n"
 			"cinematicmanager stop [all] : stops it on your screen, or for everyone\n" );
 		return;

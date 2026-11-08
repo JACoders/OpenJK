@@ -147,7 +147,9 @@ The console commands, keys and settings this client adds. What each feature does
 
 - `/cinematicmanager [name]` opens the manager, on that cinematic or a new one by that name
 - `/cinematicmanager send <name>` plays a saved one for everyone; `/cinematicmanager play <name>` on your screen only, to try it
+- `/cinematicmanager video <name>` plays a saved one on your screen and records it to `videos/<name>-001.avi` in the game folder, at `cl_aviFrameRate` frames a second (25 unless you set it)
 - `/cinematicmanager stop` stops it on your screen, `/cinematicmanager stop all` for everyone
+- In the manager: **Ctrl+Z** undoes, **Ctrl+Y** (or Ctrl+Shift+Z) redoes, **Ctrl+C** copies what's picked, **Ctrl+V** pastes it at the moment picked
 - `/cincam play <shot>` plays a camera shot made before the manager
 - `/cincam here` prints the spot you look from, as x y z pitch yaw roll fov
 - `/cincam stop` leaves the cinematic, on your screen
