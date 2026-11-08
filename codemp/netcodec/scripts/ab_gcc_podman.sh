@@ -1,7 +1,7 @@
 #!/bin/bash
 # A/B (owner, Debian VM): bench_codec built with a recent GCC in a podman container, run on the VM outside it.
 # Three builds: a reference commit (REF, default HEAD), the working tree without the forced inlining of PredictAngle
-# (noinl), the working tree (cur); code aligned to 64 bytes in all of them, as ab_gcc.sh. Prints the warm timings per
+# (noinl), the working tree (cur); code aligned to 64 bytes in all of them, as ab_gcc.sh. Prints the warm and cold timings per
 # run, then the best of each build against ref, with the checks of ab_summary.awk.
 # Usage, from anywhere: [REF=<commit>] bash codemp/netcodec/scripts/ab_gcc_podman.sh [rounds] [image]
 # (default image: docker.io/library/gcc:16)
@@ -51,8 +51,9 @@ for i in $(seq 1 "$ROUNDS"); do
 	for v in ref noinl cur; do
 		printf '%s %d: ' $v $i
 		$PIN "$W/build-$v/bench/netcodec_bench_codec" "$T" 10 \
-			| awk '/mismatches/{split($0,a,"mismatches "); mm=a[2]+0} /encode netcodec/{e=$6} /decode netcodec/{d=$6} /encode legacy/{el=$6} /decode legacy/{dl=$6}
-			       END{printf "warm encode %s (legacy %s) decode %s (legacy %s) mismatches %d\n", e, el, d, dl, mm}'
+			| awk '/mismatches/{split($0,a,"mismatches "); mm=a[2]+0}
+			       /encode netcodec/{en=$3; e=$6} /decode netcodec/{dn=$3; d=$6} /encode legacy/{el=$6} /decode legacy/{dl=$6}
+			       END{printf "warm encode %.1f (legacy %.1f) decode %.1f (legacy %.1f) mismatches %d | cold encode %.0f decode %.0f\n", e, el, d, dl, mm, en, dn}'
 	done
 done | tee "$W/runs.txt"
 awk -f "$(dirname "$0")/ab_summary.awk" "$W/runs.txt"

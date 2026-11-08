@@ -104,7 +104,7 @@ template <class O> void PutInt(O &io, ctx::Row row, int bits, int64_t nv, int64_
 		if (ab <= 8) io.Symbol(row[fctx::kA], static_cast<uint64_t>(nv) & static_cast<uint64_t>(m - 1));
 		else io.Class(row[fctx::kA], bits < 0 ? Zz(nv) : static_cast<uint64_t>(nv));
 	} else {
-		io.Class(row[fctx::kD], Zz(PyMod(nv - ov + (m / 2), m) - (m / 2)));
+		io.Class(row[fctx::kD], Zz(ModPow2(nv - ov + (m / 2), m) - (m / 2)));
 	}
 }
 
@@ -119,14 +119,14 @@ template <class O> void PutInt(O &io, ctx::Row row, int bits, int64_t nv, int64_
 		}
 		// the class alphabet allows one bit more than the width (a valid message never uses it): wrap to the width, as
 		// the delta below, so that malformed input cannot give a value the field cannot hold
-		// (m is a power of two: masks instead of PyMod's division)
+		// (m is a power of two: masks, as ModPow2)
 		const uint64_t x = io.Class(row[fctx::kA]);
 		const auto mask = static_cast<uint64_t>(m - 1);
 		if (!sgn) return static_cast<int64_t>(x & mask);
 		return static_cast<int64_t>((static_cast<uint64_t>(Unzz(x)) + static_cast<uint64_t>(m / 2)) & mask) - (m / 2);
 	}
 	const int64_t v = ov + Unzz(io.Class(row[fctx::kD]));
-	return sgn ? PyMod(v + (m / 2), m) - (m / 2) : PyMod(v, m);
+	return sgn ? ModPow2(v + (m / 2), m) - (m / 2) : ModPow2(v, m);
 }
 
 [[nodiscard]] inline uint32_t FloatKind(int64_t nv) noexcept {
@@ -139,8 +139,8 @@ template <class O> void PutFloat(O &io, ctx::Row row, int64_t nv, int64_t ov, bo
 	io.Symbol(row[fctx::kK], k);
 	const uint32_t ok = FKind(ov);
 	if (k == 1) {
-		const auto t = static_cast<int64_t>(F32(nv));
-		const int64_t ot = ok == 1 ? static_cast<int64_t>(F32(ov)) : 0;
+		const int64_t t = static_cast<int32_t>(F32(nv));   // integral kind, |t| < 4096 (32 bits: SSE2 on x86)
+		const int64_t ot = ok == 1 ? static_cast<int32_t>(F32(ov)) : 0;
 		if (absolute) io.Class(row[fctx::kIA], Zz(t));
 		else io.Class(row[fctx::kID], Zz(t - ot));
 	} else if (k == 3) {
@@ -155,7 +155,7 @@ template <class O> void PutFloat(O &io, ctx::Row row, int64_t nv, int64_t ov, bo
 	const uint32_t ok = FKind(ov);
 	if (k == 0) return 0;
 	if (k == 1) {
-		const int64_t ot = ok == 1 ? static_cast<int64_t>(F32(ov)) : 0;
+		const int64_t ot = ok == 1 ? static_cast<int32_t>(F32(ov)) : 0;   // integral kind, |ot| < 4096
 		const int64_t t = absolute ? Unzz(io.Class(row[fctx::kIA])) : ot + Unzz(io.Class(row[fctx::kID]));
 		return Pack(static_cast<double>(t));
 	}
@@ -172,7 +172,7 @@ template <class O> void PutField(O &io, const PredCtx &c, const FieldDesc &f, ct
 		if (flip) return;
 	}
 	if (f.pmode == PredMode::kTime && f.bits == 32 && c.time) {
-		io.Class(row[fctx::kT], Zz(PyMod(nv - TimeReference(c, f, *c.time) + kTwo31, kTwo32) - kTwo31));
+		io.Class(row[fctx::kT], Zz(ModPow2(nv - TimeReference(c, f, *c.time) + kTwo31, kTwo32) - kTwo31));
 		return;
 	}
 	if (f.pmode != PredMode::kNone && f.bits == 0) {
@@ -200,7 +200,7 @@ template <class O> void PutField(O &io, const PredCtx &c, const FieldDesc &f, ct
                                       int trTypeBits) noexcept {
 	if (f.ctype == CType::kBool && io.Symbol(row[fctx::kB]) == 0) return ov == 0 ? 1 : 0;   // a flip
 	if (f.pmode == PredMode::kTime && f.bits == 32 && c.time)
-		return PyMod(TimeReference(c, f, *c.time) + Unzz(io.Class(row[fctx::kT])), kTwo32);
+		return ModPow2(TimeReference(c, f, *c.time) + Unzz(io.Class(row[fctx::kT])), kTwo32);
 	if ((f.pmode == PredMode::kPos || f.pmode == PredMode::kAngle) && f.bits == 0) {
 		const uint32_t k = io.Symbol(row[fctx::kK]);
 		if (k == 2 && f.pmode == PredMode::kPos) {

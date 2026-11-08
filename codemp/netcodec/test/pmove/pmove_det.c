@@ -4,8 +4,7 @@
 // right only if a client build gives the same states as the server build. Rounding modes of pmove's velocity: 0, the
 // engine's Sys_SnapVector as it is (today's default, pmove_float 0); 1, none (pmove_float 1); 2, to nearest with ties to
 // even on every platform ((float)lrintf, the planned fix). Built with -DJKA101 and the original 1.01 game code
-// (E:\Git\jka\jediacademy\codemp\game), mode 3: 1.01's own rounding (fistp on Windows, rint on Linux; 1.01 always
-// rounds).
+// (E:\Git\jka\jediacademy\codemp\game), mode 3: 1.01's own rounding (fistp on Windows and Linux; 1.01 always rounds).
 // Output: one line per scenario and mode: the hash of the movement fields (origin, velocity, view angles, ground
 // entity, pm_flags, pm_time, commandTime) and of the whole player state after every command, and the final origin and
 // velocity as float bit patterns. --dump=<file>: the movement fields after every command (float bits), to compare two
@@ -175,16 +174,9 @@ void QDECL Com_Error(int level, const char *error, ...) {
 	exit(2);
 }
 void QDECL Com_Printf(const char *msg, ...) { (void)msg; }
-// 1.01's Sys_SnapVector (win32/win_shared.cpp: fld, fistp; unix/unix_shared.cpp: rint)
-void trap_SnapVector(float *v) {
-#if defined(_WIN32)
-	SnapEven(v);
-#else
-	v[0] = (float)rint(v[0]);
-	v[1] = (float)rint(v[1]);
-	v[2] = (float)rint(v[2]);
-#endif
-}
+// 1.01's Sys_SnapVector: fld, fistp on Windows (win32/win_shared.cpp) and on Linux (unix/snapvector.nasm, with the
+// control word set to round to nearest even); the rint version of unix/unix_shared.cpp is Sys_SnapVector3, Mac only
+void trap_SnapVector(float *v) { SnapEven(v); }
 level_locals_t level;
 gentity_t g_entities[MAX_GENTITIES];
 vmCvar_t g_gametype, bg_fighterAltControl;

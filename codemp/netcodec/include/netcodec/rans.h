@@ -48,9 +48,10 @@ struct EncSymbol {
 	[[nodiscard]] constexpr uint32_t Freq() const noexcept { return kProbScale - cmplFreq; }
 	// exclusive bound of the state before renormalisation
 	[[nodiscard]] constexpr uint32_t XMax() const noexcept { return ((kLow >> kProbBits) << 8U) * Freq(); }
-	// shift of the multiply-high: 31 + ceil(log2(freq)), and 32 when freq is 1
-	[[nodiscard]] constexpr uint32_t RcpShift() const noexcept {
-		return static_cast<uint32_t>(63 - std::countl_zero((Freq() - 1) | 1U));   // 31 + bit width
+	// shift of the multiply-high (31 + ceil(log2(freq)), and 32 when freq is 1), minus 32: applied to the product's high
+	// word (a 64-bit shift by a variable is a runtime call in MSVC's 32-bit code)
+	[[nodiscard]] constexpr uint32_t RcpShiftHigh() const noexcept {
+		return static_cast<uint32_t>(31 - std::countl_zero((Freq() - 1) | 1U));   // bit width - 1
 	}
 };
 static_assert(sizeof(EncSymbol) == 8, "encoder symbols are 8 bytes");
@@ -114,7 +115,11 @@ public:
 					if (pos == kStateBytes) return 0;
 					out[--pos] = static_cast<uint8_t>(x); x >>= 8U;
 				}
-				const auto q = static_cast<uint32_t>((uint64_t{ x } * s.rcpFreq) >> s.RcpShift());
+				// 64-bit targets: one shift of the product (32 + the shift is off the state's chain); 32-bit: a 32-bit
+				// shift of its high word, since a 64-bit shift by a variable is a runtime call in MSVC's 32-bit code
+				const uint64_t p = uint64_t{ x } * s.rcpFreq;
+				const uint32_t q = sizeof(void *) == 8 ? static_cast<uint32_t>(p >> (32U + s.RcpShiftHigh()))
+				                                       : static_cast<uint32_t>(p >> 32U) >> s.RcpShiftHigh();
 				x = x + s.bias + (q * s.cmplFreq);
 			} else {
 				const uint32_t sh = kProbBits - op.bits;           // freq = 2^sh, start = value << sh

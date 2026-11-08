@@ -19,11 +19,12 @@ inline constexpr double kAngleStep = 360.0 / 65536;   // a 16-bit angle index st
 	return (x & 1U) == 0 ? static_cast<int64_t>(x >> 1U) : -static_cast<int64_t>((x + 1) >> 1U);
 }
 
-// modulo with the sign of the divisor, and division rounding down
-[[nodiscard]] constexpr int64_t PyMod(int64_t a, int64_t m) noexcept {
-	const int64_t r = a % m;
-	return r < 0 ? r + m : r;
+// a modulo m for m a power of two, with the sign of m (0 <= result < m): a mask instead of the 64-bit division of %
+// (an idiv on x64 when m is not a constant, a runtime call on 32-bit x86)
+[[nodiscard]] constexpr int64_t ModPow2(int64_t a, int64_t m) noexcept {
+	return static_cast<int64_t>(static_cast<uint64_t>(a) & static_cast<uint64_t>(m - 1));
 }
+// division rounding down
 [[nodiscard]] constexpr int64_t FloorDiv(int64_t a, int64_t b) noexcept {
 	const int64_t q = a / b;
 	return (a % b != 0 && ((a < 0) != (b < 0))) ? q - 1 : q;
@@ -38,10 +39,19 @@ inline constexpr double kAngleStep = 360.0 / 65536;   // a 16-bit angle index st
 }
 // a double rounded to float32, as its bit pattern
 [[nodiscard]] constexpr uint32_t Pack(double x) noexcept { return std::bit_cast<uint32_t>(static_cast<float>(x)); }
-// floor of x, for |x| < 2^62 (not NaN): exact, without the library call std::floor is on SSE2 targets
+// floor of x, for |x| < 2^51 (not NaN): exact, without the library call std::floor is on SSE2 targets
 [[nodiscard]] constexpr int64_t FloorI(double x) noexcept {
+#if defined(__i386__) || defined(_M_IX86)
+	// 32-bit x86 has no SSE2 conversion between double and int64_t (x87 with two control-word changes, or a library
+	// call: half of the decoding time): x + 1.5 * 2^52 is x rounded to the nearest integer, held in the low bits
+	constexpr double kRound = 6755399441055744.0;   // 1.5 * 2^52: the sum's last place is 1 for |x| < 2^51
+	const double big = x + kRound;
+	const int64_t n = std::bit_cast<int64_t>(big) - std::bit_cast<int64_t>(kRound);
+	return big - kRound > x ? n - 1 : n;
+#else
 	const auto t = static_cast<int64_t>(x);   // rounds toward zero
 	return static_cast<double>(t) > x ? t - 1 : t;
+#endif
 }
 [[nodiscard]] constexpr int64_t Rnd(double x) noexcept { return FloorI(x + 0.5); }
 
@@ -52,7 +62,7 @@ inline constexpr double kAngleStep = 360.0 / 65536;   // a 16-bit angle index st
 	if (pattern == 0) return 0;
 	if (pattern == kNegativeZero) return 2;
 	const double f = F32(pattern);
-	return (f == f && f >= -4096 && f < 4096 && static_cast<double>(static_cast<int64_t>(f)) == f) ? 1 : 2;
+	return (f == f && f >= -4096 && f < 4096 && static_cast<double>(static_cast<int32_t>(f)) == f) ? 1 : 2;
 }
 
 // the float is exactly a 16-bit angle index times kAngleStep, |f| <= 720

@@ -29,6 +29,11 @@ if(EXISTS "${netcodec_OPENJK_DIR}/codemp/qcommon/msg.cpp")
 		endif()
 	endif()
 	target_compile_options(netcodec_legacy PRIVATE $<IF:$<BOOL:${MSVC}>,/W0,-w>)
+	# aligned as the library (CMakeLists.txt): the legacy timings are the A/B scripts' check of a busy machine, so they
+	# must not move with where the code falls
+	if(NOT MSVC)
+		target_compile_options(netcodec_legacy PRIVATE -falign-functions=64 -falign-loops=64)
+	endif()
 	# not netcodec_options: its C++20 requirement would turn on MSVC's conformance mode, which the engine code does
 	# not build with (the engine builds msg.cpp as C++11); the legacy code is not instrumented by the sanitizers
 	if(MSVC AND netcodec_ENABLE_SANITIZER_ADDRESS)

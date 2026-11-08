@@ -200,9 +200,13 @@ private:
 using ChangeList = std::array<uint8_t, kNumEntityFields>;
 static_assert(kNumEntityFields <= 256, "change list indices are bytes");
 
-// two entity images are equal: compared inline 8 bytes at a time (most compared entities are unchanged, and a
-// library memcmp call costs more than the comparison)
+// two entity images are equal (most compared entities are unchanged). The memcmp of glibc and of MSVC's runtime is
+// faster than an inline loop (warm encoding 6 to 15 % faster with GCC, Clang and MSVC, x64; 4 % with MSVC Win32), the
+// one MinGW links (ucrtbase) slower (+5.8 % with clang x64): MinGW compares inline, 8 bytes at a time.
 bool SameEntity(ImageView a, ImageView b) noexcept {
+#ifndef __MINGW32__
+	return std::memcmp(a.first(kEntityBytes).data(), b.first(kEntityBytes).data(), kEntityBytes) == 0;
+#else
 	static_assert(kEntityBytes % 8 == 4, "the last word is compared apart");
 	uint64_t acc = 0;
 	for (size_t k = 0; k + 8 <= kEntityBytes; k += 8) {
@@ -213,6 +217,7 @@ bool SameEntity(ImageView a, ImageView b) noexcept {
 	}
 	acc |= Load(a, kEntityBytes - 4) ^ Load(b, kEntityBytes - 4);
 	return acc == 0;
+#endif
 }
 
 uint32_t Changes(ImageView a, ImageView b, ChangeList &list) noexcept {
