@@ -793,7 +793,10 @@ The tools share what they do with everyone with this client through hidden `rpno
 - A hook you send goes to you, then to each player on the server the bot says has the client, one after the other, as the server's flood protection lets them through. A player counts only while their slot still has the name they told the bot
 - While hooks are going out, your other commands wait their turn behind them, so nothing comes out of order or is dropped by the flood protection. With several players with the client, a long cinematic or map edit takes longer to reach the last of them
 - If the bot doesn't answer, a hook waits up to 5 seconds and then isn't sent, rather than showing to everyone; the console says so
-- `/clientusers` lists who on the server has the client, and their version
+- **Through C1B3R** (the project's service, the feedback bot made bigger): with a C1B3R that carries hooks, your game opens a session with it on each server and keeps a line open, and the hooks the others send reach you through it as soon as they're sent. A hook you send goes to C1B3R once, and on to everyone with the client at the same moment, instead of one `rpnotify` a second for each player: a long cinematic or map edit reaches 20 players as fast as one
+  - Only an admin may send hooks, as only an admin may use `rpnotify`: once a session, your game proves it by one `rpnotify` with a code to another player with the client, whose game tells C1B3R it saw it. Until then, and for players whose client is from before, and for NPC talk (the chat box needs it from the server), hooks go by `rpnotify` as above
+  - If C1B3R doesn't answer, hooks go by `rpnotify` too
+- `/clientusers` lists who on the server has the client, their version, whether C1B3R reaches them, and who may send hooks through it
 - `cl_hookGap` sets the milliseconds between the hooks to each player (0, the default: the server's flood protection)
 - `cl_presenceUrl` is the bot's address; empty, the game tells it nothing, and hooks go to everyone as before. On a server of your own (`/devmap`), hooks go to everyone
 

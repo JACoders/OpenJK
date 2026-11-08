@@ -72,6 +72,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //   cmd:emote/<client number>/<part>/<parts>: <emote>, cmd:emote/<client number>/stop
 //     an admin's custom emote from the animation manager, played on them; see cl_animmanager.cpp.
 //
+//   cmd:c1b3r/<code>
+//     a C1B3R session's proof that its player may send hooks, as only an admin can rpnotify;
+//     told to C1B3R, see cl_presence.cpp.
+//
 //   cmd:npcnames/<part>/<parts>: <entity number>=<name>|...
 //     the NPCs' targetnames, from an admin's npc list, shown when the crosshair is on one; see
 //     cl_npcnames.cpp. Part 1 starts the list over.
@@ -469,6 +473,12 @@ static rhResult_t RH_Run( const char *text ) {
 		p = end + 1;
 	}
 
+	// a C1B3R session's proof, come through the server: an admin's, told to C1B3R, never shown
+	if ( !Q_stricmp( argv[0], "c1b3r" ) ) {
+		if ( argc >= 2 )
+			CL_Presence_Seen( argv[1] );
+		return RH_DROP;
+	}
 	if ( !Q_stricmp( argv[0], "npc" ) && argc >= 2 && !Q_stricmp( argv[1], "walk" ) ) {
 		CL_NpcWalk_Hook( argv + 2, argc - 2 );
 		return RH_DROP;
@@ -921,6 +931,11 @@ void CL_RpHooks_Disconnect( void ) {
 	memset( &rhObj, 0, sizeof( rhObj ) );
 	memset( &rhLast, 0, sizeof( rhLast ) );
 	memset( &rhSubs, 0, sizeof( rhSubs ) );
+}
+
+// a hook that came from C1B3R rather than the server, run as one from the server would be
+void CL_RpHooks_Deliver( const char *text ) {
+	RH_Run( text );
 }
 
 // the server command just tokenized: qfalse keeps it from the cgame

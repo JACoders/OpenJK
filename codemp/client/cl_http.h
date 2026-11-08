@@ -39,6 +39,7 @@ typedef struct {
 	int				sendLen;
 	char			answer[HTTP_MAX_ANSWER];	// what came back, cut at its end
 	int				answerLen;
+	int				waitMs;				// how long the answer may take, 0 as usual: a poll held open longer
 } httpRequest_t;
 
 // sends it: a POST of body as JSON, or a GET when body is NULL. qfalse when it couldn't start

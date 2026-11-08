@@ -82,7 +82,7 @@ static DWORD WINAPI HTTP_Thread( LPVOID arg ) {
 
 	session = WinHttpOpen( L"OpenJK-rpmod", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0 );
 	if ( session ) {
-		WinHttpSetTimeouts( session, HTTP_TIMEOUT_MS, HTTP_TIMEOUT_MS, HTTP_TIMEOUT_MS, HTTP_TIMEOUT_MS );
+		WinHttpSetTimeouts( session, HTTP_TIMEOUT_MS, HTTP_TIMEOUT_MS, HTTP_TIMEOUT_MS, req->waitMs > 0 ? req->waitMs : HTTP_TIMEOUT_MS );
 		connect = WinHttpConnect( session, host, parts.nPort, 0 );
 	}
 	if ( connect )
@@ -212,7 +212,7 @@ static void *HTTP_Thread( void *arg ) {
 		curl.easy_setopt( c, HTTP_CURLOPT_NOSIGNAL, 1L );
 		curl.easy_setopt( c, HTTP_CURLOPT_FOLLOWLOCATION, 1L );
 		curl.easy_setopt( c, HTTP_CURLOPT_CONNECTTIMEOUT_MS, (long)HTTP_TIMEOUT_MS );
-		curl.easy_setopt( c, HTTP_CURLOPT_TIMEOUT_MS, (long)( HTTP_TIMEOUT_MS * 2 ) );
+		curl.easy_setopt( c, HTTP_CURLOPT_TIMEOUT_MS, (long)( req->waitMs > 0 ? req->waitMs + HTTP_TIMEOUT_MS : HTTP_TIMEOUT_MS * 2 ) );
 		if ( req->send ) {
 			curl.easy_setopt( c, HTTP_CURLOPT_POSTFIELDS, req->send );
 			curl.easy_setopt( c, HTTP_CURLOPT_POSTFIELDSIZE, (long)req->sendLen );

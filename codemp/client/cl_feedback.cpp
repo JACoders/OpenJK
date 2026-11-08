@@ -47,7 +47,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 
 #define FB_CMD				"feedback"
-#define FB_DEFAULT_URL		"https://vault.tail508ce5.ts.net"
+#define FB_DEFAULT_URL		"https://c1b3r.keztor.tech"
 #define FB_KEY_FILE			"feedback.key"
 #define FB_FIRST_POLL_MS	15000				// after the game starts, the first time it asks
 #define FB_POLL_MS			( 5 * 60 * 1000 )	// then this often, while there are reports
@@ -249,6 +249,12 @@ static void FB_MakeKey( void ) {
 	for ( int i = 0; i < (int)sizeof( bytes ); i++ )
 		Com_sprintf( fb.key + i * 2, 3, "%02x", bytes[i] );
 	FB_SaveFile();
+}
+
+// the player's private key, made now if there's none: C1B3R's sessions are this player's by it too
+const char *CL_Feedback_Key( void ) {
+	FB_MakeKey();
+	return fb.key;
 }
 
 /*
