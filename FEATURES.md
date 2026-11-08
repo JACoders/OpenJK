@@ -617,11 +617,18 @@ A datapad on your screen, used like a phone. `/datapad`, or **TOOLS** in the in-
 
 - `/datapad` opens it: it rises in the bottom right corner, from above the force and ammo HUD down to the screen's edge, and the mouse works on it at once. **Esc**, `/datapad` again or **Close** puts it away; **Home** goes back to its apps. An app that needs the room has it bigger, on the right side of the screen
 - On a wide screen with `cl_ratioFix 1` it keeps its shape, as the text does
+- Its top bar shows JEDI's time: `474.08 ABY - 1345/49 GST` (the year up one each month, 474 in November 2026; the day of the month; then the hour and minute, and the seconds, in New York's time), and the server's name. Names on it show RPMod's colours, as the console does
 - **Apps:** the home screen has the apps; one opens over it, and **< Back** or **Home** returns. The first is **Settings**:
   - **Colour:** what it's lit in: cyan, blue, green, amber, red, violet or white
   - **Keys:** click **Open it** or **Close it**, then press the key for it (Esc leaves it as it was). They work while you play and while it's open
   - **Your character holds a datapad while it's open:** your character plays RPMod's `/emlift` as you open it, and it ends (a moment's crouch, as C does) as you fold or close it
-- `/datapad open`, `/datapad close` and `/datapad settings` go straight there
+- **Pazaak:** KOTOR's card game, against another player on the same server, through C1B3R. The datapad grows to the right side of the screen for it
+  - **Play:** the server's tables, to **Join** one waiting for a player or **Watch** a match; or start one (a name, all cards or ± cards only, your deck) and wait for someone to sit down
+  - **The table:** each player's 3x3 table, total, sets won and turn; your hand of 4 (the other one face down). Click a card, then **Play it** (+ or − for ± cards, 1 or 2 for the 1±2), then **End turn** or **Stand**. A turn lasts 90 s. Leaving or **Forfeit** gives the match to the other player
+  - **Side decks:** build 10-card decks from every card, name them and **Save** them on C1B3R (they follow your game everywhere); **Play with it** picks the one you play with
+  - **Rules** on the datapad. C1B3R deals and checks every move: nobody sees your hand or plays a card they don't have
+  - The cards are the datapad's own; Jedi Academy's sounds. Art of your own in a pk3 is used instead: `pazaak/cards/main`, `plus`, `minus`, `either`, `special`, `back` (.png, .tga or .jpg) and `pazaak/sounds/click`, `deal`, `play`, `turn`, `stand`, `win`, `lose` (.wav)
+- `/datapad open`, `/datapad close`, `/datapad settings` and `/datapad pazaak` go straight there
 - `/datapad pos <x> <y>` opens it elsewhere, on the 640x480 screen; `/datapad pos` puts it back above the HUD
 
 ## Long Chat in Parts

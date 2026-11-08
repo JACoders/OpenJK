@@ -1930,6 +1930,7 @@ void CL_CharEvent( int key ) {
 	else if ( Key_GetCatcher() & KEYCATCH_ASSETMANAGER )	CL_AssetManager_CharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_CINEDITOR )	CL_RpCinematic_EditorCharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_RADIALMENU )	CL_RadialMenu_CharEvent( key );
+	else if ( Key_GetCatcher() & KEYCATCH_DATAPAD )		CL_Datapad_CharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_LANGUAGES )	CL_Languages_CharEvent( key );
 	else if ( Key_GetCatcher() & KEYCATCH_CGAME )		CGVM_KeyEvent( key|K_CHAR_FLAG, qtrue );
 	else if ( Key_GetCatcher() & KEYCATCH_MESSAGE )		Field_CharEvent( &chatField, key );

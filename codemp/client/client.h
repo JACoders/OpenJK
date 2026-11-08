@@ -1072,6 +1072,8 @@ void CL_Datapad_Close( void );
 void CL_Datapad_Disconnect( void );
 void CL_Datapad_KeyEvent( int key, qboolean down );
 void CL_Datapad_MouseEvent( int dx, int dy );
+void CL_Datapad_CharEvent( int ch );
+void CL_Pazaak_Frame( void );		// cl_pazaak.cpp
 void CL_Datapad_Escape( void );
 void CL_Datapad_Draw( void );
 void CL_TapCrouch( int ms );		// cl_input.cpp

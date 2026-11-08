@@ -39,6 +39,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "client.h"
 #include "cl_http.h"
+#include "cl_presence.h"
 #include "qcommon/game_version.h"
 #include <deque>
 #include <string>
@@ -580,6 +581,23 @@ static const char *PS_HookCommand( const char *cmd, int *to ) {
 		return NULL;
 	*to = Q_isanumber( who ) && atoi( who ) >= 0 ? atoi( who ) : -1;
 	return p;
+}
+
+// for the datapad's apps (cl_pazaak.cpp): the session, and requests on it
+const char *CL_Presence_Session( void ) {
+	return psv.on && PS_Active() ? psv.id : NULL;
+}
+
+qboolean CL_Presence_Post( httpRequest_t *req, const char *path, const std::string &body ) {
+	return PS_Send( req, path, body );
+}
+
+void CL_Presence_Json( std::string &out, const char *s ) {
+	PS_Json( out, s );
+}
+
+std::string CL_Presence_Unfield( const char *in ) {
+	return PS_Unfield( in );
 }
 
 // from CL_AddReliableCommand: qtrue for a hook, taken here and never sent to the server

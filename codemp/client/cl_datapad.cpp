@@ -38,6 +38,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // Folded (datapad fold): the same in the corner, small, while you play on. Not offered for now.
 
 #include "client.h"
+#include "cl_datapad.h"
 
 #define DP_CMD			"datapad"
 #define DP_OPEN_CMD		DP_CMD " open"
@@ -59,8 +60,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define DP_BIG_TOP		26.0f
 
 #define DP_TEXT_SCALE	0.8f
-#define DP_CTRL_H		15.0f
-#define DP_STATUS_H		14.0f
 
 typedef enum {
 	DP_CLOSED,
@@ -71,21 +70,18 @@ typedef enum {
 typedef enum {
 	DP_HOME,
 	DP_SETTINGS,
+	DP_PAZAAK,
 	DP_NUM_APPS
 } dpApp_t;
 
 // an app that needs the room has the datapad bigger while it's on its screen
-static const qboolean dpAppFull[DP_NUM_APPS] = { qfalse, qfalse };
+static const qboolean dpAppFull[DP_NUM_APPS] = { qfalse, qfalse, qtrue };
 
 typedef enum {
 	DP_BIND_NONE,
 	DP_BIND_OPEN,
 	DP_BIND_CLOSE
 } dpBind_t;
-
-typedef struct {
-	float	x, y, w, h;
-} dpRect_t;
 
 // the screen's colour, picked in Settings: everything lit on it is drawn in it
 typedef struct {
@@ -109,10 +105,10 @@ static const float dpCaseEdge[4]	= { 0.36f, 0.38f, 0.42f, 1.0f };
 static const float dpCaseDark[4]	= { 0.04f, 0.04f, 0.05f, 1.0f };
 static const float dpLedOn[4]		= { 0.35f, 1.0f, 0.55f, 1.0f };
 static const float dpLedBlink[4]	= { 0.95f, 0.65f, 0.15f, 1.0f };
-static const float dpWhite[4]		= { 1.0f, 1.0f, 1.0f, 1.0f };
+const float dpWhite[4]				= { 1.0f, 1.0f, 1.0f, 1.0f };
 
 // the lit colours of the moment, from the one picked
-static float dpGlow[4], dpScan[4], dpText[4], dpDim[4], dpScreen[4], dpButton[4], dpButtonHover[4], dpTile[4];
+float dpGlow[4], dpScan[4], dpText[4], dpDim[4], dpScreen[4], dpButton[4], dpButtonHover[4], dpTile[4];
 
 static struct {
 	dpState_t	state;
@@ -148,7 +144,7 @@ Where it is
 
 // a width on a 4:3 screen as it's drawn here: narrower on a wide screen with cl_ratioFix, so it
 // keeps its shape as the text does
-static float DP_Wide( float w ) {
+float DP_Wide( float w ) {
 	return w * ( cls.widthRatioCoef > 0.0f ? cls.widthRatioCoef : 1.0f );
 }
 
@@ -240,6 +236,27 @@ static void DP_Sound( sfxHandle_t sound ) {
 		S_StartLocalSound( sound, CHAN_LOCAL_SOUND );
 }
 
+// for the apps
+void DP_PlaySound( sfxHandle_t sound ) {
+	DP_Sound( sound );
+}
+
+int DP_Font( void ) {
+	return dp.font;
+}
+
+int DP_TitleFont( void ) {
+	return dp.titleFont;
+}
+
+float DP_CursorX( void ) {
+	return dp.cursorX;
+}
+
+float DP_CursorY( void ) {
+	return dp.cursorY;
+}
+
 static void DP_Message( const char *text ) {
 	Q_strncpyz( dp.message, text, sizeof( dp.message ) );
 	dp.messageTime = cls.realtime;
@@ -308,6 +325,7 @@ static void DP_Set( dpState_t state ) {
 	} else {
 		Key_SetCatcher( Key_GetCatcher() & ~KEYCATCH_DATAPAD );
 		DP_Emote( qfalse );
+		CL_Pazaak_Shown( qfalse );
 		// put away: on the home screen next time
 		if ( state == DP_CLOSED )
 			dp.app = dp.appFrom = DP_HOME;
@@ -342,6 +360,7 @@ static void DP_SetApp( dpApp_t app ) {
 	dp.app = app;
 	dp.appTime = cls.realtime;
 	dp.binding = DP_BIND_NONE;
+	CL_Pazaak_Shown( (qboolean)( app == DP_PAZAAK ) );
 }
 
 /*
@@ -374,23 +393,92 @@ static void DP_Colors( void ) {
 	dpTile[3] = 0.9f;
 }
 
-static void DP_Fill( float x, float y, float w, float h, const float *color ) {
+void DP_Fill( float x, float y, float w, float h, const float *color ) {
 	re->SetColor( color );
 	re->DrawStretchPic( x, y, w, h, 0, 0, 0, 0, cls.whiteShader );
 	re->SetColor( NULL );
 }
 
-static void DP_Frame( float x, float y, float w, float h, const float *color ) {
+void DP_Frame( float x, float y, float w, float h, const float *color ) {
 	DP_Fill( x, y, w, 1, color );
 	DP_Fill( x, y + h - 1, w, 1, color );
 	DP_Fill( x, y, 1, h, color );
 	DP_Fill( x + w - 1, y, 1, h, color );
 }
 
-static void DP_Text( float x, float y, float w, const char *text, const float *color, int font, float scale, qboolean centred ) {
+// text with colour codes in it, RPMod's too (^a-^z, ^A-^Z on RPMod, as the console shows them): each
+// run in its colour, at the alpha it's given; too long, cut with ... at the end
+#define DP_MAX_RUNS		32
+
+static void DP_ColoredText( float x, float y, float w, const char *text, const float *color, int font, float scale, qboolean centred ) {
+	char runs[DP_MAX_RUNS][MAX_STRING_CHARS / 4];
+	float colors[DP_MAX_RUNS][4], total = 0;
+	int n = 0, len = 0;
+
+	memcpy( colors[0], color, sizeof( colors[0] ) );
+	runs[0][0] = '\0';
+	for ( const char *p = text; *p; p++ ) {
+		const float *c = Con_TypedColor( p );
+
+		if ( c ) {
+			// a new colour: a new run, unless this one's still empty
+			if ( len && n < DP_MAX_RUNS - 1 ) {
+				runs[n][len] = '\0';
+				n++;
+				len = 0;
+			}
+			memcpy( colors[n], c, sizeof( float ) * 3 );
+			colors[n][3] = color[3];
+			p++;
+			continue;
+		}
+		if ( len < (int)sizeof( runs[0] ) - 4 )
+			runs[n][len++] = *p;
+	}
+	runs[n][len] = '\0';
+	n++;
+
+	for ( int i = 0; i < n; i++ )
+		total += re->Font_StrLenPixels( runs[i], font, scale );
+	// too long: the end cut off, ... in its place
+	if ( total > w ) {
+		const float dots = re->Font_StrLenPixels( "...", font, scale );
+
+		while ( n > 0 && total + dots > w ) {
+			int l = (int)strlen( runs[n - 1] );
+
+			if ( !l ) {
+				n--;
+				continue;
+			}
+			total -= re->Font_StrLenPixels( runs[n - 1], font, scale );
+			runs[n - 1][l - 1] = '\0';
+			total += re->Font_StrLenPixels( runs[n - 1], font, scale );
+		}
+		if ( n > 0 ) {
+			Q_strcat( runs[n - 1], sizeof( runs[0] ), "..." );
+			total += dots;
+		}
+	}
+	if ( centred )
+		x += ( w - total ) * 0.5f;
+	for ( int i = 0; i < n; i++ ) {
+		re->Font_DrawString( (int)x, (int)y, runs[i], colors[i], font, -1, scale );
+		x += re->Font_StrLenPixels( runs[i], font, scale );
+	}
+}
+
+void DP_Text( float x, float y, float w, const char *text, const float *color, int font, float scale, qboolean centred ) {
 	char buf[MAX_STRING_CHARS];
 	int len;
 
+	// colour codes in it: drawn as colours, RPMod's too, never as text
+	for ( const char *p = text; *p; p++ ) {
+		if ( p[0] == Q_COLOR_ESCAPE && p[1] && Con_TypedColor( p ) ) {
+			DP_ColoredText( x, y, w, text, color, font, scale, centred );
+			return;
+		}
+	}
 	Q_strncpyz( buf, text, sizeof( buf ) );
 	len = (int)strlen( buf );
 	while ( len > 3 && re->Font_StrLenPixels( buf, font, scale ) > w ) {
@@ -403,12 +491,12 @@ static void DP_Text( float x, float y, float w, const char *text, const float *c
 	re->Font_DrawString( (int)x, (int)y, buf, color, font, -1, scale );
 }
 
-static qboolean DP_InRect( float x, float y, float w, float h ) {
+qboolean DP_InRect( float x, float y, float w, float h ) {
 	return (qboolean)( dp.cursorX >= x && dp.cursorX < x + w && dp.cursorY >= y && dp.cursorY < y + h );
 }
 
 // a click in the rect, taken
-static qboolean DP_Clicked( float x, float y, float w, float h ) {
+qboolean DP_Clicked( float x, float y, float w, float h ) {
 	if ( !dp.click || dp.clickX < x || dp.clickX >= x + w || dp.clickY < y || dp.clickY >= y + h )
 		return qfalse;
 	dp.click = qfalse;
@@ -416,7 +504,7 @@ static qboolean DP_Clicked( float x, float y, float w, float h ) {
 	return qtrue;
 }
 
-static qboolean DP_Button( float x, float y, float w, const char *label, qboolean on ) {
+qboolean DP_Button( float x, float y, float w, const char *label, qboolean on ) {
 	DP_Fill( x, y, w, DP_CTRL_H, on || DP_InRect( x, y, w, DP_CTRL_H ) ? dpButtonHover : dpButton );
 	DP_Frame( x, y, w, DP_CTRL_H, dpGlow );
 	DP_Text( x, y + 3, w, label, dpText, dp.font, 0.62f, qtrue );
@@ -448,20 +536,64 @@ static void DP_DrawCase( const dpRect_t *r, float big, dpRect_t *screen ) {
 }
 
 // the bar at the top of the screen: the time here, and where you are
-static void DP_StatusBar( const dpRect_t *s, float scale ) {
-	qtime_t now;
-	const char *server;
+// the day of the week, 0 Sunday, of a date (Sakamoto's)
+static int DP_Weekday( int y, int m, int d ) {
+	static const int t[] = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
 
-	Com_RealTime( &now );
-	DP_Text( s->x + 4, s->y + 2, 40, va( "%02i:%02i", now.tm_hour, now.tm_min ), dpText, dp.font, scale, qfalse );
-	server = Info_ValueForKey( cl.gameState.stringData + cl.gameState.stringOffsets[CS_SERVERINFO], "sv_hostname" );
-	if ( server[0] && s->w > 160 ) {
-		char plain[128];
+	if ( m < 3 )
+		y--;
+	return ( y + y / 4 - y / 100 + y / 400 + t[m - 1] + d ) % 7;
+}
 
-		Q_strncpyz( plain, server, sizeof( plain ) );
-		Q_StripColor( plain );
-		DP_Text( s->x + 48, s->y + 2, s->w - 52, plain, dpDim, dp.font, scale, qfalse );
+// the n-th Sunday of a month (n 1 the first)
+static int DP_Sunday( int y, int m, int n ) {
+	return 1 + ( 7 - DP_Weekday( y, m, 1 ) ) % 7 + ( n - 1 ) * 7;
+}
+
+// the time in New York now, whatever this computer's own zone: UTC-5, UTC-4 from the second Sunday
+// of March at 2:00 to the first Sunday of November at 2:00 (1:00 in standard time)
+static void DP_NewYork( struct tm *out ) {
+	const time_t utc = time( NULL );
+	time_t t = utc - 5 * 3600;
+	struct tm *st = gmtime( &t );
+	int start, end, mdhm;
+
+	if ( !st ) {
+		memset( out, 0, sizeof( *out ) );
+		return;
 	}
+	*out = *st;
+	start = DP_Sunday( out->tm_year + 1900, 3, 2 );
+	end = DP_Sunday( out->tm_year + 1900, 11, 1 );
+	// month, day, hour as one number to compare: standard time's
+	mdhm = ( out->tm_mon + 1 ) * 10000 + out->tm_mday * 100 + out->tm_hour;
+	if ( mdhm >= 3 * 10000 + start * 100 + 2 && mdhm < 11 * 10000 + end * 100 + 1 ) {
+		t += 3600;
+		st = gmtime( &t );
+		if ( st )
+			*out = *st;
+	}
+}
+
+// JEDI's own time: <year>.<day> ABY - <hour><minute>/<seconds> GST, New York's time. The year goes
+// up one a month: 474 in November 2026; the day is the month's
+static const char *DP_JediTime( void ) {
+	struct tm ny;
+	int year;
+
+	DP_NewYork( &ny );
+	year = 474 + ( ny.tm_year + 1900 - 2026 ) * 12 + ( ny.tm_mon + 1 - 11 );
+	return va( "%i.%02i ABY - %02i%02i/%02i GST", year, ny.tm_mday, ny.tm_hour, ny.tm_min, ny.tm_sec );
+}
+
+static void DP_StatusBar( const dpRect_t *s, float scale ) {
+	const char *when = DP_JediTime(), *server;
+	const float tw = re->Font_StrLenPixels( when, dp.font, scale ) + DP_Wide( 8 );
+
+	DP_Text( s->x + 4, s->y + 2, s->w - 8, when, dpText, dp.font, scale, qfalse );
+	server = Info_ValueForKey( cl.gameState.stringData + cl.gameState.stringOffsets[CS_SERVERINFO], "sv_hostname" );
+	if ( server[0] && s->w - tw > DP_Wide( 60 ) )
+		DP_Text( s->x + 4 + tw, s->y + 2, s->w - tw - 8, server, dpDim, dp.font, scale, qfalse );
 	DP_Fill( s->x + 2, s->y + DP_STATUS_H - 1, s->w - 4, 1, dpGlow );
 }
 
@@ -489,12 +621,24 @@ static void DP_SettingsPicture( float x, float y, float w, float h ) {
 	}
 }
 
+// Pazaak's picture: two cards, fanned
+static void DP_PazaakPicture( float x, float y, float w, float h ) {
+	const float back[4] = { 0.25f, 0.45f, 0.95f, 1.0f }, front[4] = { 0.85f, 0.30f, 0.28f, 1.0f };
+
+	DP_Fill( x + w * 0.22f, y + h * 0.18f, w * 0.36f, h * 0.56f, back );
+	DP_Frame( x + w * 0.22f, y + h * 0.18f, w * 0.36f, h * 0.56f, dpWhite );
+	DP_Fill( x + w * 0.42f, y + h * 0.28f, w * 0.36f, h * 0.56f, front );
+	DP_Frame( x + w * 0.42f, y + h * 0.28f, w * 0.36f, h * 0.56f, dpWhite );
+}
+
 static void DP_DrawHome( const dpRect_t *s ) {
 	const float size = 34.0f;
 	const float x = s->x + DP_Wide( 10 ), y = s->y + DP_STATUS_H + 10;
 
 	// the apps, a row at a time as there come more
-	if ( DP_AppIcon( x, y, size, "Settings", DP_SettingsPicture ) )
+	if ( DP_AppIcon( x, y, size, "Pazaak", DP_PazaakPicture ) )
+		DP_SetApp( DP_PAZAAK );
+	if ( DP_AppIcon( x + DP_Wide( size + 16 ), y, size, "Settings", DP_SettingsPicture ) )
 		DP_SetApp( DP_SETTINGS );
 }
 
@@ -576,6 +720,14 @@ static void DP_DrawApps( const dpRect_t *s ) {
 	dpRect_t in, out;
 
 	DP_StatusBar( s, 0.62f );
+	// Pazaak draws itself, once the datapad has grown to it
+	if ( dp.app == DP_PAZAAK || ( dp.appFrom == DP_PAZAAK && t < 1.0f ) ) {
+		if ( dp.app == DP_PAZAAK && t >= 1.0f )
+			CL_Pazaak_Draw( s );
+		else
+			dp.click = qfalse;
+		return;
+	}
 	if ( t >= 1.0f || dp.app == dp.appFrom ) {
 		if ( dp.app == DP_SETTINGS )
 			DP_DrawSettings( s );
@@ -676,10 +828,17 @@ void CL_Datapad_KeyEvent( int key, qboolean down ) {
 		dp.clickY = dp.cursorY;
 		return;
 	}
+	if ( dp.app == DP_PAZAAK && CL_Pazaak_Key( key ) )
+		return;
 	// its keys work while it's open, as they do in the game
 	binding = Key_GetBinding( key );
 	if ( VALIDSTRING( binding ) && !Q_stricmpn( binding, DP_CMD, strlen( DP_CMD ) ) )
 		Cbuf_AddText( va( "%s\n", binding ) );
+}
+
+void CL_Datapad_CharEvent( int ch ) {
+	if ( dp.state == DP_OPEN && dp.app == DP_PAZAAK )
+		CL_Pazaak_Char( ch );
 }
 
 void CL_Datapad_MouseEvent( int dx, int dy ) {
@@ -711,10 +870,10 @@ static void DP_Datapad_f( void ) {
 		DP_Set( dp.state == DP_OPEN ? DP_CLOSED : DP_OPEN );
 	} else if ( !Q_stricmp( arg, "open" ) ) {
 		DP_Set( DP_OPEN );
-	} else if ( !Q_stricmp( arg, "settings" ) ) {
+	} else if ( !Q_stricmp( arg, "settings" ) || !Q_stricmp( arg, "pazaak" ) ) {
 		DP_Set( DP_OPEN );
 		if ( dp.state == DP_OPEN )
-			DP_SetApp( DP_SETTINGS );
+			DP_SetApp( !Q_stricmp( arg, "pazaak" ) ? DP_PAZAAK : DP_SETTINGS );
 	} else if ( !Q_stricmp( arg, "fold" ) ) {
 		DP_Set( DP_FOLDED );
 	} else if ( !Q_stricmp( arg, "close" ) ) {
@@ -732,6 +891,7 @@ static void DP_Datapad_f( void ) {
 		Com_Printf( "usage: " DP_CMD "                opens the datapad, or puts it away\n" );
 		Com_Printf( "       " DP_CMD " open|close\n" );
 		Com_Printf( "       " DP_CMD " settings       open on its Settings\n" );
+		Com_Printf( "       " DP_CMD " pazaak         open on Pazaak\n" );
 		Com_Printf( "       " DP_CMD " pos <x> <y>    where it opens, on the 640x480 screen (its top left)\n" );
 		Com_Printf( "       " DP_CMD " pos            back in the bottom right corner, above the HUD\n" );
 	}
@@ -744,4 +904,5 @@ void CL_Datapad_Init( void ) {
 	cl_datapadColor = Cvar_Get( "cl_datapadColor", "0", CVAR_ARCHIVE_ND, "The datapad's colour: 0 cyan, 1 blue, 2 green, 3 amber, 4 red, 5 violet, 6 white" );
 	cl_datapadEmote = Cvar_Get( "cl_datapadEmote", "0", CVAR_ARCHIVE_ND, "Your character holds a datapad (RPMod's /emlift) while yours is open" );
 	Cmd_AddCommand( DP_CMD, DP_Datapad_f, "The datapad: open like a phone, folded in the corner, or put away" );
+	CL_Pazaak_Init();
 }
