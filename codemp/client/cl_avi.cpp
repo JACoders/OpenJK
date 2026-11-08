@@ -597,6 +597,31 @@ void CL_TakeVideoFrame( void )
 
 /*
 ===============
+CL_CloseAVILater
+
+The frame asked of the renderer last is filled in this frame's drawing: closing before that frees
+the buffers it's about to write into. So it's closed at the end of the frame, by CL_CloseAVIDue
+===============
+*/
+static qboolean aviCloseDue;
+
+void CL_CloseAVILater( void )
+{
+  if( afd.fileOpen )
+    aviCloseDue = qtrue;
+}
+
+qboolean CL_CloseAVIDue( void )
+{
+  if( !aviCloseDue )
+    return qfalse;
+  aviCloseDue = qfalse;
+  CL_CloseAVI( );
+  return qtrue;
+}
+
+/*
+===============
 CL_CloseAVI
 
 Closes the AVI file and writes an index chunk

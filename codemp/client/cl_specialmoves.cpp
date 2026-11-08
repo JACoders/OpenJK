@@ -388,6 +388,15 @@ static const char *SM_NotPlaying( void ) {
 	return NULL;
 }
 
+// the Force Jump level: the server sends it in 2 bits, so 4 comes as 0; Force Jump known at 0 is that 4
+static int SM_JumpLevel( const playerState_t *ps ) {
+	const int level = ps->fd.forcePowerLevel[FP_LEVITATION];
+
+	if ( level == 0 && ( ps->fd.forcePowersKnown & ( 1 << FP_LEVITATION ) ) )
+		return 4;
+	return level;
+}
+
 // why you can't do it now, or NULL
 static const char *SM_CantDo( const smMove_t *m ) {
 	const playerState_t *ps = &cl.snap.ps;
@@ -412,8 +421,8 @@ static const char *SM_CantDo( const smMove_t *m ) {
 		return "Turn your saber on";
 	if ( ( m->flags & SM_FAST ) && !( ps->fd.forcePowersActive & ( ( 1 << FP_SPEED ) | ( 1 << FP_RAGE ) ) ) )
 		return "Needs Force Speed or Rage on";
-	if ( m->jump && ps->fd.forcePowerLevel[FP_LEVITATION] < m->jump )
-		return va( "Needs Force Jump %i (you have %i)", m->jump, ps->fd.forcePowerLevel[FP_LEVITATION] );
+	if ( m->jump && SM_JumpLevel( ps ) < m->jump )
+		return va( "Needs Force Jump %i (you have %i)", m->jump, SM_JumpLevel( ps ) );
 	if ( m->fp && ps->fd.forcePower < m->fp )
 		return va( "Needs %i force points (you have %i)", m->fp, ps->fd.forcePower );
 	if ( ( m->flags & SM_GROUND ) && ps->groundEntityNum == ENTITYNUM_NONE )
@@ -450,7 +459,7 @@ static const char *SM_DebugState( void ) {
 
 	return va( "pm_type %i pm_flags 0x%x health %i saberMove %i legsAnim %i weapon %i style %i fp %i jump %i %s speed %.0f",
 		ps->pm_type, ps->pm_flags, ps->stats[STAT_HEALTH], ps->saberMove, ps->legsAnim, ps->weapon,
-		ps->fd.saberAnimLevel, ps->fd.forcePower, ps->fd.forcePowerLevel[FP_LEVITATION],
+		ps->fd.saberAnimLevel, ps->fd.forcePower, SM_JumpLevel( ps ),
 		ps->groundEntityNum == ENTITYNUM_NONE ? "air" : "ground", sqrtf( ps->velocity[0] * ps->velocity[0] + ps->velocity[1] * ps->velocity[1] ) );
 }
 
@@ -954,10 +963,10 @@ static void SM_DrawState( void ) {
 	if ( SM_NotPlaying() )
 		text = SM_NotPlaying();
 	else if ( ps->weapon != WP_SABER )
-		text = va( "No saber out    Force points %i    Force Jump %i", ps->fd.forcePower, ps->fd.forcePowerLevel[FP_LEVITATION] );
+		text = va( "No saber out    Force points %i    Force Jump %i", ps->fd.forcePower, SM_JumpLevel( ps ) );
 	else
 		text = va( "Style %s    Force points %i    Force Jump %i",
-			style > 0 && style < (int)ARRAY_LEN( smStyleNames ) ? smStyleNames[style] : "?", ps->fd.forcePower, ps->fd.forcePowerLevel[FP_LEVITATION] );
+			style > 0 && style < (int)ARRAY_LEN( smStyleNames ) ? smStyleNames[style] : "?", ps->fd.forcePower, SM_JumpLevel( ps ) );
 	SM_Text( SM_CAT_X, SM_Y + 34, SM_W - 24, text, smDim, sm.font, SM_TEXT_SCALE, qfalse );
 }
 

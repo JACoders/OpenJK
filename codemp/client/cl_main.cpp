@@ -2447,6 +2447,9 @@ void CL_Frame ( int msec ) {
 
 	cls.framecount++;
 
+	// a video stopped this frame: closed now the renderer's done with its last frame
+	if ( CL_CloseAVIDue( ) )
+		takeVideoFrame = qfalse;
 	if ( takeVideoFrame ) {
 		// save the current screen
 		CL_TakeVideoFrame( );
@@ -2829,7 +2832,7 @@ CL_StopVideo_f
 */
 void CL_StopVideo_f( void )
 {
-	CL_CloseAVI( );
+	CL_CloseAVILater( );
 }
 
 static void CL_AddFavorite_f( void ) {

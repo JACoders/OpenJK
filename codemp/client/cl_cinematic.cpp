@@ -2999,7 +2999,12 @@ static struct {
 	qboolean	gzDragging;
 	gzDrag_t	gzDrag;
 	int			gzHot;
-	qboolean	addOpen;			// the actions to add are listed
+	qboolean	addOpen;			// the actions to add are listed, in a popup over the panel
+	qboolean	addPlaced;			// the popup placed this frame, where addPop says
+	float		addPop[4];			// x y w h
+	float		addBtn[4];			// the button that opens it
+	qboolean	popClick;			// this frame's click, landed in the popup
+	qboolean	popHover;			// the mouse over the popup: nothing under it lights up
 	qboolean	extraOpen;			// an extra's settings shown
 
 	// a preview going round between the marks either side of the moment
@@ -4060,7 +4065,8 @@ static void CM_VideoDone( void ) {
 	if ( !cmVideo )
 		return;
 	cmVideo = qfalse;
-	CL_CloseAVI();
+	// closed at the end of the frame: the renderer still has the last one to fill
+	CL_CloseAVILater();
 	Com_Printf( "Cinematic video saved: %s\n", cmVideoPath );
 	CM_Message( va( S_COLOR_GREEN "Saved %s in the game folder", cmVideoPath ) );
 }
@@ -5148,7 +5154,7 @@ static void CM_TextClipped( float x, float y, float w, const char *text, const f
 }
 
 static qboolean CM_InRect( float x, float y, float w, float h ) {
-	return (qboolean)( !cm.flying && cm.cursorX >= x && cm.cursorX < x + w && cm.cursorY >= y && cm.cursorY < y + h );
+	return (qboolean)( !cm.flying && !cm.popHover && cm.cursorX >= x && cm.cursorX < x + w && cm.cursorY >= y && cm.cursorY < y + h );
 }
 
 // eats this frame's click if it landed in the rect
@@ -6718,18 +6724,22 @@ static void CM_DrawLookClip( float x, float y, float w, cmClip_t *clip ) {
 	CM_Text( x, y + 1 + CM_ROW_H * 2, S_COLOR_GREY "that's off can't be lit here", cmWhite );
 }
 
+// the actions to add: a teleport is a position of one key
+static const struct {
+	const char	*label;
+	int			kind;
+	qboolean	tele;
+} cmAdds[] = {
+	{ "Move", CM_CLIP_MOVE, qfalse }, { "Position", CM_CLIP_PLACE, qfalse }, { "Teleport", CM_CLIP_PLACE, qtrue },
+	{ "Record", CM_CLIP_RECORD, qfalse }, { "Animation", CM_CLIP_ANIM, qfalse }, { "Emote", CM_CLIP_EMOTE, qfalse },
+	{ "Say", CM_CLIP_SAY, qfalse }, { "Look", CM_CLIP_LOOK, qfalse }, { "Force", CM_CLIP_FORCE, qfalse },
+	{ "NPC command", CM_CLIP_NPCCMD, qfalse }, { "Spawn", CM_CLIP_SPAWN, qfalse }, { "Remove", CM_CLIP_REMOVE, qfalse } };
+#define CM_ADD_LINES		( ( (int)ARRAY_LEN( cmAdds ) + 2 ) / 3 )
+// the top of the panel's bottom part: Preview, Video, Play for everyone
+#define CM_BOTTOM_Y			( SCREEN_HEIGHT - 4 - ( CM_CTRL_H + CM_GAP ) * 2 - CM_ROW_H )
+
 static void CM_DrawEntitiesTab( float x, float y, float w ) {
 	static const char *kinds[CM_NUM_CLIPS] = { "Move", "Animation", "Say", "Emote", "Position", "Record", "NPC command", "Spawn", "Remove", "Look", "Force" };
-	// the actions to add: a teleport is a position of one key
-	static const struct {
-		const char	*label;
-		int			kind;
-		qboolean	tele;
-	} adds[] = {
-		{ "Move", CM_CLIP_MOVE, qfalse }, { "Position", CM_CLIP_PLACE, qfalse }, { "Teleport", CM_CLIP_PLACE, qtrue },
-		{ "Record", CM_CLIP_RECORD, qfalse }, { "Animation", CM_CLIP_ANIM, qfalse }, { "Emote", CM_CLIP_EMOTE, qfalse },
-		{ "Say", CM_CLIP_SAY, qfalse }, { "Look", CM_CLIP_LOOK, qfalse }, { "Force", CM_CLIP_FORCE, qfalse },
-		{ "NPC command", CM_CLIP_NPCCMD, qfalse }, { "Spawn", CM_CLIP_SPAWN, qfalse }, { "Remove", CM_CLIP_REMOVE, qfalse } };
 	cmCine_t *c = &cm.cine;
 	const int rows = CM_Clip() && cm.ent >= 0 && CM_Clip()->ent == cm.ent ? 4 : 6;
 	const cmPerson_t *picked = NULL;
@@ -6813,20 +6823,25 @@ static void CM_DrawEntitiesTab( float x, float y, float w ) {
 	if ( CM_Button( x, y, w, va( "+ Add action at %.1f s   %s", CM_AddTime( CM_CLIP_MOVE ) / 1000.0f, cm.addOpen ? "^" : "v" ), cm.addOpen,
 		(qboolean)( c->numClips < CM_MAX_CLIPS ) ) )
 		cm.addOpen = (qboolean)!cm.addOpen;
-	y += CM_CTRL_H + 1;
+	cm.addBtn[0] = x;
+	cm.addBtn[1] = y;
+	cm.addBtn[2] = w;
+	cm.addBtn[3] = CM_CTRL_H;
+	// the actions in a popup drawn over the rest: under the button, or over it if the panel's
+	// bottom is in the way
 	if ( cm.addOpen ) {
-		const float third = ( w - 8 ) / 3.0f;
+		const float h = CM_ADD_LINES * ( CM_CTRL_H + 1 ) + 7;
+		float py = y + CM_CTRL_H + 1;
 
-		for ( int k = 0; k < (int)ARRAY_LEN( adds ); k++ ) {
-			if ( CM_Button( x + ( k % 3 ) * ( third + 4 ), y + ( k / 3 ) * ( CM_CTRL_H + 1 ), third, adds[k].label, qfalse, qtrue ) ) {
-				cm.addOpen = qfalse;
-				CM_AddClip( adds[k].kind, adds[k].tele );
-				return;
-			}
-		}
-		y += ( CM_CTRL_H + 1 ) * ( ( (int)ARRAY_LEN( adds ) + 2 ) / 3 );
+		if ( py + h > CM_BOTTOM_Y - 6 )
+			py = y - 1 - h;
+		cm.addPop[0] = x - 3;
+		cm.addPop[1] = Q_max( 4.0f, py );
+		cm.addPop[2] = w + 6;
+		cm.addPop[3] = h;
+		cm.addPlaced = qtrue;
 	}
-	y += CM_GAP + 3;
+	y += CM_CTRL_H + 1 + CM_GAP + 3;
 
 	clip = CM_Clip();
 	if ( !clip || clip->ent != cm.ent || cm.ent < 0 ) {
@@ -9927,6 +9942,26 @@ static void CM_DrawFileList( float x, float y, float w ) {
 		cm.listing = qfalse;
 }
 
+// the actions to add, over the panel: it takes the click it was given
+static void CM_DrawAddPopup( void ) {
+	const float *r = cm.addPop;
+	const float third = ( r[2] - 6 - 8 ) / 3.0f;
+
+	cm.click = cm.popClick;
+	cm.popHover = qfalse;
+	CM_Fill( r[0] + 2, r[1] + 2, r[2], r[3], cmPanel );
+	CM_Box( r[0], r[1], r[2], r[3], cmPanelLight );
+	CM_Fill( r[0] + 1, r[1] + 1, r[2] - 2, r[3] - 2, cmPanel );
+	for ( int k = 0; k < (int)ARRAY_LEN( cmAdds ); k++ ) {
+		if ( CM_Button( r[0] + 3 + ( k % 3 ) * ( third + 4 ), r[1] + 3 + ( k / 3 ) * ( CM_CTRL_H + 1 ), third, cmAdds[k].label, qfalse, qtrue ) ) {
+			cm.addOpen = qfalse;
+			CM_AddClip( cmAdds[k].kind, cmAdds[k].tele );
+			break;
+		}
+	}
+	cm.click = qfalse;
+}
+
 static void CM_DrawEditor( void ) {
 	const float x = CM_PANEL_X + 6, w = CM_PANEL_W - 12;
 	const float half = ( w - 4 ) * 0.5f, third = ( w - 8 ) / 3.0f;
@@ -9941,6 +9976,25 @@ static void CM_DrawEditor( void ) {
 			CM_Text( 8, SCREEN_HEIGHT - 16, S_COLOR_GREY "Preview: Esc, P or a click stops it", cmWhite );
 		return;
 	}
+
+	// the actions' popup, placed last frame: a click in it is its own, and nothing under it lights
+	// up; a click anywhere else but its button closes it
+	cm.popClick = qfalse;
+	cm.popHover = qfalse;
+	if ( cm.addOpen && cm.addPlaced ) {
+		const float *r = cm.addPop, *b = cm.addBtn;
+
+		cm.popHover = (qboolean)( !cm.flying && cm.cursorX >= r[0] && cm.cursorX < r[0] + r[2] && cm.cursorY >= r[1] && cm.cursorY < r[1] + r[3] );
+		if ( cm.popHover )
+			cm.wheel = 0;
+		if ( cm.click && cm.clickX >= r[0] && cm.clickX < r[0] + r[2] && cm.clickY >= r[1] && cm.clickY < r[1] + r[3] ) {
+			cm.popClick = qtrue;
+			cm.click = qfalse;
+		} else if ( cm.click && !( cm.clickX >= b[0] && cm.clickX < b[0] + b[2] && cm.clickY >= b[1] && cm.clickY < b[1] + b[3] ) ) {
+			cm.addOpen = qfalse;
+		}
+	}
+	cm.addPlaced = qfalse;
 
 	// through the cinematic's camera at the timeline's moment: its fade or wipe then
 	if ( CM_TlLooking() ) {
@@ -10122,7 +10176,7 @@ static void CM_DrawEditor( void ) {
 			CM_DrawCameraTab( x, y, w );
 
 		// try it
-		y = SCREEN_HEIGHT - 4 - ( CM_CTRL_H + CM_GAP ) * 2 - CM_ROW_H;
+		y = CM_BOTTOM_Y;
 		CM_Fill( x, y - 4, w, 1, cmBorder );
 		CM_Text( x, y, CL_RpHooks_Experimental() ? va( S_COLOR_GREY "%.1f s, %i shot%s, %i in it", total / 1000.0f, cm.cine.numShots, cm.cine.numShots == 1 ? "" : "s", cm.cine.numEnts )
 			: S_COLOR_GREY "For everyone: " RP_EXPERIMENTAL_LABEL, cmWhite );
@@ -10146,6 +10200,13 @@ static void CM_DrawEditor( void ) {
 			}
 		}
 	}
+
+	// over everything else
+	if ( cm.addOpen && cm.addPlaced )
+		CM_DrawAddPopup();
+	else
+		cm.addOpen = qfalse;
+	cm.popHover = qfalse;
 
 	// a click in the view picks a spot or someone; on nothing it leaves the box typed in
 	if ( cm.click && cm.clickX < CM_PANEL_X && !cm.listing )
