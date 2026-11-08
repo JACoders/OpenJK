@@ -344,6 +344,7 @@ typedef struct {
 	int			fogScroll;
 	qboolean	fogAdded;			// the tab shows ours, not the map's
 	unsigned	fogItemsSum;		// ours as they were last applied
+	unsigned	cineFogKey;			// a cinematic's fog as it was last applied
 	qhandle_t	hidden[ME_MAX_HIDDEN];
 	int			numHidden;
 	qboolean	dirty;
@@ -2063,6 +2064,16 @@ static unsigned ME_FogItemsSum( void ) {
 	return sum;
 }
 
+// a cinematic's fog as it is, to tell when it's changed
+static unsigned ME_CineFogKey( void ) {
+	vec3_t color;
+	float depth;
+
+	if ( !CL_Cinematic_Fog( color, &depth ) )
+		return 0;
+	return 1 + ( (unsigned)( depth / 8.0f ) * 31 + (unsigned)( color[0] * 64 ) ) * 961 + (unsigned)( color[1] * 64 ) * 31 + (unsigned)( color[2] * 64 );
+}
+
 // ours to the renderer, or the map's back: its fogs as we have them, and our volumes
 static void ME_ApplyFogs( void ) {
 	me.fogsDirty = qfalse;
@@ -2078,6 +2089,15 @@ static void ME_ApplyFogs( void ) {
 	if ( !re->ext.AddFog || !re->ext.ClearAddedFogs || cls.state != CA_ACTIVE )
 		return;
 	re->ext.ClearAddedFogs();
+	// a cinematic's fog, over everything
+	{
+		vec3_t color, mins = { -65536.0f, -65536.0f, -65536.0f }, maxs = { 65536.0f, 65536.0f, 65536.0f };
+		float depth;
+
+		me.cineFogKey = ME_CineFogKey();
+		if ( CL_Cinematic_Fog( color, &depth ) )
+			re->ext.AddFog( mins, maxs, color, depth );
+	}
 	if ( !me.fogsShown )
 		return;
 	for ( int i = 0; i < me.numItems; i++ ) {
@@ -4539,7 +4559,7 @@ void CL_MapEditor_Frame( void ) {
 		ME_ApplyTextures();
 	if ( !me.fogsRead )
 		ME_ReadFogs();
-	if ( me.fogsDirty || me.fogsShown != ME_Shown() || me.fogItemsSum != ME_FogItemsSum() )
+	if ( me.fogsDirty || me.fogsShown != ME_Shown() || me.fogItemsSum != ME_FogItemsSum() || me.cineFogKey != ME_CineFogKey() )
 		ME_ApplyFogs();
 	ME_RunTriggers();
 	ME_RunShare();

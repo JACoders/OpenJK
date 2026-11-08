@@ -28,8 +28,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // the cinematic as it is then and the bars drag to retime things.
 //
 // Cinematics are saved in cinematics/<name>.cin, a line each:
-//   look <bars 0|1> <hud 0|1> <only those in it seen 0|1> <bars 0 thin|1|2 wide>
+//   look <bars 0|1> <hud 0|1> <only those in it seen 0|1> <bars 0 thin|1|2 wide> <the game's sounds %>
 //   mark <seconds in> <name|->                      a moment marked on the timeline
+//   maplook <seconds in> <seconds, 0 to the end> <fade seconds> <light %> <r g b> <sky r g b> <fog depth, 0 none> <fog r g b>
 //   force <ent> <seconds in> <seconds, 0 to the end> <cmForces> <at ent, -1 no one> <acted 0|1>
 //   shot <hold seconds> <hook>      a shot as the cin/path or cin/orbit hook has it (see
 //                                   cl_rpcinematic.cpp); a path of one spot is held that long
@@ -122,6 +123,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define CM_LIGHT_MS			3000
 #define CM_MAX_SCREENS		16
 #define CM_MAX_MARKS		16
+#define CM_MAX_MAPLOOKS		16
+#define CM_MAPLOOK_MS		4000
+#define CM_FOG_NONE			20000.0f	// fog this thin is none
 #define CM_CAMREC_MAX		600			// a camera flown and kept: a tenth of a second each, a minute
 #define CM_CAMREC_EVERY		100
 #define CM_SCREEN_MS		1500
@@ -406,6 +410,19 @@ typedef struct {
 	int			fade;				// ms in and out, a tint's and the edges'
 } cmScreen_t;
 
+// the map's look for a while, faded in and out: its light, how bright and what colour, the sky's
+// colour, and fog; one over another blends into it
+typedef struct {
+	int			start;
+	int			ms;					// 0 to the end
+	int			fade;
+	int			light;				// percent
+	vec3_t		lightColor;
+	vec3_t		skyColor;
+	float		fogDepth;			// how deep it takes to see nothing through it, 0 no fog
+	vec3_t		fogColor;
+} cmMapLook_t;
+
 typedef struct {
 	qboolean	bars, hud;
 	qboolean	onlyCast;			// no one but those in it seen while it plays
@@ -432,6 +449,9 @@ typedef struct {
 	cmLight_t	lights[CM_MAX_LIGHTS];
 	int			numScreens;
 	cmScreen_t	screens[CM_MAX_SCREENS];
+	int			numMapLooks;
+	cmMapLook_t	mapLooks[CM_MAX_MAPLOOKS];
+	int			worldVolume;		// the game's own sounds while it plays, percent; its music as it is
 } cmCine_t;
 
 // how much of the screen's height each of a cinematic's bars takes
@@ -664,6 +684,10 @@ static void CM_PlaceAt( const cmClip_t *clip, int ms, vec3_t org, vec3_t ang ) {
 }
 
 // a prop and a light: when they go, where they are, how bright
+static int CM_MapLookEnd( const cmCine_t *c, const cmMapLook_t *m ) {
+	return m->ms > 0 ? m->start + m->ms : Q_max( m->start + 1, CM_Total( c ) );
+}
+
 static int CM_PropEnd( const cmCine_t *c, const cmProp_t *pr ) {
 	return pr->ms > 0 ? pr->start + pr->ms : Q_max( pr->start + 1, CM_Total( c ) );
 }
@@ -927,6 +951,7 @@ static void CM_RecEvents( const cmRec_t *r, const cmClip_t *clip, int from, int 
 }
 
 static qboolean CM_Playing( const cmCine_t *c );
+static void CM_WorldVolume( const cmCine_t *c );
 static void CM_SyncExtras( void );
 
 // everyone where the cinematic has them t ms in, on their animation's frame
@@ -1124,6 +1149,7 @@ static void CM_Default( cmCine_t *c ) {
 	memset( c, 0, sizeof( *c ) );
 	c->bars = qtrue;
 	c->barSize = 1;
+	c->worldVolume = 100;
 }
 
 static void CM_WriteLine( fileHandle_t f, const char *line ) {
@@ -1137,7 +1163,15 @@ static int CM_ToText( const cmCine_t *c, char *out, int size ) {
 
 	out[0] = '\0';
 #define CM_ADD( text ) do { const char *t_ = ( text ); const int l_ = strlen( t_ ); if ( len + l_ < size ) { memcpy( out + len, t_, l_ + 1 ); len += l_; } } while ( 0 )
-	CM_ADD( va( "look %i %i %i %i\n", c->bars ? 1 : 0, c->hud ? 1 : 0, c->onlyCast ? 1 : 0, c->barSize ) );
+	CM_ADD( va( "look %i %i %i %i %i\n", c->bars ? 1 : 0, c->hud ? 1 : 0, c->onlyCast ? 1 : 0, c->barSize, c->worldVolume ) );
+	// maplook <start> <seconds> <fade> <light %> <r g b> <sky r g b> <fog depth, 0 none> <fog r g b>
+	for ( int i = 0; i < c->numMapLooks; i++ ) {
+		const cmMapLook_t *m = &c->mapLooks[i];
+
+		CM_ADD( va( "maplook %g %g %g %i %g %g %g %g %g %g %i %g %g %g\n", RC_Seconds( m->start ), RC_Seconds( m->ms ), RC_Seconds( m->fade ), m->light,
+			m->lightColor[0], m->lightColor[1], m->lightColor[2], m->skyColor[0], m->skyColor[1], m->skyColor[2], RC_Round( m->fogDepth ),
+			m->fogColor[0], m->fogColor[1], m->fogColor[2] ) );
+	}
 	for ( int i = 0; i < c->numMarks; i++ )
 		CM_ADD( va( "mark %g %s\n", RC_Seconds( c->marks[i] ), c->markNames[i][0] ? c->markNames[i] : "-" ) );
 	// fx <start> <seconds, 0 once> <size> <x y z> <angles 0|1> <pitch yaw roll> <effect>
@@ -1325,9 +1359,10 @@ static void CM_Parse( char *text, cmCine_t *c ) {
 		if ( !Q_stricmpn( line, "look ", 5 ) ) {
 			int bars = 1, hud = 0;
 
-			int only = 0, size = 1;
+			int only = 0, size = 1, volume = 100;
 
-			sscanf( line + 5, "%i %i %i %i", &bars, &hud, &only, &size );
+			sscanf( line + 5, "%i %i %i %i %i", &bars, &hud, &only, &size, &volume );
+			c->worldVolume = Com_Clampi( 0, 100, volume );
 			c->onlyCast = (qboolean)( only != 0 );
 			c->barSize = Com_Clampi( 0, 2, size );
 			c->bars = (qboolean)( bars != 0 );
@@ -1375,6 +1410,20 @@ static void CM_Parse( char *text, cmCine_t *c ) {
 			s->spot = (qboolean)( spot != 0 );
 			Q_strncpyz( s->path, line + 4 + n, sizeof( s->path ) );
 			c->numSnd++;
+		} else if ( !Q_stricmpn( line, "maplook ", 8 ) && c->numMapLooks < CM_MAX_MAPLOOKS ) {
+			cmMapLook_t *m = &c->mapLooks[c->numMapLooks];
+			float start, secs, fade, fog;
+
+			memset( m, 0, sizeof( *m ) );
+			if ( sscanf( line + 8, "%f %f %f %i %f %f %f %f %f %f %f %f %f %f", &start, &secs, &fade, &m->light, &m->lightColor[0], &m->lightColor[1],
+				&m->lightColor[2], &m->skyColor[0], &m->skyColor[1], &m->skyColor[2], &fog, &m->fogColor[0], &m->fogColor[1], &m->fogColor[2] ) < 14 )
+				continue;
+			m->start = RC_SecondsMs( start );
+			m->ms = RC_SecondsMs( secs );
+			m->fade = RC_SecondsMs( fade );
+			m->light = Com_Clampi( 0, 300, m->light );
+			m->fogDepth = fog > 0.0f ? Com_Clamp( 64.0f, CM_FOG_NONE, fog ) : 0.0f;
+			c->numMapLooks++;
 		} else if ( !Q_stricmpn( line, "mark ", 5 ) && c->numMarks < CM_MAX_MARKS ) {
 			float at = 0.0f;
 			char name[32] = "-";
@@ -2377,6 +2426,7 @@ static void CM_StopPlaying( void ) {
 		return;
 	cmp.playing = qfalse;
 	CM_VideoDone();
+	CM_WorldVolume( NULL );
 	if ( cmMusicPlayed ) {
 		cmMusicPlayed = qfalse;
 		CL_SoundManager_RestoreMusic();
@@ -2447,6 +2497,7 @@ static qboolean CM_Play( const cmCine_t *c, int fromMs, qboolean local ) {
 	cmp.playing = qtrue;
 	RC_CineBegin( c->hud, c->bars );
 	RC_SetBarFrac( CM_BarFrac( c ) );
+	CM_WorldVolume( c );
 	CM_PlayerFrame();
 	return qtrue;
 }
@@ -2789,7 +2840,9 @@ typedef enum {
 	CM_DRAG_LIGHT,		// a light, when it comes on
 	CM_DRAG_LIGHT_END,	// how long it stays on
 	CM_DRAG_SCREEN,		// a flash, tint or dark edges, when
-	CM_DRAG_SCREEN_END	// and how long
+	CM_DRAG_SCREEN_END,	// and how long
+	CM_DRAG_MAPLOOK,	// the map's look, when
+	CM_DRAG_MAPLOOK_END	// and how long
 } cmDrag_t;
 
 static struct {
@@ -2859,6 +2912,7 @@ static struct {
 	int			prop, propKey, propScroll, propPickScroll;
 	int			light, lightScroll;
 	int			screen, screenScroll;
+	int			mapLook, mapLookScroll;
 	qboolean	worldDrag;
 
 	// the move arrows over the effect picked: J; one dragged moves it along
@@ -3140,6 +3194,8 @@ static void CM_Ripple( void ) {
 		CM_REMAP( c->lights[i].start );
 	for ( int i = 0; i < c->numScreens; i++ )
 		CM_REMAP( c->screens[i].start );
+	for ( int i = 0; i < c->numMapLooks; i++ )
+		CM_REMAP( c->mapLooks[i].start );
 	if ( cm.tlPinned && !cm.tlDrag )
 		CM_REMAP( cm.tlMs );
 #undef CM_REMAP
@@ -3149,12 +3205,13 @@ static void CM_Ripple( void ) {
 // what starts at or after ms moves by delta, what's between ms and ms - delta back to ms
 static void CM_ShiftClips( int ms, int delta ) {
 	const int clips = cm.cine.numClips, fx = clips + cm.cine.numFx, snd = fx + cm.cine.numSnd, txt = snd + cm.cine.numTxt;
-	const int props = txt + cm.cine.numProps, lights = props + cm.cine.numLights;
+	const int props = txt + cm.cine.numProps, lights = props + cm.cine.numLights, screens = lights + cm.cine.numScreens;
 
-	for ( int i = 0; i < lights + cm.cine.numScreens; i++ ) {
+	for ( int i = 0; i < screens + cm.cine.numMapLooks; i++ ) {
 		int *start = i < clips ? &cm.cine.clips[i].start : i < fx ? &cm.cine.fx[i - clips].start
 			: i < snd ? &cm.cine.snd[i - fx].start : i < txt ? &cm.cine.txt[i - snd].start
-			: i < props ? &cm.cine.props[i - txt].start : i < lights ? &cm.cine.lights[i - props].start : &cm.cine.screens[i - lights].start;
+			: i < props ? &cm.cine.props[i - txt].start : i < lights ? &cm.cine.lights[i - props].start
+			: i < screens ? &cm.cine.screens[i - lights].start : &cm.cine.mapLooks[i - screens].start;
 
 		if ( delta < 0 && *start >= ms + delta && *start < ms )
 			*start = ms + delta;
@@ -7549,6 +7606,11 @@ static void CM_DeleteWorld( void ) {
 		memmove( &c->screens[cm.screen], &c->screens[cm.screen + 1], ( c->numScreens - cm.screen ) * sizeof( c->screens[0] ) );
 		cm.screen = Q_min( cm.screen, c->numScreens - 1 );
 		CM_Changed();
+	} else if ( cm.worldPage == 3 && cm.mapLook >= 0 && cm.mapLook < c->numMapLooks ) {
+		c->numMapLooks--;
+		memmove( &c->mapLooks[cm.mapLook], &c->mapLooks[cm.mapLook + 1], ( c->numMapLooks - cm.mapLook ) * sizeof( c->mapLooks[0] ) );
+		cm.mapLook = Q_min( cm.mapLook, c->numMapLooks - 1 );
+		CM_Changed();
 	}
 }
 
@@ -7870,8 +7932,140 @@ static void CM_DrawScreenPage( float x, float y, float w ) {
 	CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "its bar there: drag it, or its end", cmWhite );
 }
 
+// a row of colour swatches, black first if asked; qtrue if one's clicked into rgb
+static qboolean CM_Swatches( float x, float y, float w, float *rgb, qboolean black ) {
+	const int first = black ? 0 : 1, num = (int)ARRAY_LEN( cmLightColors ) + 1 - first;
+	const float sw = ( w - 4.0f * ( num - 1 ) ) / num;
+	qboolean clicked = qfalse;
+
+	for ( int i = 0; i < num; i++ ) {
+		const float sx = x + i * ( sw + 4 );
+		vec3_t c;
+		vec4_t col;
+
+		if ( i + first )
+			VectorCopy( cmLightColors[i + first - 1].rgb, c );
+		else
+			VectorClear( c );
+		VectorCopy( c, col );
+		col[3] = 1.0f;
+		CM_Box( sx, y, sw, CM_CTRL_H, VectorCompare( c, rgb ) ? cmHighlight : CM_InRect( sx, y, sw, CM_CTRL_H ) ? cmHoverBox : cmPanelLight );
+		CM_Fill( sx + 3, y + 3, sw - 6, CM_CTRL_H - 6, col );
+		if ( CM_Clicked( sx, y, sw, CM_CTRL_H ) ) {
+			VectorCopy( c, rgb );
+			clicked = qtrue;
+		}
+	}
+	return clicked;
+}
+
+static cmMapLook_t *CM_MapLook( void ) {
+	return cm.mapLook >= 0 && cm.mapLook < cm.cine.numMapLooks ? &cm.cine.mapLooks[cm.mapLook] : NULL;
+}
+
+static const char *CM_MapLookLabel( int i ) {
+	const cmMapLook_t *m = &cm.cine.mapLooks[i];
+
+	return va( S_COLOR_CYAN "%.1fs " S_COLOR_WHITE "light %i%%" S_COLOR_GREY "%s", m->start / 1000.0f, m->light, m->fogDepth > 0.0f ? ", fog" : "" );
+}
+
+static void CM_DrawMapPage( float x, float y, float w ) {
+	static const int volumes[] = { 100, 50, 25, 0 };
+	cmCine_t *c = &cm.cine;
+	cmMapLook_t *m;
+	int clicked, steps;
+
+	clicked = CM_WorldList( x, y, w, 3, c->numMapLooks, cm.mapLook, &cm.mapLookScroll, CM_MapLookLabel );
+	if ( clicked >= 0 )
+		cm.mapLook = clicked;
+	y += 3 * CM_ROW_H + 6;
+	if ( CM_Button( x, y, w, va( "+ The map's look at %.1f s", ( cm.tlPinned ? cm.tlMs : 0 ) / 1000.0f ), qfalse, (qboolean)( c->numMapLooks < CM_MAX_MAPLOOKS ) ) ) {
+		const cmMapLook_t *like = CM_MapLook();
+
+		m = &c->mapLooks[c->numMapLooks];
+		if ( like ) {
+			*m = *like;
+		} else {
+			memset( m, 0, sizeof( *m ) );
+			m->light = 40;
+			VectorSet( m->lightColor, 0.55f, 0.65f, 1.0f );
+			VectorSet( m->skyColor, 0.3f, 0.35f, 0.6f );
+			VectorSet( m->fogColor, 0.5f, 0.5f, 0.5f );
+		}
+		m->start = cm.tlPinned ? cm.tlMs : 0;
+		m->ms = like ? like->ms : CM_MAPLOOK_MS;
+		m->fade = like ? like->fade : 1500;
+		cm.mapLook = c->numMapLooks++;
+		cm.mapLookScroll = Q_max( 0, cm.mapLook - 2 );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP + 3;
+	if ( ( m = CM_MapLook() ) != NULL ) {
+		CM_Fill( x, y - 2, w, 1, cmBorder );
+		steps = CM_Stepper( x, y, w - 54, "Light", va( "%i%%", m->light ) );
+		if ( steps ) {
+			m->light = Com_Clampi( 0, 300, m->light + steps * 10 );
+			CM_Changed();
+		}
+		if ( CM_Button( x + w - 50, y, 50, "Delete", qfalse, qtrue ) ) {
+			CM_DeleteWorld();
+			return;
+		}
+		y += CM_CTRL_H + CM_GAP;
+		if ( CM_Swatches( x, y, w, m->lightColor, qfalse ) )
+			CM_Changed();
+		y += CM_CTRL_H + CM_GAP;
+		CM_Text( x, y + 2, "Sky", cmDim );
+		if ( CM_Swatches( x + 30, y, w - 30, m->skyColor, qtrue ) )
+			CM_Changed();
+		y += CM_CTRL_H + CM_GAP;
+		// none, then thicker and thicker
+		{
+			static const float depths[] = { 0.0f, 8000.0f, 5000.0f, 3000.0f, 2000.0f, 1400.0f, 1000.0f, 700.0f, 450.0f, 250.0f };
+			int d = 0;
+
+			while ( d < (int)ARRAY_LEN( depths ) - 1 && m->fogDepth > 0.0f && depths[d] != m->fogDepth && ( d == 0 || depths[d] > m->fogDepth ) )
+				d++;
+			steps = CM_Stepper( x, y, w, "Fog", m->fogDepth > 0.0f ? va( "see %i through it", RC_Round( m->fogDepth ) ) : "none" );
+			if ( steps ) {
+				m->fogDepth = depths[Com_Clampi( 0, (int)ARRAY_LEN( depths ) - 1, d + steps )];
+				CM_Changed();
+			}
+		}
+		y += CM_CTRL_H + CM_GAP;
+		if ( m->fogDepth > 0.0f ) {
+			if ( CM_Swatches( x, y, w, m->fogColor, qtrue ) )
+				CM_Changed();
+			y += CM_CTRL_H + CM_GAP;
+		}
+		steps = CM_Stepper( x, y, w, "Lasts", m->ms > 0 ? va( "%.1f s", m->ms / 1000.0f ) : "to the end" );
+		CM_AdjustMs( &m->ms, steps, 0.5f, 0 );
+		y += CM_CTRL_H + CM_GAP;
+		steps = CM_Stepper( x, y, w, "Fades", m->fade > 0 ? va( "%.1f s in and out", m->fade / 1000.0f ) : "no, at once" );
+		CM_AdjustMs( &m->fade, steps, 0.5f, 0 );
+		y += CM_CTRL_H + CM_GAP;
+	} else {
+		CM_Text( x, y, S_COLOR_GREY "The map's light, its sky and fog for a while:", cmWhite );
+		CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "night falling, an alarm's red, a haze", cmWhite );
+		y += CM_ROW_H * 2 + 4;
+	}
+	// for all of it
+	CM_Fill( x, y - 2, w, 1, cmBorder );
+	{
+		int v = 0;
+
+		while ( v < (int)ARRAY_LEN( volumes ) - 1 && volumes[v] > c->worldVolume )
+			v++;
+		steps = CM_Stepper( x, y + 2, w, "Game sounds", c->worldVolume >= 100 ? "as they are" : c->worldVolume ? va( "%i%%, music as it is", c->worldVolume ) : "none, music only" );
+		if ( steps ) {
+			c->worldVolume = volumes[Com_Clampi( 0, (int)ARRAY_LEN( volumes ) - 1, v + steps )];
+			CM_Changed();
+		}
+	}
+}
+
 static void CM_DrawWorldTab( float x, float y, float w ) {
-	static const char *pages[] = { "Props", "Lights", "Screen" };
+	static const char *pages[] = { "Props", "Lights", "Screen", "Map" };
 	const int page = CM_Tabs( x, y, w, pages, ARRAY_LEN( pages ), cm.worldPage );
 
 	if ( page != cm.worldPage ) {
@@ -7883,8 +8077,10 @@ static void CM_DrawWorldTab( float x, float y, float w ) {
 		CM_DrawPropsPage( x, y, w );
 	else if ( cm.worldPage == 1 )
 		CM_DrawLightsPage( x, y, w );
-	else
+	else if ( cm.worldPage == 2 )
 		CM_DrawScreenPage( x, y, w );
+	else
+		CM_DrawMapPage( x, y, w );
 }
 
 // the key or light held follows what's under the mouse
@@ -8479,6 +8675,7 @@ static void CM_TlClick( const cmTrack_t *t, float rowsY, int numRows ) {
 	const int row = r > 0 ? cm.tlScroll + r : r;
 	const int at = CM_TlMsAt( t, cx, qfalse );
 	const int fxRow = 1 + c->numEnts * 2, sndRow = fxRow + 1, txtRow = sndRow + 1, propRow = txtRow + 1, lightRow = propRow + 1, screenRow = lightRow + 1;
+	const int mapRow = screenRow + 1;
 
 	cm.tlDragSpan = t->span;
 	cm.typing = CM_TYPE_NONE;
@@ -8494,9 +8691,9 @@ static void CM_TlClick( const cmTrack_t *t, float rowsY, int numRows ) {
 			cm.tab = CM_TAB_SOUNDS;
 		} else if ( row == txtRow ) {
 			cm.tab = CM_TAB_TEXT;
-		} else if ( row == propRow || row == lightRow || row == screenRow ) {
+		} else if ( row == propRow || row == lightRow || row == screenRow || row == mapRow ) {
 			cm.tab = CM_TAB_WORLD;
-			cm.worldPage = row == propRow ? 0 : row == lightRow ? 1 : 2;
+			cm.worldPage = row == propRow ? 0 : row == lightRow ? 1 : row == screenRow ? 2 : 3;
 		} else if ( row > 0 ) {
 			cm.ent = ( row - 1 ) / 2;
 			cm.clip = -1;
@@ -8610,6 +8807,25 @@ static void CM_TlClick( const cmTrack_t *t, float rowsY, int numRows ) {
 			} else {
 				cm.tlDrag = CM_DRAG_TXT;
 				cm.tlDragGrab = at - x->start;
+			}
+			return;
+		}
+	} else if ( row == mapRow ) {
+		for ( int i = c->numMapLooks - 1; i >= 0; i-- ) {
+			const cmMapLook_t *m = &c->mapLooks[i];
+			const float x0 = CM_TlX( t, m->start ), x1 = CM_TlX( t, CM_MapLookEnd( c, m ) );
+
+			if ( cx < x0 - 2 || cx > x1 + CM_TL_GRAB )
+				continue;
+			cm.tab = CM_TAB_WORLD;
+			cm.worldPage = 3;
+			cm.mapLook = i;
+			cm.tlDragIndex = i;
+			if ( cx >= x1 - CM_TL_GRAB && x1 - x0 > CM_TL_GRAB * 2 ) {
+				cm.tlDrag = CM_DRAG_MAPLOOK_END;
+			} else {
+				cm.tlDrag = CM_DRAG_MAPLOOK;
+				cm.tlDragGrab = at - m->start;
 			}
 			return;
 		}
@@ -8822,6 +9038,19 @@ static void CM_TlDrag( const cmTrack_t *t ) {
 		}
 		break;
 	}
+	case CM_DRAG_MAPLOOK:
+	case CM_DRAG_MAPLOOK_END:
+		if ( cm.tlDragIndex < c->numMapLooks ) {
+			cmMapLook_t *m = &c->mapLooks[cm.tlDragIndex];
+			const int ms = cm.tlDrag == CM_DRAG_MAPLOOK ? CM_TlSnap( at - cm.tlDragGrab ) : Q_max( CM_TL_MIN_MS, CM_TlSnap( at - m->start ) );
+			int *field = cm.tlDrag == CM_DRAG_MAPLOOK ? &m->start : &m->ms;
+
+			if ( ms != *field ) {
+				*field = ms;
+				CM_Changed();
+			}
+		}
+		break;
 	case CM_DRAG_SCREEN:
 	case CM_DRAG_SCREEN_END:
 		if ( cm.tlDragIndex < c->numScreens ) {
@@ -8869,7 +9098,7 @@ static void CM_TlDrag( const cmTrack_t *t ) {
 static void CM_DrawTimeline( void ) {
 	cmCine_t *c = &cm.cine;
 	const int fxRow = 1 + c->numEnts * 2, sndRow = fxRow + 1, txtRow = sndRow + 1, propRow = txtRow + 1, lightRow = propRow + 1, screenRow = lightRow + 1;
-	const int numRows = screenRow + 1, visRows = Q_min( CM_TL_ROWS, numRows );
+	const int mapRow = screenRow + 1, numRows = mapRow + 1, visRows = Q_min( CM_TL_ROWS, numRows );
 	const float x = CM_TL_X, w = CM_TL_W;
 	const float boxH = CM_TL_RULER_H + Q_max( 2, visRows ) * CM_ROW_H + 3, boxY = CM_TL_BOTTOM - boxH, headY = boxY - CM_CTRL_H - 2;
 	const float rowsY = boxY + 1 + CM_TL_RULER_H;
@@ -9018,6 +9247,16 @@ static void CM_DrawTimeline( void ) {
 				for ( int k = 0; k < pr->numKeys; k++ )
 					CM_Fill( CM_TlX( &t, pr->start + pr->keys[k].ms ) - 2, ry + CM_ROW_H - 6, 5, 5, i == cm.prop && k == cm.propKey ? cmTlHead : cmWhite );
 			}
+		} else if ( row == mapRow ) {
+			CM_TextClipped( x + 3, ry, CM_TL_LABEL_W - 6, "Map", cm.tab == CM_TAB_WORLD && cm.worldPage == 3 ? cmTlSel : cmWhite );
+			for ( int i = 0; i < c->numMapLooks; i++ ) {
+				const cmMapLook_t *m = &c->mapLooks[i];
+				const vec4_t bar = { 0.2f + m->lightColor[0] * 0.3f * m->light / 100.0f, 0.2f + m->lightColor[1] * 0.3f * m->light / 100.0f,
+					0.2f + m->lightColor[2] * 0.3f * m->light / 100.0f, 0.85f };
+
+				CM_TlBar( CM_TlX( &t, m->start ), CM_TlX( &t, CM_MapLookEnd( c, m ) ), ry, bar, va( "light %i%%%s", m->light, m->fogDepth > 0.0f ? ", fog" : "" ),
+					(qboolean)( i == cm.mapLook && cm.tab == CM_TAB_WORLD && cm.worldPage == 3 ) );
+			}
 		} else if ( row == screenRow ) {
 			CM_TextClipped( x + 3, ry, CM_TL_LABEL_W - 6, "Screen", cm.tab == CM_TAB_WORLD && cm.worldPage == 2 ? cmTlSel : cmWhite );
 			for ( int i = 0; i < c->numScreens; i++ ) {
@@ -9084,7 +9323,7 @@ static void CM_DrawTimeline( void ) {
 			}
 		}
 	}
-	if ( !c->numEnts && !c->numFx && !c->numSnd && !c->numTxt && !c->numProps && !c->numLights && !c->numScreens )
+	if ( !c->numEnts && !c->numFx && !c->numSnd && !c->numTxt && !c->numProps && !c->numLights && !c->numScreens && !c->numMapLooks )
 		CM_Text( t.x + 3, rowsY + CM_ROW_H, S_COLOR_GREY "Who's in it: the Entities tab. Effects, sounds, text, props and lights: their tabs", cmWhite );
 	else if ( numRows > visRows )
 		CM_Text( x + 3, boxY, va( S_COLOR_GREY "%i of %i", cm.tlScroll / 2 + 1, c->numEnts ), cmWhite );
@@ -10466,7 +10705,8 @@ typedef enum {
 	CM_BOARD_TXT,
 	CM_BOARD_PROP,
 	CM_BOARD_LIGHT,
-	CM_BOARD_SCREEN
+	CM_BOARD_SCREEN,
+	CM_BOARD_MAPLOOK
 } cmBoardKind_t;
 
 static struct {
@@ -10484,6 +10724,7 @@ static struct {
 	cmProp_t	prop;
 	cmLight_t	light;
 	cmScreen_t	screen;
+	cmMapLook_t	mapLook;
 } cmBoard;
 
 static void CM_BoardClip( const cmClip_t *clip ) {
@@ -10559,6 +10800,10 @@ static void CM_Copy( void ) {
 			cmBoard.kind = CM_BOARD_LIGHT;
 			cmBoard.light = *CM_Light();
 			Q_strncpyz( cmBoard.what, "the light", sizeof( cmBoard.what ) );
+		} else if ( cm.worldPage == 3 && CM_MapLook() ) {
+			cmBoard.kind = CM_BOARD_MAPLOOK;
+			cmBoard.mapLook = *CM_MapLook();
+			Q_strncpyz( cmBoard.what, "the map's look", sizeof( cmBoard.what ) );
 		} else if ( cm.worldPage == 2 && CM_Screen() ) {
 			cmBoard.kind = CM_BOARD_SCREEN;
 			cmBoard.screen = *CM_Screen();
@@ -10689,6 +10934,15 @@ static void CM_Paste( void ) {
 		cm.tab = CM_TAB_WORLD;
 		cm.worldPage = 1;
 		break;
+	case CM_BOARD_MAPLOOK:
+		if ( c->numMapLooks >= CM_MAX_MAPLOOKS )
+			return;
+		c->mapLooks[c->numMapLooks] = cmBoard.mapLook;
+		c->mapLooks[c->numMapLooks].start = CM_PasteAt( cmBoard.mapLook.start );
+		cm.mapLook = c->numMapLooks++;
+		cm.tab = CM_TAB_WORLD;
+		cm.worldPage = 3;
+		break;
 	case CM_BOARD_SCREEN:
 		if ( c->numScreens >= CM_MAX_SCREENS )
 			return;
@@ -10767,6 +11021,130 @@ void CL_Cinematic_AddToScene( const refdef_t *fd ) {
 			continue;
 		CM_LightOrg( l, org );
 		re->AddLightToScene( org, l->radius, l->color[0] * a, l->color[1] * a, l->color[2] * a );
+	}
+}
+
+/*
+===============================================================================
+
+The map's look: its light, the sky, fog; the game's own sounds
+
+===============================================================================
+*/
+
+static struct {
+	int			frame;
+	qboolean	any;				// a look going on
+	float		light;
+	vec3_t		lightColor, skyColor, fogColor;
+	float		fogDepth;
+} cmMapNow = { -1 };
+
+static float CM_Lerp( float a, float b, float w ) {
+	return a + ( b - a ) * w;
+}
+
+// the map's look now, once a frame: the cinematic playing, or the one being made at the moment
+// picked; each look going on blended over the ones before it, as far as it's faded in
+static void CM_MapNow( void ) {
+	const cmCine_t *c = NULL;
+	int t = 0, order[CM_MAX_MAPLOOKS], n = 0;
+
+	if ( cmMapNow.frame == cls.framecount )
+		return;
+	cmMapNow.frame = cls.framecount;
+	cmMapNow.any = qfalse;
+	cmMapNow.light = 1.0f;
+	VectorSet( cmMapNow.lightColor, 1, 1, 1 );
+	VectorSet( cmMapNow.skyColor, 1, 1, 1 );
+	VectorSet( cmMapNow.fogColor, 0.5f, 0.5f, 0.5f );
+	cmMapNow.fogDepth = CM_FOG_NONE;
+	if ( cmp.playing ) {
+		c = &cmp.cine;
+		t = cls.realtime - cmp.start;
+	} else if ( cm.open && cm.tlPinned ) {
+		c = &cm.cine;
+		t = cm.tlMs;
+	}
+	if ( !c || cls.state != CA_ACTIVE )
+		return;
+	for ( int i = 0; i < c->numMapLooks; i++ ) {
+		int j = n++;
+
+		for ( ; j > 0 && c->mapLooks[order[j - 1]].start > c->mapLooks[i].start; j-- )
+			order[j] = order[j - 1];
+		order[j] = i;
+	}
+	for ( int k = 0; k < n; k++ ) {
+		const cmMapLook_t *m = &c->mapLooks[order[k]];
+		const int in = t - m->start, len = CM_MapLookEnd( c, m ) - m->start;
+		float w = 1.0f;
+
+		if ( in < 0 || in >= len )
+			continue;
+		if ( m->fade > 0 ) {
+			w = Q_min( w, (float)in / m->fade );
+			if ( m->ms > 0 )
+				w = Q_min( w, (float)( len - in ) / m->fade );
+		}
+		cmMapNow.any = qtrue;
+		cmMapNow.light = CM_Lerp( cmMapNow.light, m->light / 100.0f, w );
+		for ( int j = 0; j < 3; j++ ) {
+			cmMapNow.lightColor[j] = CM_Lerp( cmMapNow.lightColor[j], m->lightColor[j], w );
+			cmMapNow.skyColor[j] = CM_Lerp( cmMapNow.skyColor[j], m->skyColor[j], w );
+			if ( m->fogDepth > 0.0f )
+				cmMapNow.fogColor[j] = CM_Lerp( cmMapNow.fogColor[j], m->fogColor[j], w );
+		}
+		cmMapNow.fogDepth = CM_Lerp( cmMapNow.fogDepth, m->fogDepth > 0.0f ? m->fogDepth : CM_FOG_NONE, w );
+	}
+}
+
+// a light style as the cgame sets it, darker, brighter or coloured as the map's look has it
+int CL_Cinematic_LightStyle( int style, int color ) {
+	byteAlias_t ba;
+
+	CM_MapNow();
+	if ( !cmMapNow.any )
+		return color;
+	ba.i = color;
+	for ( int j = 0; j < 3; j++ )
+		ba.b[j] = (byte)Com_Clampi( 0, 255, (int)( ba.b[j] * cmMapNow.light * cmMapNow.lightColor[j] + 0.5f ) );
+	return ba.i;
+}
+
+// the sky's colour as the map's look has it; qfalse if it's as it is
+qboolean CL_Cinematic_SkyTint( vec3_t tint ) {
+	CM_MapNow();
+	if ( !cmMapNow.any || ( fabsf( cmMapNow.skyColor[0] - 1.0f ) < 0.01f && fabsf( cmMapNow.skyColor[1] - 1.0f ) < 0.01f && fabsf( cmMapNow.skyColor[2] - 1.0f ) < 0.01f ) )
+		return qfalse;
+	VectorCopy( cmMapNow.skyColor, tint );
+	return qtrue;
+}
+
+// fog over everything as the map's look has it; qfalse if there's none
+qboolean CL_Cinematic_Fog( vec3_t color, float *depth ) {
+	CM_MapNow();
+	if ( !cmMapNow.any || cmMapNow.fogDepth >= CM_FOG_NONE - 1.0f )
+		return qfalse;
+	VectorCopy( cmMapNow.fogColor, color );
+	*depth = cmMapNow.fogDepth;
+	return qtrue;
+}
+
+// the game's own sounds quieter while a cinematic plays, s_volume put back after; kept in a cvar
+// too, so a crash meanwhile doesn't leave it low
+static cvar_t *rpc_cinVolume;
+
+static void CM_WorldVolume( const cmCine_t *c ) {
+	if ( !rpc_cinVolume )
+		rpc_cinVolume = Cvar_Get( "rpc_cinVolume", "", CVAR_ARCHIVE_ND | CVAR_INTERNAL, "s_volume while a cinematic has it quieter" );
+	if ( c && c->worldVolume < 100 ) {
+		if ( !rpc_cinVolume->string[0] )
+			Cvar_Set( "rpc_cinVolume", Cvar_VariableString( "s_volume" ) );
+		Cvar_SetValue( "s_volume", (float)atof( rpc_cinVolume->string ) * c->worldVolume / 100.0f );
+	} else if ( rpc_cinVolume->string[0] ) {
+		Cvar_Set( "s_volume", rpc_cinVolume->string );
+		Cvar_Set( "rpc_cinVolume", "" );
 	}
 }
 
@@ -10917,8 +11295,9 @@ void CM_Init( void ) {
 	cm.tlCam = qtrue;
 	rpc_cinNoPredict = Cvar_Get( "rpc_cinNoPredict", "0", CVAR_ARCHIVE_ND | CVAR_INTERNAL, "" );
 	cl_cinRecordKey = Cvar_Get( "cl_cinRecordKey", "F10", CVAR_ARCHIVE_ND, "The key that ends a recording in the cinematic manager" );
-	// a cinematic moving you was cut short by a crash: prediction back
+	// a cinematic moving you was cut short by a crash: prediction back, and the game's sounds
 	CM_HoldSelf( qfalse );
+	CM_WorldVolume( NULL );
 	Cmd_AddCommand( CM_TOGGLE_CMD, CM_Cinematic_f, "The cinematic manager: make cinematics of camera shots and what players and NPCs do, and play them" );
 }
 

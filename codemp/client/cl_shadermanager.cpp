@@ -3644,15 +3644,25 @@ void CL_ShaderManager_SkyLook( void ) {
 		re->ext.SetSkyZoom( sm.sky.zoom );
 	if ( !re->ext.SetSkyLook )
 		return;
-	if ( !SM_SkyAltered( &sm.sky ) ) {
-		if ( sm.skySet )
-			re->ext.SetSkyLook( NULL, NULL, NULL );
-		sm.skySet = qfalse;
-		return;
+	{
+		vec3_t cine;
+		const qboolean cineTint = CL_Cinematic_SkyTint( cine );
+
+		if ( !SM_SkyAltered( &sm.sky ) && !cineTint ) {
+			if ( sm.skySet )
+				re->ext.SetSkyLook( NULL, NULL, NULL );
+			sm.skySet = qfalse;
+			return;
+		}
+		VectorScale( sm.sky.tint, 1.0f / 255.0f, tint );
+		VectorCopy( sm.sky.angles, angles );
+		angles[YAW] = AngleNormalize360( angles[YAW] + (float)fmod( sm.sky.spin * ( cl.serverTime / 1000.0 ), 360.0 ) );
+		// a cinematic's colour for the sky, over the shader manager's
+		if ( cineTint ) {
+			for ( int j = 0; j < 3; j++ )
+				tint[j] *= cine[j];
+		}
 	}
-	VectorScale( sm.sky.tint, 1.0f / 255.0f, tint );
-	VectorCopy( sm.sky.angles, angles );
-	angles[YAW] = AngleNormalize360( angles[YAW] + (float)fmod( sm.sky.spin * ( cl.serverTime / 1000.0 ), 360.0 ) );
 	re->ext.SetSkyLook( tint, angles, sm.sky.shift );
 	sm.skySet = qtrue;
 }

@@ -417,7 +417,7 @@ static void CL_R_Font_DrawString( int ox, int oy, const char *text, const float 
 
 // the map editor's light styles over the server's
 static void CL_R_SetLightStyle( int style, int color ) {
-	re->SetLightStyle( style, CL_MapEditor_LightStyle( style, color ) );
+	re->SetLightStyle( style, CL_Cinematic_LightStyle( style, CL_MapEditor_LightStyle( style, color ) ) );
 }
 
 // effects are culled against cgame's view; with a tool's free camera looking
