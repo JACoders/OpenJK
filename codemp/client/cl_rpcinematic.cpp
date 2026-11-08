@@ -138,8 +138,9 @@ typedef struct {
 	float		dofNow;
 	int			dofTime;
 
-	// the bars, on their own as well
+	// the bars, on their own as well, and how much of the screen each takes
 	qboolean	bars;
+	float		barFrac;
 	float		barsFrom;
 	int			barsStart, barsDuration;
 
@@ -811,6 +812,7 @@ static void RC_Start( void ) {
 		return;
 	rc.active = qtrue;
 	rc.showHud = qfalse;
+	rc.barFrac = RC_BAR_FRAC;
 	rc.lookAt = qfalse;
 	rc.playing = qfalse;
 	rc.shotFov = qfalse;
@@ -833,6 +835,11 @@ static void RC_Start( void ) {
 }
 
 // a cinematic starts: the camera takes over, the HUD and the bars as it has them
+// how much of the screen's height each bar takes, a cinematic's own
+void RC_SetBarFrac( float frac ) {
+	rc.barFrac = Com_Clamp( 0.02f, 0.3f, frac );
+}
+
 void RC_CineBegin( qboolean hud, qboolean bars ) {
 	RC_Start();
 	rc.showHud = hud;
@@ -1141,7 +1148,7 @@ static void RC_Release( rcPlaying_t *p ) {
 static rcPlaying_t *RC_StartAnim( int num, const char *anim, int from, int to, int mode, qboolean loop, int speed, int delay, int ms, qboolean editor ) {
 	rcPlaying_t *p = NULL;
 
-	if ( num < 0 || num >= MAX_GENTITIES || !anim[0] )
+	if ( ( ( num < 0 || num >= MAX_GENTITIES ) && !CL_Extras_IsNum( num ) ) || !anim[0] )
 		return NULL;
 	// the editor shows one at a time, in place of the one it showed
 	for ( int i = 0; i < RC_MAX_PLAYING && editor; i++ ) {
@@ -2379,7 +2386,7 @@ void CL_RpCinematic_Frame( void ) {
 // the black bars, over the scene and under the menus, then the editor
 void CL_RpCinematic_Draw( void ) {
 	static const vec4_t black = { 0.0f, 0.0f, 0.0f, 1.0f };
-	const float h = RC_BarsNow() * RC_BAR_FRAC * SCREEN_HEIGHT;
+	const float h = RC_BarsNow() * ( rc.barFrac > 0.0f ? rc.barFrac : RC_BAR_FRAC ) * SCREEN_HEIGHT;
 
 	if ( h >= 0.5f && !CE_Viewing() ) {
 		re->SetColor( black );

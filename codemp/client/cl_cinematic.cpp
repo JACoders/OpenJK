@@ -28,7 +28,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // the cinematic as it is then and the bars drag to retime things.
 //
 // Cinematics are saved in cinematics/<name>.cin, a line each:
-//   look <bars 0|1> <hud 0|1> <only those in it seen 0|1>
+//   look <bars 0|1> <hud 0|1> <only those in it seen 0|1> <bars 0 thin|1|2 wide>
+//   mark <seconds in> <name|->                      a moment marked on the timeline
+//   force <ent> <seconds in> <seconds, 0 to the end> <cmForces> <at ent, -1 no one> <acted 0|1>
 //   shot <hold seconds> <hook>      a shot as the cin/path or cin/orbit hook has it (see
 //                                   cl_rpcinematic.cpp); a path of one spot is held that long
 //   ent <who>                       a player or an NPC: me, a number, a player's name, a targetname
@@ -119,6 +121,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define CM_MAX_LIGHTS		16
 #define CM_LIGHT_MS			3000
 #define CM_MAX_SCREENS		16
+#define CM_MAX_MARKS		16
+#define CM_CAMREC_MAX		600			// a camera flown and kept: a tenth of a second each, a minute
+#define CM_CAMREC_EVERY		100
 #define CM_SCREEN_MS		1500
 
 typedef enum {
@@ -132,8 +137,33 @@ typedef enum {
 	CM_CLIP_SPAWN,		// the NPC spawned at its moment, its targetname the ent's who
 	CM_CLIP_REMOVE,		// and taken out
 	CM_CLIP_LOOK,		// how they look meanwhile: hidden, their size, drawn as a hologram, their saber
+	CM_CLIP_FORCE,		// a force power at someone: its effect from their hands, and both of them acting it
 	CM_NUM_CLIPS
 } cmClipKind_t;
+
+// a force power: its effect, played again this often, from the hands to the one it's at or round
+// the one using it, and how each of them acts it
+typedef struct {
+	const char	*name;
+	const char	*effect;
+	int			every;				// ms
+	qboolean	atTarget;			// played on the one it's at, else from the hands toward them
+	qboolean	onSelf;				// played on the one using it
+	const char	*anim;				// the one using it
+	const char	*victim;			// the one it's at
+} cmForce_t;
+
+static const cmForce_t cmForces[] = {
+	{ "lightning", "force/lightning", 60, qfalse, qfalse, "BOTH_FORCELIGHTNING_HOLD", "BOTH_SONICPAIN_HOLD" },
+	{ "lightning, both hands", "force/lightningwide", 60, qfalse, qfalse, "BOTH_FORCE_2HANDEDLIGHTNING_HOLD", "BOTH_SONICPAIN_HOLD" },
+	{ "drain", "force/drain_hand", 80, qfalse, qfalse, "BOTH_FORCE_DRAIN_HOLD", "BOTH_SONICPAIN_HOLD" },
+	{ "grip", "force/force_touch", 400, qtrue, qfalse, "BOTH_FORCEGRIP_HOLD", "BOTH_CHOKE1" },
+	{ "push", "force/pushblur", 250, qfalse, qfalse, "BOTH_FORCEPUSH", NULL },
+	{ "pull", "force/pushblur", 250, qfalse, qfalse, "BOTH_FORCEPULL", NULL },
+	{ "heal", "force/heal", 1000, qfalse, qtrue, "BOTH_FORCEHEAL_START", NULL },
+	{ "rage", "force/rage2", 500, qfalse, qtrue, "BOTH_FORCE_RAGE", NULL }
+};
+#define CM_FORCE_MS			2000
 
 // what a look can draw someone as: in place of their body, or over it
 typedef struct {
@@ -251,6 +281,12 @@ typedef struct {
 	char		hold[MAX_QPATH];
 	int			holdHand;			// 0 right, 1 left
 	vec3_t		holdAng;
+
+	// a force power, for its a.ms (0 to the end): which (cmForces), at whom (an ent, -1 no one), and
+	// whether both act it
+	int			power;
+	int			target;
+	qboolean	forceAnims;
 } cmClip_t;
 
 // someone in it: a player or an NPC by who, or an extra, "+" and its name, that only screens
@@ -373,6 +409,10 @@ typedef struct {
 typedef struct {
 	qboolean	bars, hud;
 	qboolean	onlyCast;			// no one but those in it seen while it plays
+	int			barSize;			// 0 thin, 1 as they were, 2 wide
+	int			numMarks;			// moments marked on the timeline, things snap to them
+	int			marks[CM_MAX_MARKS];
+	char		markNames[CM_MAX_MARKS][32];
 	int			numShots;
 	rcShot_t	shots[CM_MAX_SHOTS];
 	int			numEnts;
@@ -393,6 +433,13 @@ typedef struct {
 	int			numScreens;
 	cmScreen_t	screens[CM_MAX_SCREENS];
 } cmCine_t;
+
+// how much of the screen's height each of a cinematic's bars takes
+static float CM_BarFrac( const cmCine_t *c ) {
+	static const float fracs[3] = { 0.07f, RC_BAR_FRAC, 0.18f };
+
+	return fracs[Com_Clampi( 0, 2, c->barSize )];
+}
 
 // a move as it goes: each of them from where they are then through the spots, a group
 // keeping its shape
@@ -947,13 +994,51 @@ static void CM_Apply( const cmCine_t *c, const cmPlan_t *plans, int t ) {
 		}
 	}
 
-	// on each one, the animation or emote that started last, while it lasts
+	// on each one, the animation or emote that started last, while it lasts; a force power's on the
+	// one using it and the one it's at
 	for ( int i = 0; i < c->numClips; i++ ) {
 		const cmClip_t *clip = &c->clips[i];
-		const int len = clip->kind == CM_CLIP_ANIM || clip->kind == CM_CLIP_EMOTE ? CM_AnimLen( c, clip ) : 0;
+		const int len = clip->kind == CM_CLIP_ANIM || clip->kind == CM_CLIP_EMOTE || clip->kind == CM_CLIP_FORCE ? CM_AnimLen( c, clip ) : 0;
 		const rcAnim_t *a = &clip->a;
 		int targets[CM_MAX_GROUP], numTargets;
 
+		if ( clip->kind == CM_CLIP_FORCE && clip->forceAnims && t >= clip->start && ( len <= 0 || t < clip->start + len ) ) {
+			static rcAnim_t forceAnims[CM_MAX_CLIPS][2];
+			const cmForce_t *f = &cmForces[clip->power];
+
+			for ( int side = 0; side < 2; side++ ) {
+				const char *anim = side ? f->victim : f->anim;
+				const int who = side ? clip->target : clip->ent;
+				rcAnim_t *fa = &forceAnims[i][side];
+
+				if ( !anim || who < 0 || who >= c->numEnts || CM_GoneAt( c, who, t ) )
+					continue;
+				memset( fa, 0, sizeof( *fa ) );
+				Q_strncpyz( fa->anim, anim, sizeof( fa->anim ) );
+				fa->to = -1;
+				fa->loop = qtrue;
+				fa->speed = 100;
+				numTargets = CM_Resolve( c->ents[who].who, targets, CM_MAX_GROUP );
+				for ( int m = 0; m < numTargets; m++ ) {
+					int j = 0;
+
+					while ( j < count && nums[j] != targets[m] )
+						j++;
+					if ( j == count ) {
+						if ( count == (int)ARRAY_LEN( nums ) )
+							continue;
+						count++;
+					} else if ( starts[j] > clip->start ) {
+						continue;
+					}
+					nums[j] = targets[m];
+					anims[j] = fa;
+					starts[j] = clip->start;
+					elapsed[j] = t - clip->start;
+				}
+			}
+			continue;
+		}
 		if ( ( clip->kind != CM_CLIP_ANIM && clip->kind != CM_CLIP_EMOTE ) || t < clip->start || ( len > 0 && t >= clip->start + len )
 			|| CM_GoneAt( c, clip->ent, t ) )
 			continue;
@@ -1038,6 +1123,7 @@ static int CM_FindEnt( cmCine_t *c, const char *who, qboolean add ) {
 static void CM_Default( cmCine_t *c ) {
 	memset( c, 0, sizeof( *c ) );
 	c->bars = qtrue;
+	c->barSize = 1;
 }
 
 static void CM_WriteLine( fileHandle_t f, const char *line ) {
@@ -1051,7 +1137,9 @@ static int CM_ToText( const cmCine_t *c, char *out, int size ) {
 
 	out[0] = '\0';
 #define CM_ADD( text ) do { const char *t_ = ( text ); const int l_ = strlen( t_ ); if ( len + l_ < size ) { memcpy( out + len, t_, l_ + 1 ); len += l_; } } while ( 0 )
-	CM_ADD( va( "look %i %i %i\n", c->bars ? 1 : 0, c->hud ? 1 : 0, c->onlyCast ? 1 : 0 ) );
+	CM_ADD( va( "look %i %i %i %i\n", c->bars ? 1 : 0, c->hud ? 1 : 0, c->onlyCast ? 1 : 0, c->barSize ) );
+	for ( int i = 0; i < c->numMarks; i++ )
+		CM_ADD( va( "mark %g %s\n", RC_Seconds( c->marks[i] ), c->markNames[i][0] ? c->markNames[i] : "-" ) );
 	// fx <start> <seconds, 0 once> <size> <x y z> <angles 0|1> <pitch yaw roll> <effect>
 	for ( int i = 0; i < c->numFx; i++ ) {
 		const cmFx_t *f = &c->fx[i];
@@ -1136,6 +1224,9 @@ static int CM_ToText( const cmCine_t *c, char *out, int size ) {
 		} else if ( clip->kind == CM_CLIP_SAY ) {
 			Com_sprintf( line, sizeof( line ), "say %i %g %s|%s\n", clip->ent, RC_Seconds( clip->start ), clip->name, clip->text );
 			CM_ADD( line );
+		} else if ( clip->kind == CM_CLIP_FORCE ) {
+			CM_ADD( va( "force %i %g %g %i %i %i\n", clip->ent, RC_Seconds( clip->start ), RC_Seconds( clip->a.ms ), clip->power, clip->target,
+				clip->forceAnims ? 1 : 0 ) );
 		} else if ( clip->kind == CM_CLIP_LOOK ) {
 			CM_ADD( va( "appear %i %g %g %i %i %i %i %i %i %i %i %i %s\n", clip->ent, RC_Seconds( clip->start ), RC_Seconds( clip->a.ms ), clip->hidden ? 1 : 0,
 				clip->size, clip->shell, clip->saber, clip->blade, clip->holdHand, RC_Round( clip->holdAng[PITCH] ), RC_Round( clip->holdAng[YAW] ),
@@ -1234,10 +1325,11 @@ static void CM_Parse( char *text, cmCine_t *c ) {
 		if ( !Q_stricmpn( line, "look ", 5 ) ) {
 			int bars = 1, hud = 0;
 
-			int only = 0;
+			int only = 0, size = 1;
 
-			sscanf( line + 5, "%i %i %i", &bars, &hud, &only );
+			sscanf( line + 5, "%i %i %i %i", &bars, &hud, &only, &size );
 			c->onlyCast = (qboolean)( only != 0 );
+			c->barSize = Com_Clampi( 0, 2, size );
 			c->bars = (qboolean)( bars != 0 );
 			c->hud = (qboolean)( hud != 0 );
 		} else if ( !Q_stricmpn( line, "shot ", 5 ) && c->numShots < CM_MAX_SHOTS ) {
@@ -1283,6 +1375,31 @@ static void CM_Parse( char *text, cmCine_t *c ) {
 			s->spot = (qboolean)( spot != 0 );
 			Q_strncpyz( s->path, line + 4 + n, sizeof( s->path ) );
 			c->numSnd++;
+		} else if ( !Q_stricmpn( line, "mark ", 5 ) && c->numMarks < CM_MAX_MARKS ) {
+			float at = 0.0f;
+			char name[32] = "-";
+
+			if ( sscanf( line + 5, "%f %31s", &at, name ) < 1 )
+				continue;
+			c->marks[c->numMarks] = RC_SecondsMs( at );
+			Q_strncpyz( c->markNames[c->numMarks], strcmp( name, "-" ) ? name : "", sizeof( c->markNames[0] ) );
+			c->numMarks++;
+		} else if ( !Q_stricmpn( line, "force ", 6 ) && c->numClips < CM_MAX_CLIPS ) {
+			cmClip_t *clip = &c->clips[c->numClips];
+			float start, seconds;
+			int ent, power = 0, target = -1, anims = 1;
+
+			memset( clip, 0, sizeof( *clip ) );
+			if ( sscanf( line + 6, "%i %f %f %i %i %i", &ent, &start, &seconds, &power, &target, &anims ) < 4 || ent < 0 || ent >= CM_MAX_ENTS )
+				continue;
+			clip->kind = CM_CLIP_FORCE;
+			clip->ent = ent;
+			clip->start = RC_SecondsMs( start );
+			clip->a.ms = RC_SecondsMs( seconds );
+			clip->power = Com_Clampi( 0, (int)ARRAY_LEN( cmForces ) - 1, power );
+			clip->target = target >= 0 && target < CM_MAX_ENTS ? target : -1;
+			clip->forceAnims = (qboolean)( anims != 0 );
+			c->numClips++;
 		} else if ( !Q_stricmpn( line, "music ", 6 ) && c->numSnd < CM_MAX_SND ) {
 			cmSnd_t *s = &c->snd[c->numSnd];
 			float start, secs;
@@ -1715,6 +1832,7 @@ static struct {
 	int			seenNext;
 	int			fxNext[CM_MAX_FX];		// when each effect plays again; a one-off, 1 once it has
 	int			sndNext[CM_MAX_SND];	// the same for each sound
+	int			forceNext[CM_MAX_CLIPS];	// and each force power's effect
 } cmp;
 
 static sfxHandle_t CM_SndHandle( const char *path ) {
@@ -1864,7 +1982,7 @@ static void CM_DrawTexts( const cmCine_t *c, int t ) {
 	static const float kindScale[CM_NUM_TXT_KINDS] = { 1.0f, 1.0f, 1.5f, 0.85f };
 	static const float sizeScale[] = { 0.8f, 1.0f, 1.3f };
 	static char lines[CM_TXT_MAX_LINES][CM_TXT_LEN + CM_TXT_WHO_LEN + 16];
-	const float barH = RC_BAR_FRAC * SCREEN_HEIGHT;
+	const float barH = CM_BarFrac( c ) * SCREEN_HEIGHT;
 	float used[CM_NUM_TXT_KINDS] = { 0 };
 	int font = 0;
 
@@ -1996,6 +2114,63 @@ static void CM_PlayFx( const cmFx_t *f, int id ) {
 
 static int CM_FxEnd( const cmFx_t *f ) {
 	return f->start + ( f->ms > 0 ? f->ms : CM_FX_ONCE_MS );
+}
+
+// where someone's hands are, near enough, turned toward a point: in front of their chest
+static qboolean CM_HandsToward( const cmCine_t *c, int ent, const vec3_t to, vec3_t org, vec3_t dir ) {
+	vec3_t flat;
+	int num;
+
+	if ( ent < 0 || ent >= c->numEnts || !CM_Resolve( c->ents[ent].who, &num, 1 ) || !RC_EntityOrigin( num, org ) )
+		return qfalse;
+	org[2] += 14.0f;
+	VectorSubtract( to, org, flat );
+	flat[2] = 0.0f;
+	if ( VectorNormalize( flat ) > 1.0f )
+		VectorMA( org, 14.0f, flat, org );
+	VectorSubtract( to, org, dir );
+	if ( VectorNormalize( dir ) < 1.0f )
+		VectorCopy( flat, dir );
+	return qtrue;
+}
+
+// the force powers going on t ms in: their effects again each while
+static void CM_RunForce( const cmCine_t *c, int t, int *next ) {
+	for ( int i = 0; i < c->numClips; i++ ) {
+		const cmClip_t *clip = &c->clips[i];
+		const cmForce_t *f;
+		const int len = clip->kind == CM_CLIP_FORCE ? CM_AnimLen( c, clip ) : 0;
+		vec3_t org, dir, at;
+		int id, num;
+
+		if ( clip->kind != CM_CLIP_FORCE || t < clip->start || ( len > 0 && t >= clip->start + len ) || cls.realtime < next[i] )
+			continue;
+		f = &cmForces[clip->power];
+		next[i] = cls.realtime + f->every;
+		if ( !( id = CM_FxId( f->effect ) ) )
+			continue;
+		// the one it's at, over their middle; with no one, in front of the one using it
+		if ( clip->target >= 0 && clip->target < c->numEnts && CM_Resolve( c->ents[clip->target].who, &num, 1 ) && RC_EntityOrigin( num, at ) ) {
+			at[2] += 12.0f;
+		} else {
+			vec3_t ang = { 0, 0, 0 }, fwd;
+
+			if ( clip->ent >= c->numEnts || !RC_TrackTarget( c->ents[clip->ent].who, at, &ang[YAW] ) )
+				continue;
+			AngleVectors( ang, fwd, NULL, NULL );
+			VectorMA( at, 128.0f, fwd, at );
+		}
+		if ( f->atTarget ) {
+			VectorSet( dir, 0, 0, 1 );
+			FX_PlayEffectID( id, at, dir, -1, -1 );
+		} else if ( CM_HandsToward( c, clip->ent, at, org, dir ) ) {
+			if ( f->onSelf ) {
+				org[2] -= 14.0f;
+				VectorSet( dir, 0, 0, 1 );
+			}
+			FX_PlayEffectID( id, org, dir, -1, -1 );
+		}
+	}
 }
 
 // t ms in: the one-offs at their moment, the others again and again while they last
@@ -2232,6 +2407,7 @@ static void CM_PlayerFrame( void ) {
 	CM_Apply( &cmp.cine, cmPlayPlans, t );
 	CM_RunFx( &cmp.cine, t, cmp.fxNext );
 	CM_RunSnd( &cmp.cine, t, cmp.sndNext );
+	CM_RunForce( &cmp.cine, t, cmp.forceNext );
 	if ( cmp.driver )
 		CM_DriverTeles( t, qfalse );
 	CM_RunSays( t );
@@ -2266,9 +2442,11 @@ static qboolean CM_Play( const cmCine_t *c, int fromMs, qboolean local ) {
 	}
 	memset( cmp.fxNext, 0, sizeof( cmp.fxNext ) );
 	memset( cmp.sndNext, 0, sizeof( cmp.sndNext ) );
+	memset( cmp.forceNext, 0, sizeof( cmp.forceNext ) );
 	CM_Plan( &cmp.cine, cmPlayPlans );
 	cmp.playing = qtrue;
 	RC_CineBegin( c->hud, c->bars );
+	RC_SetBarFrac( CM_BarFrac( c ) );
 	CM_PlayerFrame();
 	return qtrue;
 }
@@ -2690,6 +2868,13 @@ static struct {
 	int			gzHot;
 	qboolean	addOpen;			// the actions to add are listed
 	qboolean	extraOpen;			// an extra's settings shown
+
+	// the free camera flown and kept as a shot: where it was, every tenth of a second
+	qboolean	camRec;
+	int			camRecStart, camRecNext, camRecCount;
+	vec3_t		camRecOrg[CM_CAMREC_MAX], camRecAng[CM_CAMREC_MAX];
+	float		camRecFov[CM_CAMREC_MAX];
+	int			camRecMs[CM_CAMREC_MAX];
 	char		newNpc[MAX_QPATH];	// an NPC to spawn in it, by its targetname, being typed
 	int			listAsked;			// cls.realtime the NPC list was last asked for
 	int			entScroll, pickScroll;
@@ -2830,6 +3015,8 @@ static void CM_Changed( void ) {
 	cmUndoTime = cls.realtime;
 }
 
+static void CM_CamRecStart( void );
+static void CM_CamRecStop( void );
 static void CM_UndoReset( void );
 static void CM_UndoFrame( void );
 static void CM_Undo( qboolean redo );
@@ -3227,6 +3414,11 @@ static void CM_RemoveEnt( void ) {
 		}
 		if ( c->clips[i].ent > e )
 			c->clips[i].ent--;
+		// a force power at them is at no one now
+		if ( c->clips[i].kind == CM_CLIP_FORCE && c->clips[i].target == e )
+			c->clips[i].target = -1;
+		else if ( c->clips[i].kind == CM_CLIP_FORCE && c->clips[i].target > e )
+			c->clips[i].target--;
 		i++;
 	}
 	c->numEnts--;
@@ -3284,6 +3476,16 @@ static void CM_AddClip( int kind, qboolean tele ) {
 	} else if ( kind == CM_CLIP_SAY ) {
 		cm.typing = CM_TYPE_SAY;
 		CM_Message( "Type what they say" );
+	} else if ( kind == CM_CLIP_FORCE ) {
+		clip->a.ms = CM_FORCE_MS;
+		clip->target = -1;
+		clip->forceAnims = qtrue;
+		// at the first one in it who isn't them
+		for ( int e = 0; e < c->numEnts && clip->target < 0; e++ ) {
+			if ( e != cm.ent )
+				clip->target = e;
+		}
+		CM_Message( "A force power: pick it and who it's at; its end on the timeline is when it stops" );
 	} else if ( kind == CM_CLIP_LOOK ) {
 		clip->a.ms = CM_EMOTE_MS;
 		clip->size = 100;
@@ -4149,6 +4351,10 @@ void CL_RpCinematic_EditorKeyEvent( int key, qboolean down ) {
 	}
 
 	clip = CM_Clip();
+	if ( cm.camRec && ( key == A_ENTER || key == A_KP_ENTER ) ) {
+		CM_CamRecStop();
+		return;
+	}
 	switch ( key ) {
 	case A_ENTER:
 	case A_KP_ENTER:
@@ -5498,6 +5704,15 @@ static void CM_DrawCameraTab( float x, float y, float w ) {
 		return;
 	}
 	y += CM_CTRL_H + CM_GAP;
+	// a shot flown by hand
+	if ( CM_Button( x, y, w, cm.camRec ? va( S_COLOR_RED "Recording %.1f s: Stop (Enter)", ( cls.realtime - cm.camRecStart ) / 1000.0f ) : "Record a shot: fly the camera",
+		cm.camRec, (qboolean)( cm.camRec || cm.cine.numShots < CM_MAX_SHOTS ) ) ) {
+		if ( cm.camRec )
+			CM_CamRecStop();
+		else
+			CM_CamRecStart();
+	}
+	y += CM_CTRL_H + CM_GAP;
 	if ( CM_Button( x, y, half, "Path", (qboolean)!s->orbit, qtrue ) )
 		CM_SetOrbit( qfalse );
 	if ( CM_Button( x + half + 4, y, half, "Orbit", s->orbit, qtrue ) )
@@ -6177,6 +6392,45 @@ static float CM_DrawExtra( float x, float y, float w, cmEnt_t *e ) {
 	return y + CM_ROW_H + 4;
 }
 
+static void CM_DrawForceClip( float x, float y, float w, cmClip_t *clip ) {
+	const cmCine_t *c = &cm.cine;
+	int steps;
+
+	steps = CM_Stepper( x, y, w, "Power", cmForces[clip->power].name );
+	if ( steps ) {
+		clip->power = ( clip->power + steps + ARRAY_LEN( cmForces ) ) % ARRAY_LEN( cmForces );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	// at someone else in it, or at no one: in front of them
+	steps = CM_Stepper( x, y, w, "At", clip->target >= 0 && clip->target < c->numEnts ? c->ents[clip->target].who : "no one, ahead" );
+	if ( steps ) {
+		int t = clip->target;
+
+		for ( int n = 0; n <= c->numEnts; n++ ) {
+			t += steps > 0 ? 1 : -1;
+			if ( t >= c->numEnts )
+				t = -1;
+			else if ( t < -1 )
+				t = c->numEnts - 1;
+			if ( t != clip->ent )
+				break;
+		}
+		clip->target = t;
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	if ( CM_Switch( x, y, w, "Acted", clip->forceAnims ? "both of them" : "no, the effect only" ) ) {
+		clip->forceAnims = (qboolean)!clip->forceAnims;
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	CM_Text( x, y + 1, va( S_COLOR_GREY "%.1f s to %s: drag it on the timeline", clip->start / 1000.0f,
+		clip->a.ms ? va( "%.1f s", ( clip->start + clip->a.ms ) / 1000.0f ) : "the end" ), cmWhite );
+	CM_Text( x, y + 1 + CM_ROW_H, S_COLOR_GREY "Only seen, on screens with this client;", cmWhite );
+	CM_Text( x, y + 1 + CM_ROW_H * 2, S_COLOR_GREY "no one is hurt. Seen when it plays", cmWhite );
+}
+
 // a look in a few words, for its bar
 static const char *CM_LookSummary( const cmClip_t *clip ) {
 	static char out[96];
@@ -6263,7 +6517,7 @@ static void CM_DrawLookClip( float x, float y, float w, cmClip_t *clip ) {
 }
 
 static void CM_DrawEntitiesTab( float x, float y, float w ) {
-	static const char *kinds[CM_NUM_CLIPS] = { "Move", "Animation", "Say", "Emote", "Position", "Record", "NPC command", "Spawn", "Remove", "Look" };
+	static const char *kinds[CM_NUM_CLIPS] = { "Move", "Animation", "Say", "Emote", "Position", "Record", "NPC command", "Spawn", "Remove", "Look", "Force" };
 	// the actions to add: a teleport is a position of one key
 	static const struct {
 		const char	*label;
@@ -6272,8 +6526,8 @@ static void CM_DrawEntitiesTab( float x, float y, float w ) {
 	} adds[] = {
 		{ "Move", CM_CLIP_MOVE, qfalse }, { "Position", CM_CLIP_PLACE, qfalse }, { "Teleport", CM_CLIP_PLACE, qtrue },
 		{ "Record", CM_CLIP_RECORD, qfalse }, { "Animation", CM_CLIP_ANIM, qfalse }, { "Emote", CM_CLIP_EMOTE, qfalse },
-		{ "Say", CM_CLIP_SAY, qfalse }, { "Look", CM_CLIP_LOOK, qfalse }, { "NPC command", CM_CLIP_NPCCMD, qfalse },
-		{ "Spawn", CM_CLIP_SPAWN, qfalse }, { "Remove", CM_CLIP_REMOVE, qfalse } };
+		{ "Say", CM_CLIP_SAY, qfalse }, { "Look", CM_CLIP_LOOK, qfalse }, { "Force", CM_CLIP_FORCE, qfalse },
+		{ "NPC command", CM_CLIP_NPCCMD, qfalse }, { "Spawn", CM_CLIP_SPAWN, qfalse }, { "Remove", CM_CLIP_REMOVE, qfalse } };
 	cmCine_t *c = &cm.cine;
 	const int rows = CM_Clip() && cm.ent >= 0 && CM_Clip()->ent == cm.ent ? 4 : 6;
 	const cmPerson_t *picked = NULL;
@@ -6405,6 +6659,8 @@ static void CM_DrawEntitiesTab( float x, float y, float w ) {
 		CM_DrawRemoveClip( x, y, w, clip );
 	else if ( clip->kind == CM_CLIP_LOOK )
 		CM_DrawLookClip( x, y, w, clip );
+	else if ( clip->kind == CM_CLIP_FORCE )
+		CM_DrawForceClip( x, y, w, clip );
 	else
 		CM_DrawAnimClip( x, y, w, clip );
 }
@@ -8092,6 +8348,7 @@ retime them.
 #define CM_TL_BOTTOM		( SCREEN_HEIGHT - 12 - ( CM_HELP_LINES - 1 ) * CM_ROW_H - 4 )
 #define CM_TL_GRAB			4.0f		// a spot or an end is grabbed this near
 #define CM_TL_SNAP_MS		100
+#define CM_TL_MARK_SNAP		150		// ms either side of a mark that snaps to it
 #define CM_TL_MIN_MS		100			// the least between two spots
 
 static vec4_t cmTlStripe	= { 1.0f, 1.0f, 1.0f, 0.04f };
@@ -8127,8 +8384,49 @@ static int CM_TlMsAt( const cmTrack_t *t, float x, qboolean pastEnd ) {
 	return (int)( Com_Clamp( 0.0f, pastEnd ? 4.0f : 1.0f, f ) * t->span + 0.5f );
 }
 
+// the marked moment within range of ms, -1 none
+static int CM_MarkNear( int ms, int range ) {
+	int best = -1;
+
+	for ( int i = 0; i < cm.cine.numMarks; i++ ) {
+		const int d = abs( cm.cine.marks[i] - ms );
+
+		if ( d <= range && ( best < 0 || d < abs( cm.cine.marks[best] - ms ) ) )
+			best = i;
+	}
+	return best;
+}
+
+// a moment dragged to: on a marked one near it, else on the tenth of a second
 static int CM_TlSnap( int ms ) {
+	const int m = CM_MarkNear( ms, CM_TL_MARK_SNAP );
+
+	if ( m >= 0 )
+		return cm.cine.marks[m];
 	return Q_max( 0, ( ms + CM_TL_SNAP_MS / 2 ) / CM_TL_SNAP_MS * CM_TL_SNAP_MS );
+}
+
+// a moment marked where the timeline's at, or the mark there taken away
+static void CM_ToggleMark( void ) {
+	cmCine_t *c = &cm.cine;
+	const int m = CM_MarkNear( cm.tlMs, 0 );
+
+	if ( m >= 0 ) {
+		c->numMarks--;
+		memmove( &c->marks[m], &c->marks[m + 1], ( c->numMarks - m ) * sizeof( c->marks[0] ) );
+		memmove( c->markNames[m], c->markNames[m + 1], ( c->numMarks - m ) * sizeof( c->markNames[0] ) );
+		CM_Changed();
+		return;
+	}
+	if ( c->numMarks >= CM_MAX_MARKS ) {
+		CM_Message( S_COLOR_YELLOW "16 marks at most" );
+		return;
+	}
+	c->marks[c->numMarks] = cm.tlMs;
+	c->markNames[c->numMarks][0] = '\0';
+	c->numMarks++;
+	CM_Changed();
+	CM_Message( va( "Marked %.1f s: what's dragged near it snaps to it", cm.tlMs / 1000.0f ) );
 }
 
 static int CM_ClipEnd( int i, int span ) {
@@ -8384,7 +8682,8 @@ static void CM_TlClick( const cmTrack_t *t, float rowsY, int numRows ) {
 			Q_strncpyz( cm.pickWho, c->ents[e].who, sizeof( cm.pickWho ) );
 			cm.tab = CM_TAB_ENTITIES;
 			cm.tlDragIndex = i;
-			if ( ( clip->kind == CM_CLIP_ANIM || clip->kind == CM_CLIP_EMOTE || clip->kind == CM_CLIP_LOOK ) && cx >= x1 - CM_TL_GRAB && x1 - x0 > CM_TL_GRAB * 2 ) {
+			if ( ( clip->kind == CM_CLIP_ANIM || clip->kind == CM_CLIP_EMOTE || clip->kind == CM_CLIP_LOOK || clip->kind == CM_CLIP_FORCE ) && cx >= x1 - CM_TL_GRAB
+				&& x1 - x0 > CM_TL_GRAB * 2 ) {
 				cm.tlDrag = CM_DRAG_CLIP_END;
 			} else {
 				cm.tlDrag = CM_DRAG_CLIP;
@@ -8420,9 +8719,11 @@ static void CM_TlDrag( const cmTrack_t *t ) {
 		cm.tlDrag = CM_DRAG_NONE;
 	switch ( cm.tlDrag ) {
 	case CM_DRAG_HEAD: {
+		const int m = CM_MarkNear( at, (int)( 6.0f / t->w * t->span ) );
 		int local;
 
-		cm.tlMs = at;
+		// on a mark when it's dragged near one
+		cm.tlMs = m >= 0 ? c->marks[m] : at;
 		// the camera tab follows the shot it's in
 		if ( c->numShots && cm.tab == CM_TAB_CAMERA )
 			CM_SelectShot( CM_ShotAt( c, at, &local ) );
@@ -8592,6 +8893,8 @@ static void CM_DrawTimeline( void ) {
 		CM_Text( x, headY + 2, va( "Timeline" S_COLOR_GREY "  %.1f s: click a moment to see it", total / 1000.0f ), cmWhite );
 	if ( CM_Button( x + w - 44, headY, 44, "Let go", qfalse, cm.tlPinned ) )
 		CM_TlLetGo();
+	if ( CM_Button( x + w - 44 - 4 - 104 - 4 - 50, headY, 50, cm.tlPinned && CM_MarkNear( cm.tlMs, 0 ) >= 0 ? "Unmark" : "+ Mark", qfalse, cm.tlPinned ) )
+		CM_ToggleMark();
 	if ( CM_Button( x + w - 44 - 4 - 104, headY, 104, cm.tlCam ? "Seen: the cinematic's" : "Seen: free camera", qfalse, cm.tlPinned ) ) {
 		cm.tlCam = (qboolean)!cm.tlCam;
 		if ( cm.tlCam )
@@ -8769,6 +9072,10 @@ static void CM_DrawTimeline( void ) {
 						clip->emote[0] ? va( "/%s", clip->emote ) : "no emote yet", sel );
 				else if ( clip->kind == CM_CLIP_LOOK )
 					CM_TlBar( CM_TlX( &t, clip->start ), CM_TlX( &t, CM_ClipEnd( i, t.span ) ), ry, cmTlEmote, CM_LookSummary( clip ), sel );
+				else if ( clip->kind == CM_CLIP_FORCE )
+					CM_TlBar( CM_TlX( &t, clip->start ), CM_TlX( &t, CM_ClipEnd( i, t.span ) ), ry, cmTlAct,
+						clip->target >= 0 && clip->target < c->numEnts ? va( "%s at %s", cmForces[clip->power].name, c->ents[clip->target].who )
+						: cmForces[clip->power].name, sel );
 				else if ( clip->kind == CM_CLIP_SAY )
 					CM_TlBar( CM_TlX( &t, clip->start ), CM_TlX( &t, CM_ClipEnd( i, t.span ) ), ry, cmTlSay,
 						clip->text[0] ? va( "\"%s\"", clip->text ) : "says nothing yet", sel );
@@ -8781,6 +9088,16 @@ static void CM_DrawTimeline( void ) {
 		CM_Text( t.x + 3, rowsY + CM_ROW_H, S_COLOR_GREY "Who's in it: the Entities tab. Effects, sounds, text, props and lights: their tabs", cmWhite );
 	else if ( numRows > visRows )
 		CM_Text( x + 3, boxY, va( S_COLOR_GREY "%i of %i", cm.tlScroll / 2 + 1, c->numEnts ), cmWhite );
+
+	// the marked moments, a line down the rows and their number on the ruler
+	for ( int i = 0; i < c->numMarks; i++ ) {
+		static const vec4_t markColor = { 1.0f, 0.8f, 0.2f, 0.7f };
+		const float mx = CM_TlX( &t, c->marks[i] );
+
+		CM_Fill( mx, boxY + 1, 1, boxH - 2, markColor );
+		CM_Fill( mx - 2, boxY + 1, 5, 4, markColor );
+		CM_Text( mx + 3, boxY, va( S_COLOR_YELLOW "%i", i + 1 ), cmWhite );
+	}
 
 	// the moment, or the green camera's in the view running along
 	if ( cm.tlPinned ) {
@@ -8827,7 +9144,7 @@ static void CM_DrawGuides( void ) {
 	const float cx = SCREEN_WIDTH * 0.5f, cy = SCREEN_HEIGHT * 0.5f;
 
 	if ( cm.cine.bars ) {
-		const float h = RC_BAR_FRAC * SCREEN_HEIGHT;
+		const float h = CM_BarFrac( &cm.cine ) * SCREEN_HEIGHT;
 
 		CM_Fill( 0, 0, SCREEN_WIDTH, h, cmBarGuide );
 		CM_Fill( 0, SCREEN_HEIGHT - h, SCREEN_WIDTH, h, cmBarGuide );
@@ -9009,8 +9326,17 @@ static void CM_DrawEditor( void ) {
 		static const char *tabs[] = { "Camera", "Entities", "Effects", "Sounds", "Text", "World" };
 
 		// how it looks to everyone
-		if ( CM_Switch( x, y, half, "Bars", cm.cine.bars ? "on" : "off" ) ) {
-			cm.cine.bars = (qboolean)!cm.cine.bars;
+		// off, thin, as they were, wide
+		if ( CM_Switch( x, y, half, "Bars", !cm.cine.bars ? "off" : cm.cine.barSize == 0 ? "thin" : cm.cine.barSize == 2 ? "wide" : "on" ) ) {
+			if ( !cm.cine.bars ) {
+				cm.cine.bars = qtrue;
+				cm.cine.barSize = 0;
+			} else if ( cm.cine.barSize < 2 ) {
+				cm.cine.barSize++;
+			} else {
+				cm.cine.bars = qfalse;
+				cm.cine.barSize = 1;
+			}
 			CM_Changed();
 		}
 		if ( CM_Switch( x + half + 4, y, half, "HUD", cm.cine.hud ? "shown" : "hidden" ) ) {
@@ -9971,6 +10297,87 @@ Every frame, and the command
 /*
 ===============================================================================
 
+The camera flown and kept as a shot
+
+===============================================================================
+*/
+
+static void CM_CamRecStart( void ) {
+	cm.camRec = qtrue;
+	cm.camRecStart = cls.realtime;
+	cm.camRecNext = 0;
+	cm.camRecCount = 0;
+	cm.through = qfalse;
+	CM_Message( "Recording the camera: fly it (hold right mouse), then Stop or Enter; a minute at most" );
+}
+
+// the take as a shot after the one shown: its spots spread over it, each as far in as it was flown
+static void CM_CamRecStop( void ) {
+	cmCine_t *c = &cm.cine;
+	const int n = cm.camRecCount;
+	rcShot_t *s;
+	int at, keys, prev = 0;
+
+	cm.camRec = qfalse;
+	if ( n < 2 ) {
+		CM_Message( S_COLOR_YELLOW "Too short to keep" );
+		return;
+	}
+	if ( c->numShots >= CM_MAX_SHOTS ) {
+		CM_Message( S_COLOR_YELLOW "A cinematic has 16 shots at most" );
+		return;
+	}
+	at = c->numShots ? cm.cur + 1 : 0;
+	CM_ShiftClips( CM_ShotStart( c, at ), cm.camRecMs[n - 1] );
+	memmove( &c->shots[at + 1], &c->shots[at], ( c->numShots - at ) * sizeof( c->shots[0] ) );
+	c->numShots++;
+	s = &c->shots[at];
+	memset( s, 0, sizeof( *s ) );
+	keys = Q_min( RC_MAX_KEYS, n );
+	for ( int k = 0; k < keys; k++ ) {
+		const int i = k * ( n - 1 ) / ( keys - 1 );
+		rcKey_t *key = &s->keys[k];
+
+		VectorCopy( cm.camRecOrg[i], key->org );
+		VectorCopy( cm.camRecAng[i], key->ang );
+		key->fov = cm.camRecFov[i];
+		key->ms = k ? cm.camRecMs[i] - prev : 0;
+		prev = cm.camRecMs[i];
+		// turned the short way from the one before, so the curve doesn't spin
+		if ( k ) {
+			for ( int j = 0; j < 3; j++ )
+				key->ang[j] = s->keys[k - 1].ang[j] + AngleNormalize180( key->ang[j] - s->keys[k - 1].ang[j] );
+		}
+	}
+	s->numKeys = keys;
+	s->linear = qtrue;		// as fast as it was flown
+	CM_SeeShots();
+	cm.cur = -1;
+	CM_SelectShot( at );
+	CM_Changed();
+	CM_Message( va( S_COLOR_GREEN "Kept %.1f s as shot %i, %i spots; Track page: Handheld for a camera held by hand", cm.camRecMs[n - 1] / 1000.0f, at + 1, keys ) );
+}
+
+static void CM_CamRecFrame( void ) {
+	const int ms = cls.realtime - cm.camRecStart;
+
+	if ( !cm.camRec || cls.realtime < cm.camRecNext )
+		return;
+	if ( cm.camRecCount >= CM_CAMREC_MAX ) {
+		CM_CamRecStop();
+		return;
+	}
+	cm.camRecNext = cls.realtime + CM_CAMREC_EVERY;
+	VectorCopy( cm.camOrg, cm.camRecOrg[cm.camRecCount] );
+	VectorCopy( cm.camAng, cm.camRecAng[cm.camRecCount] );
+	cm.camRecFov[cm.camRecCount] = cm.camFov;
+	cm.camRecMs[cm.camRecCount] = ms;
+	cm.camRecCount++;
+}
+
+/*
+===============================================================================
+
 Undo, redo; copy and paste
 
 ===============================================================================
@@ -10412,8 +10819,10 @@ static void CM_SyncExtras( void ) {
 
 void CM_Frame( void ) {
 	CM_SyncExtras();
-	if ( cm.open )
+	if ( cm.open ) {
 		CM_UndoFrame();
+		CM_CamRecFrame();
+	}
 	CM_PickFxFrame();
 	CM_PickSndFrame();
 	CM_PreviewFx();

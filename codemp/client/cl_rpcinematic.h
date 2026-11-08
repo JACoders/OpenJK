@@ -190,6 +190,7 @@ float RC_Seconds( int ms );
 // shots
 int RC_ShotMs( const rcShot_t *s );
 void RC_EvalShot( const rcShot_t *s, int ms, vec3_t org, vec3_t ang, float *fov );
+void RC_SetBarFrac( float frac );
 void RC_EvalShotLive( const rcShot_t *s, int ms, vec3_t org, vec3_t ang, float *fov, qboolean smooth );
 qboolean RC_TrackTarget( const char *who, vec3_t at, float *yaw );
 void RC_FillFov( rcShot_t *s, float fov );
