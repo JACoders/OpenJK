@@ -2134,7 +2134,8 @@ typedef enum {
 typedef enum {
 	CM_PAGE_SPOTS,
 	CM_PAGE_FOCUS,
-	CM_PAGE_LOOK
+	CM_PAGE_LOOK,
+	CM_PAGE_TRACK		// who it keeps in frame, and its shaking
 } cmPage_t;
 
 typedef enum {
@@ -2150,7 +2151,8 @@ typedef enum {
 	CM_TYPE_NPCTYPE,	// a spawn's NPC type
 	CM_TYPE_DIALOG,		// an NPC command's dialog
 	CM_TYPE_TXT,		// a text's words
-	CM_TYPE_TXTWHO		// and who says them
+	CM_TYPE_TXTWHO,		// and who says them
+	CM_TYPE_TRACK		// who a shot keeps in frame
 } cmTyping_t;
 
 typedef enum {
@@ -2227,6 +2229,9 @@ static struct {
 	// the Text tab: the one picked
 	int			txt;
 	int			txtScroll;
+
+	// the Track page: the jolt picked
+	int			shakeSel;
 
 	// the move arrows over the effect picked: J; one dragged moves it along
 	qboolean	gizmo;
@@ -3153,7 +3158,7 @@ static qboolean CM_ViewCam( vec3_t org, vec3_t ang, float *fov ) {
 		int local;
 		const int shot = CM_ShotAt( &cm.cine, cm.tlMs, &local );
 
-		RC_EvalShot( &cm.cine.shots[shot], local, org, ang, fov );
+		RC_EvalShotLive( &cm.cine.shots[shot], local, org, ang, fov, qfalse );
 		return qtrue;
 	}
 	VectorCopy( cm.camOrg, org );
@@ -3390,6 +3395,11 @@ static char *CM_TypedText( int *size ) {
 			return NULL;
 		*size = sizeof( s->dofWho );
 		return s->dofWho;
+	case CM_TYPE_TRACK:
+		if ( !s )
+			return NULL;
+		*size = sizeof( s->trackWho );
+		return s->trackWho;
 	case CM_TYPE_EMOTE:
 		if ( !clip || clip->kind != CM_CLIP_EMOTE )
 			return NULL;
@@ -3430,7 +3440,7 @@ static char *CM_TypedText( int *size ) {
 static qboolean CM_AllowChar( int ch ) {
 	if ( cm.typing == CM_TYPE_SAY || cm.typing == CM_TYPE_SAYNAME || cm.typing == CM_TYPE_DIALOG || cm.typing == CM_TYPE_TXT || cm.typing == CM_TYPE_TXTWHO )
 		return (qboolean)!( ch < ' ' || ch > '~' || ( cm.typing != CM_TYPE_SAY && cm.typing != CM_TYPE_TXT && ch == '|' ) || ( cm.typing == CM_TYPE_DIALOG && ch == ';' ) );
-	return (qboolean)( CM_NameChar( ch ) || ( ( cm.typing == CM_TYPE_WHO || cm.typing == CM_TYPE_FOCUS ) && ch == ',' ) );
+	return (qboolean)( CM_NameChar( ch ) || ( ( cm.typing == CM_TYPE_WHO || cm.typing == CM_TYPE_FOCUS || cm.typing == CM_TYPE_TRACK ) && ch == ',' ) );
 }
 
 // what was typed changed: the animations' names are in capitals, the emotes' small, and their
@@ -3970,7 +3980,7 @@ static void CM_AddScene( void ) {
 		const int ms = cm.tlPinned ? cm.tlMs : cls.realtime % ( total + 1000 );
 		const int shot = CM_ShotAt( &cm.cine, Q_min( ms, total ), &local );
 
-		RC_EvalShot( &cm.cine.shots[shot], local, org, ang, &fov );
+		RC_EvalShotLive( &cm.cine.shots[shot], local, org, ang, &fov, qfalse );
 		CM_Camera( org, ang, fov, cmGhostColor );
 	}
 
@@ -4726,10 +4736,114 @@ static void CM_DrawLookPage( float x, float y, float w ) {
 	y = CM_DrawTransition( x, y, w, "Going out", &s->out );
 }
 
+// someone kept in frame, a path turning to them or an orbit circling them; and the camera
+// shaking, held by hand and jolted
+static void CM_DrawTrackPage( float x, float y, float w ) {
+	static const char *handheld[RC_MAX_HANDHELD + 1] = { "off, steady", "light", "medium", "heavy" };
+	rcShot_t *s = CM_Shot();
+	const float half = ( w - 4 ) * 0.5f;
+	int steps, local = 0;
+	vec3_t at;
+	float yaw;
+
+	CM_Text( x, y + 2, "Keep in frame", cmWhite );
+	y += CM_ROW_H + 2;
+	CM_Text( x, y + 2, "Who", cmDim );
+	CM_TextBox( x + 30, y, w - 30 - 34, s->trackWho, "nobody: as set", CM_TYPE_TRACK, NULL );
+	if ( CM_Button( x + w - 30, y, 30, "Aim", qfalse, (qboolean)( CM_PersonAtCrosshair() != NULL ) ) ) {
+		Q_strncpyz( s->trackWho, CM_PersonAtCrosshair(), sizeof( s->trackWho ) );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	if ( s->trackWho[0] ) {
+		if ( RC_TrackTarget( s->trackWho, at, &yaw ) )
+			CM_TextClipped( x, y, w, va( S_COLOR_GREEN "%s" S_COLOR_GREY ": the camera %s", s->trackWho, s->orbit ? "circles them" : "turns to them" ), cmWhite );
+		else
+			CM_TextClipped( x, y, w, va( S_COLOR_YELLOW "%s isn't here: as set meanwhile", s->trackWho ), cmWhite );
+		y += CM_ROW_H + 2;
+		if ( s->orbit ) {
+			if ( CM_Switch( x, y, w, "From yaw", s->trackTurn ? "the way they face" : "the map's" ) ) {
+				s->trackTurn = (qboolean)!s->trackTurn;
+				CM_Changed();
+			}
+			y += CM_CTRL_H + CM_GAP;
+			CM_Text( x, y, S_COLOR_GREY "Their way: from yaw 180 behind them,", cmWhite );
+			CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "90 or 270 beside, 0 in front; degrees 0", cmWhite );
+			CM_Text( x, y + CM_ROW_H * 2, S_COLOR_GREY "stays there as they go (Spots page)", cmWhite );
+			y += CM_ROW_H * 3 + 2;
+		} else {
+			CM_Text( x, y, S_COLOR_GREY "The spots stay where they are; it turns", cmWhite );
+			CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "to them. An orbit goes round them", cmWhite );
+			y += CM_ROW_H * 2 + 2;
+		}
+	} else {
+		CM_Text( x, y, S_COLOR_GREY "A player or NPC: a path turns to them", cmWhite );
+		CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "wherever they go, an orbit circles them", cmWhite );
+		y += CM_ROW_H * 2 + 2;
+	}
+
+	y += 4;
+	CM_Fill( x, y - 3, w, 1, cmBorder );
+	CM_Text( x, y + 2, "Shake", cmWhite );
+	y += CM_ROW_H + 2;
+	steps = CM_Stepper( x, y, w, "Handheld", handheld[s->handheld] );
+	if ( steps ) {
+		s->handheld = Com_Clampi( 0, RC_MAX_HANDHELD, s->handheld + steps );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	// a jolt at the moment picked, if it's in this shot
+	if ( cm.tlPinned && CM_ShotAt( &cm.cine, cm.tlMs, &local ) != cm.cur )
+		local = 0;
+	if ( CM_Button( x, y, w, va( "+ Jolt at %.1f s into the shot", local / 1000.0f ), qfalse, (qboolean)( s->numShakes < RC_MAX_SHAKES ) ) ) {
+		int i = s->numShakes++;
+
+		for ( ; i > 0 && s->shakes[i - 1].ms > local; i-- )
+			s->shakes[i] = s->shakes[i - 1];
+		s->shakes[i].ms = local;
+		s->shakes[i].strength = 5;
+		s->shakes[i].len = 1000;
+		cm.shakeSel = i;
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	for ( int i = 0; i < s->numShakes; i++ ) {
+		const rcShake_t *k = &s->shakes[i];
+
+		if ( CM_Button( x, y, w - 20, va( "%.1f s: strength %i, %.1f s", k->ms / 1000.0f, k->strength, k->len / 1000.0f ), (qboolean)( i == cm.shakeSel ), qtrue ) )
+			cm.shakeSel = i;
+		if ( CM_Button( x + w - 16, y, 16, "x", qfalse, qtrue ) ) {
+			memmove( &s->shakes[i], &s->shakes[i + 1], ( s->numShakes - i - 1 ) * sizeof( s->shakes[0] ) );
+			s->numShakes--;
+			CM_Changed();
+			return;
+		}
+		y += CM_CTRL_H + 2;
+	}
+	if ( cm.shakeSel >= 0 && cm.shakeSel < s->numShakes ) {
+		rcShake_t *k = &s->shakes[cm.shakeSel];
+
+		y += CM_GAP;
+		steps = CM_Stepper( x, y, w, "Strength", va( "%i", k->strength ) );
+		if ( steps ) {
+			k->strength = Com_Clampi( 1, 10, k->strength + steps );
+			CM_Changed();
+		}
+		y += CM_CTRL_H + CM_GAP;
+		steps = CM_Stepper( x, y, w, "Dies away in", va( "%.1f s", k->len / 1000.0f ) );
+		CM_AdjustMs( &k->len, steps, 0.25f, 100 );
+		y += CM_CTRL_H + CM_GAP;
+		steps = CM_Stepper( x, y, half * 2 + 4, "At", va( "%.1f s", k->ms / 1000.0f ) );
+		CM_AdjustMs( &k->ms, steps, 0.1f, 0 );
+	} else if ( !s->numShakes ) {
+		CM_Text( x, y, S_COLOR_GREY "A jolt: an explosion, a ship landing", cmWhite );
+	}
+}
+
 static void CM_DrawCameraTab( float x, float y, float w ) {
 	rcShot_t *s = CM_Shot();
 	const float half = ( w - 4 ) * 0.5f;
-	static const char *pages[] = { "Spots", "Focus", "Filter, fades" };
+	static const char *pages[] = { "Spots", "Focus", "Filter", "Track" };
 
 	if ( !s ) {
 		CM_Text( x, y, "No shots yet", cmWhite );
@@ -4768,13 +4882,15 @@ static void CM_DrawCameraTab( float x, float y, float w ) {
 	}
 	y += 2;
 	cm.page = CM_Tabs( x, y, w, pages, ARRAY_LEN( pages ), cm.page );
-	if ( cm.page != CM_PAGE_FOCUS && cm.typing == CM_TYPE_FOCUS )
+	if ( ( cm.page != CM_PAGE_FOCUS && cm.typing == CM_TYPE_FOCUS ) || ( cm.page != CM_PAGE_TRACK && cm.typing == CM_TYPE_TRACK ) )
 		cm.typing = CM_TYPE_NONE;
 	y += CM_CTRL_H + 6;
 	if ( cm.page == CM_PAGE_FOCUS )
 		CM_DrawFocusPage( x, y, w );
 	else if ( cm.page == CM_PAGE_LOOK )
 		CM_DrawLookPage( x, y, w );
+	else if ( cm.page == CM_PAGE_TRACK )
+		CM_DrawTrackPage( x, y, w );
 	else if ( s->orbit )
 		CM_DrawOrbitPage( x, y, w );
 	else

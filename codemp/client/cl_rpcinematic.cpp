@@ -41,6 +41,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //                                   (a player or NPC, by number; a name where it's played)
 //                                   filter <name> <strength %>: one of rcFilters' words over
 //                                   the picture
+//                                   track <turn 0|1> <who>: the camera keeps who in frame (a
+//                                   player or NPC); a path turns to them, an orbit circles them,
+//                                   from the way they face with turn 1
+//                                   handheld <1-3>: the camera sways as if held by hand
+//                                   shake <seconds in> <strength 1-10> <seconds>: a jolt, dying away
 //                                   A path's spot can end in its own <focus> <range> <blur>
 //                                   after its fov: the depth of field goes from one spot's
 //                                   to the next's
@@ -276,6 +281,92 @@ void RC_EvalShot( const rcShot_t *s, int ms, vec3_t org, vec3_t ang, float *fov 
 	}
 }
 
+// a smooth wobble between -1 and 1, the same wherever it's worked out: waves that never line up
+static float RC_Wobble( float t, float f, float phase ) {
+	return ( sinf( t * f + phase ) + 0.6f * sinf( t * f * 2.31f + phase * 1.7f ) + 0.3f * sinf( t * f * 4.73f + phase * 2.9f ) ) / 1.9f;
+}
+
+// the shot's shaking ms into it, on the camera: a slow sway held by hand, and jolts dying away
+static void RC_Shake( const rcShot_t *s, int ms, vec3_t org, vec3_t ang ) {
+	const float t = ms / 1000.0f;
+
+	if ( s->handheld > 0 ) {
+		const float a = s->handheld * 0.45f;
+
+		ang[PITCH] += a * RC_Wobble( t, 1.3f, 0.0f );
+		ang[YAW] += a * RC_Wobble( t, 1.1f, 1.3f );
+		ang[ROLL] += a * 0.6f * RC_Wobble( t, 0.8f, 2.1f );
+		org[2] += a * 1.2f * RC_Wobble( t, 1.6f, 0.4f );
+	}
+	for ( int i = 0; i < s->numShakes; i++ ) {
+		const rcShake_t *k = &s->shakes[i];
+		const float in = (float)( ms - k->ms );
+		float a;
+
+		if ( in < 0.0f || in >= k->len )
+			continue;
+		a = 1.0f - in / k->len;
+		a = a * a * k->strength * 0.6f;
+		ang[PITCH] += a * RC_Wobble( t, 70.0f, k->ms * 0.01f );
+		ang[YAW] += a * RC_Wobble( t, 83.0f, k->ms * 0.01f + 1.0f );
+		ang[ROLL] += a * 0.7f * RC_Wobble( t, 61.0f, k->ms * 0.01f + 2.0f );
+		org[0] += a * 0.8f * RC_Wobble( t, 77.0f, k->ms * 0.01f + 3.0f );
+		org[1] += a * 0.8f * RC_Wobble( t, 89.0f, k->ms * 0.01f + 4.0f );
+		org[2] += a * 0.8f * RC_Wobble( t, 67.0f, k->ms * 0.01f + 5.0f );
+	}
+}
+
+// the camera as it is when it plays: the shot, turned to or circling whoever it keeps in frame
+// where they are now, and shaken. smooth: playing, an orbit turning with them follows the way
+// they face gently, not every twitch of it
+void RC_EvalShotLive( const rcShot_t *s, int ms, vec3_t org, vec3_t ang, float *fov, qboolean smooth ) {
+	static float smoothYaw;
+	static int smoothFrame = -10;
+	vec3_t at;
+	float yaw = 0.0f;
+
+	if ( s->trackWho[0] && RC_TrackTarget( s->trackWho, at, &yaw ) ) {
+		if ( s->orbit ) {
+			rcShot_t moved = *s;
+
+			VectorCopy( at, moved.center );
+			if ( s->trackTurn ) {
+				if ( smooth && cls.framecount - smoothFrame <= 2 )
+					smoothYaw += AngleNormalize180( yaw - smoothYaw ) * Com_Clamp( 0.0f, 1.0f, cls.frametime * 0.004f );
+				else
+					smoothYaw = yaw;
+				if ( smooth )
+					smoothFrame = cls.framecount;
+				moved.fromYaw = s->fromYaw + ( smooth ? smoothYaw : yaw );
+			}
+			RC_EvalShot( &moved, ms, org, ang, fov );
+			// not through the walls round them: nearer them, on their side, still looking at them
+			{
+				static const vec3_t mins = { -4.0f, -4.0f, -4.0f }, maxs = { 4.0f, 4.0f, 4.0f };
+				trace_t tr;
+
+				CM_BoxTrace( &tr, at, org, mins, maxs, 0, MASK_SOLID, qfalse );
+				if ( !tr.startsolid && tr.fraction < 1.0f )
+					VectorCopy( tr.endpos, org );
+			}
+		} else {
+			vec3_t dir;
+			float roll;
+
+			RC_EvalShot( s, ms, org, ang, fov );
+			roll = ang[ROLL];
+			VectorSubtract( at, org, dir );
+			if ( VectorLength( dir ) > 1.0f ) {
+				vectoangles( dir, ang );
+				ang[ROLL] = roll;
+			}
+		}
+	} else {
+		RC_EvalShot( s, ms, org, ang, fov );
+	}
+	RC_Shake( s, ms, org, ang );
+}
+
 // fovs not given are the one before's, the first's the camera's
 void RC_FillFov( rcShot_t *s, float fov ) {
 	if ( s->orbit ) {
@@ -348,6 +439,36 @@ static qboolean RC_ParseOption( const char *p, rcShot_t *s ) {
 		}
 		return qtrue;
 	}
+	if ( !Q_stricmpn( p, "track ", 6 ) ) {
+		int turn = 0, n = 0;
+
+		if ( sscanf( p + 6, "%i %n", &turn, &n ) >= 1 && n > 0 && p[6 + n] ) {
+			s->trackTurn = (qboolean)( turn != 0 );
+			Q_strncpyz( s->trackWho, p + 6 + n, sizeof( s->trackWho ) );
+		}
+		return qtrue;
+	}
+	if ( !Q_stricmpn( p, "handheld ", 9 ) ) {
+		s->handheld = Com_Clampi( 0, RC_MAX_HANDHELD, atoi( p + 9 ) );
+		return qtrue;
+	}
+	if ( !Q_stricmpn( p, "shake ", 6 ) ) {
+		float sec, len;
+		int strength;
+
+		if ( sscanf( p + 6, "%f %i %f", &sec, &strength, &len ) == 3 && s->numShakes < RC_MAX_SHAKES && strength > 0 && len > 0.0f ) {
+			rcShake_t k;
+			int i = s->numShakes++;
+
+			k.ms = RC_SecondsMs( sec );
+			k.strength = Com_Clampi( 1, 10, strength );
+			k.len = Q_max( 100, RC_SecondsMs( len ) );
+			for ( ; i > 0 && s->shakes[i - 1].ms > k.ms; i-- )
+				s->shakes[i] = s->shakes[i - 1];
+			s->shakes[i] = k;
+		}
+		return qtrue;
+	}
 	if ( !Q_stricmpn( p, "filter ", 7 ) ) {
 		char word[32];
 		int strength = 100;
@@ -413,6 +534,12 @@ static void RC_WriteOptions( const rcShot_t *s, char *out, int size ) {
 	}
 	if ( s->filter && s->filterStrength > 0 )
 		Q_strcat( out, size, va( "/filter %s %i", RC_FilterWord( s->filter ), s->filterStrength ) );
+	if ( s->trackWho[0] )
+		Q_strcat( out, size, va( "/track %i %s", s->trackTurn ? 1 : 0, s->trackWho ) );
+	if ( s->handheld > 0 )
+		Q_strcat( out, size, va( "/handheld %i", s->handheld ) );
+	for ( int i = 0; i < s->numShakes; i++ )
+		Q_strcat( out, size, va( "/shake %g %i %g", RC_Seconds( s->shakes[i].ms ), s->shakes[i].strength, RC_Seconds( s->shakes[i].len ) ) );
 	for ( int i = 0; i < 2; i++ ) {
 		const rcTrans_t *tr = trs[i];
 
@@ -602,7 +729,7 @@ static void RC_Update( void ) {
 	if ( rc.playing ) {
 		float fov;
 
-		RC_EvalShot( &rc.shot, cls.realtime - rc.start, rc.org, rc.ang, &fov );
+		RC_EvalShotLive( &rc.shot, cls.realtime - rc.start, rc.org, rc.ang, &fov, qtrue );
 		rc.fovY = rc.shotFov ? RC_FovY( fov ) : RC_Fov();
 	} else {
 		VectorCopy( rc.holdOrg, rc.org );
@@ -1689,6 +1816,30 @@ qboolean RC_FocusTarget( const char *who, vec3_t out ) {
 	if ( !who[0] || RC_AnimTargets( who, &num, 1 ) < 1 || !RC_EntityOrigin( num, out ) )
 		return qfalse;
 	out[2] += RC_DOF_FOLLOW_UP;
+	return qtrue;
+}
+
+// someone the camera keeps in frame: a little over their middle, and the way they face
+qboolean RC_TrackTarget( const char *who, vec3_t at, float *yaw ) {
+	int num;
+
+	if ( !RC_FocusTarget( who, at ) || RC_AnimTargets( who, &num, 1 ) < 1 )
+		return qfalse;
+	*yaw = 0.0f;
+	if ( num == clc.clientNum ) {
+		*yaw = cl.snap.ps.viewangles[YAW];
+		return qtrue;
+	}
+	if ( CL_NpcWalk_PoseYaw( num, yaw ) )
+		return qtrue;
+	for ( int i = 0; i < cl.snap.numEntities; i++ ) {
+		const entityState_t *es = &cl.parseEntities[( cl.snap.parseEntitiesNum + i ) & ( MAX_PARSE_ENTITIES - 1 )];
+
+		if ( es->number == num ) {
+			*yaw = es->apos.trBase[YAW];
+			break;
+		}
+	}
 	return qtrue;
 }
 

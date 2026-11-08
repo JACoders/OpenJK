@@ -38,6 +38,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define RC_DOF_MAX_BLUR		10.0f
 #define RC_DOF_POINT		-2.0f		// a shot's focus on a spot that moves from key to key
 #define RC_MAX_FOCUS		8
+#define RC_MAX_SHAKES		8
+#define RC_MAX_HANDHELD		3
 #define RC_TRANS_MS			1000
 
 // an NPC walking a route while an old shot plays
@@ -102,6 +104,13 @@ typedef struct {
 	float		range;
 } rcFocus_t;
 
+// a jolt of the camera ms into its shot, strength 1-10, dying away over len ms
+typedef struct {
+	int			ms;
+	int			strength;
+	int			len;
+} rcShake_t;
+
 // a camera shot: a path through spots, one spot held (a still, its ms long), or an orbit
 typedef struct {
 	qboolean	orbit;
@@ -133,6 +142,16 @@ typedef struct {
 	float		radius, height, fromYaw, degrees;
 	float		fov, endFov;
 	int			ms;				// an orbit's, or a still's
+
+	// someone kept in frame: a path turns to them wherever they go, an orbit circles them; with
+	// trackTurn an orbit's from yaw is from the way they face, so it stays behind them, beside them...
+	char		trackWho[MAX_QPATH];
+	qboolean	trackTurn;
+
+	// the camera shaken: held by hand all along (0 not, up to RC_MAX_HANDHELD), and jolts
+	int			handheld;
+	rcShake_t	shakes[RC_MAX_SHAKES];
+	int			numShakes;
 } rcShot_t;
 
 typedef enum {
@@ -171,6 +190,8 @@ float RC_Seconds( int ms );
 // shots
 int RC_ShotMs( const rcShot_t *s );
 void RC_EvalShot( const rcShot_t *s, int ms, vec3_t org, vec3_t ang, float *fov );
+void RC_EvalShotLive( const rcShot_t *s, int ms, vec3_t org, vec3_t ang, float *fov, qboolean smooth );
+qboolean RC_TrackTarget( const char *who, vec3_t at, float *yaw );
 void RC_FillFov( rcShot_t *s, float fov );
 qboolean RC_ParseShot( char **argv, int argc, rcShot_t *s, const vec3_t ang );
 void RC_WriteShot( const rcShot_t *s, char *out, int size );
