@@ -4,7 +4,7 @@ What changed in OpenJK-rpmod from version to version, newest first. What each fe
 
 OpenJK-rpmod is built on [OpenJK](https://github.com/JACoders/OpenJK); for the changes OpenJK itself made, see [its changelog](https://github.com/JACoders/OpenJK/blob/master/CHANGELOG.md).
 
-## 0.8.3
+## 0.9.0
 
 - [Added] `Pazaak on the datapad`. KOTOR's card game against another player on your server, through C1B3R: start a table or join one, play a match to three sets, or watch one. Build and save your 10-card side decks (kept on C1B3R). C1B3R deals and checks every move, so no one sees your hand. The cards are drawn by the client, with Jedi Academy's sounds; your own art and sounds in a pk3 are used instead if you have them. `/datapad pazaak` opens it.
 - [Added] `Datapad`. `/datapad` opens a datapad like a phone: it rises in the bottom right corner, from above the HUD down to the screen's edge, with the mouse, and Esc or `/datapad` again puts it away; an app that needs the room has it bigger on the right side. `/datapad pos <x> <y>` moves it. Its top bar shows JEDI's own time (`474.08 ABY - 1345/49 GST`, New York's time) and names show RPMod's colours. Its home screen has apps, starting with **Settings**: its colour, the keys that open and close it, and whether your character holds a datapad (RPMod's `/emlift`) while it's open.
