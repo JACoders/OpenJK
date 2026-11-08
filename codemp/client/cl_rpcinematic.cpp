@@ -44,6 +44,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //                                   track <turn 0|1> <who>: the camera keeps who in frame (a
 //                                   player or NPC); a path turns to them, an orbit circles them,
 //                                   from the way they face with turn 1
+//                                   dolly: zoomed as it goes so what it keeps in frame, or looks at,
+//                                   stays the size it was at the start (the vertigo shot)
 //                                   handheld <1-3>: the camera sways as if held by hand
 //                                   shake <seconds in> <strength 1-10> <seconds>: a jolt, dying away
 //                                   A path's spot can end in its own <focus> <range> <blur>
@@ -365,6 +367,19 @@ void RC_EvalShotLive( const rcShot_t *s, int ms, vec3_t org, vec3_t ang, float *
 	} else {
 		RC_EvalShot( s, ms, org, ang, fov );
 	}
+	// a dolly zoom: what it looks at as big as it was at the start, however near or far the camera
+	if ( s->dolly && !s->orbit && ( s->trackWho[0] ? RC_TrackTarget( s->trackWho, at, &yaw ) : s->look ) ) {
+		vec3_t org0, ang0;
+		float fov0, d0, d;
+
+		if ( !s->trackWho[0] )
+			VectorCopy( s->lookAt, at );
+		RC_EvalShot( s, 0, org0, ang0, &fov0 );
+		d0 = Distance( org0, at );
+		d = Distance( org, at );
+		if ( d0 > 1.0f && d > 1.0f )
+			*fov = Com_Clamp( 5.0f, 150.0f, RAD2DEG( 2.0f * atanf( tanf( DEG2RAD( fov0 * 0.5f ) ) * d0 / d ) ) );
+	}
 	RC_Shake( s, ms, org, ang );
 }
 
@@ -447,6 +462,10 @@ static qboolean RC_ParseOption( const char *p, rcShot_t *s ) {
 			s->trackTurn = (qboolean)( turn != 0 );
 			Q_strncpyz( s->trackWho, p + 6 + n, sizeof( s->trackWho ) );
 		}
+		return qtrue;
+	}
+	if ( !Q_stricmp( p, "dolly" ) ) {
+		s->dolly = qtrue;
 		return qtrue;
 	}
 	if ( !Q_stricmpn( p, "handheld ", 9 ) ) {
@@ -539,6 +558,8 @@ static void RC_WriteOptions( const rcShot_t *s, char *out, int size ) {
 		Q_strcat( out, size, va( "/track %i %s", s->trackTurn ? 1 : 0, s->trackWho ) );
 	if ( s->handheld > 0 )
 		Q_strcat( out, size, va( "/handheld %i", s->handheld ) );
+	if ( s->dolly )
+		Q_strcat( out, size, "/dolly" );
 	for ( int i = 0; i < s->numShakes; i++ )
 		Q_strcat( out, size, va( "/shake %g %i %g", RC_Seconds( s->shakes[i].ms ), s->shakes[i].strength, RC_Seconds( s->shakes[i].len ) ) );
 	for ( int i = 0; i < 2; i++ ) {

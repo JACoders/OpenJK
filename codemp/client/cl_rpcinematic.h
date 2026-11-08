@@ -147,6 +147,7 @@ typedef struct {
 	// trackTurn an orbit's from yaw is from the way they face, so it stays behind them, beside them...
 	char		trackWho[MAX_QPATH];
 	qboolean	trackTurn;
+	qboolean	dolly;			// zoomed as it moves so what it looks at stays the same size
 
 	// the camera shaken: held by hand all along (0 not, up to RC_MAX_HANDHELD), and jolts
 	int			handheld;

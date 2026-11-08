@@ -2923,6 +2923,12 @@ static struct {
 	qboolean	addOpen;			// the actions to add are listed
 	qboolean	extraOpen;			// an extra's settings shown
 
+	// a preview going round between the marks either side of the moment
+	qboolean	loop;
+	int			loopFrom, loopTo;
+	// a picture of the moment: the manager hidden a few frames for it
+	int			pictureFrames;
+
 	// the free camera flown and kept as a shot: where it was, every tenth of a second
 	qboolean	camRec;
 	int			camRecStart, camRecNext, camRecCount;
@@ -3987,9 +3993,11 @@ static void CM_StopPreview( void ) {
 }
 
 // the cinematic on this screen, from the timeline's moment or the start
+static void CM_LoopSpan( int *from, int *to );
+
 static void CM_Preview( void ) {
 	const int total = CM_Total( &cm.cine );
-	const int from = cm.tlPinned && cm.tlMs < total ? cm.tlMs : 0;
+	int from = cm.tlPinned && cm.tlMs < total ? cm.tlMs : 0;
 
 	if ( cm.preview )
 		return;
@@ -3997,12 +4005,36 @@ static void CM_Preview( void ) {
 		CM_Message( S_COLOR_YELLOW "Add a shot first: fly where it starts and press Enter" );
 		return;
 	}
+	// going round between the marks either side of the moment
+	if ( cm.loop ) {
+		CM_LoopSpan( &cm.loopFrom, &cm.loopTo );
+		from = cm.loopFrom;
+	}
 	CM_Unapply();
 	cm.applied = qfalse;
 	cm.flying = qfalse;
 	cm.through = qfalse;
 	if ( CM_Play( &cm.cine, from, qtrue ) )
 		cm.preview = qtrue;
+}
+
+// a picture of the moment as the players see it, through the cinematic's camera, into
+// screenshots/<name>-<ms>.jpg, nothing of the manager's on it
+static void CM_Picture( void ) {
+	if ( !cm.cine.numShots ) {
+		CM_Message( S_COLOR_YELLOW "Add a shot first: fly where it starts and press Enter" );
+		return;
+	}
+	if ( !cm.tlPinned ) {
+		cm.tlMs = 0;
+		CM_TlPin();
+	}
+	cm.tlCam = qtrue;
+	cm.through = qfalse;
+	cm.typing = CM_TYPE_NONE;
+	cm.pictureFrames = 4;
+	Cbuf_AddText( va( "screenshot %s-%06i\n", cm.name[0] ? cm.name : "cinematic", cm.tlMs ) );
+	CM_Message( va( S_COLOR_GREEN "Picture of %.1f s in screenshots/", cm.tlMs / 1000.0f ) );
 }
 
 // every frame: the timeline's moment shown, or the animation being made on its model
@@ -4544,6 +4576,12 @@ static void CM_EditorFrame( void ) {
 	CM_Ripple();
 
 	if ( cm.preview ) {
+		// round again from the first mark, at the second or the end
+		if ( cm.loop && !cmVideo && ( !cmp.playing || cls.realtime - cmp.start >= cm.loopTo ) ) {
+			if ( !CM_Play( &cm.cine, cm.loopFrom, qtrue ) )
+				cm.preview = qfalse;
+			return;
+		}
 		if ( !cmp.playing )
 			cm.preview = qfalse;
 		return;
@@ -5675,6 +5713,14 @@ static void CM_DrawTrackPage( float x, float y, float w ) {
 		y += CM_ROW_H * 2 + 2;
 	}
 
+	// the vertigo shot: zoomed as the camera moves so what it looks at stays as big
+	if ( !s->orbit && ( s->trackWho[0] || s->look ) ) {
+		if ( CM_Switch( x, y, w, "Dolly zoom", s->dolly ? "on: it stays as big" : "off" ) ) {
+			s->dolly = (qboolean)!s->dolly;
+			CM_Changed();
+		}
+		y += CM_CTRL_H + CM_GAP;
+	}
 	y += 4;
 	CM_Fill( x, y - 3, w, 1, cmBorder );
 	CM_Text( x, y + 2, "Shake", cmWhite );
@@ -8602,6 +8648,60 @@ static int CM_TlSnap( int ms ) {
 	return Q_max( 0, ( ms + CM_TL_SNAP_MS / 2 ) / CM_TL_SNAP_MS * CM_TL_SNAP_MS );
 }
 
+// a second more at the moment picked, or a second less from it: the shot it's in longer or shorter
+// there, and all after it along with it
+static void CM_ChangeTime( int delta ) {
+	cmCine_t *c = &cm.cine;
+	rcShot_t *s;
+	int local, shot;
+
+	if ( !cm.tlPinned || !c->numShots || ( shot = CM_ShotAt( c, cm.tlMs, &local ) ) < 0 )
+		return;
+	s = &c->shots[shot];
+	if ( s->orbit || s->numKeys == 1 ) {
+		if ( s->ms + delta < 500 ) {
+			CM_Message( S_COLOR_YELLOW "The shot's too short to take a second from" );
+			return;
+		}
+		s->ms += delta;
+	} else {
+		int from = 0, i;
+
+		// the stretch between two spots the moment is in
+		for ( i = 1; i < s->numKeys - 1 && local > from + s->keys[i].ms; i++ )
+			from += s->keys[i].ms;
+		if ( s->keys[i].ms + delta < 100 ) {
+			CM_Message( S_COLOR_YELLOW "Too short between these spots to take a second from" );
+			return;
+		}
+		s->keys[i].ms += delta;
+	}
+	if ( delta > 0 )
+		CM_ShiftClips( cm.tlMs, delta );
+	else
+		CM_ShiftClips( cm.tlMs - delta, delta );
+	// the shot's new length is ours, not one to stretch what's in it over
+	CM_SeeShots();
+	CM_Changed();
+	CM_Message( delta > 0 ? va( "A second more at %.1f s", cm.tlMs / 1000.0f ) : va( "A second less from %.1f s", cm.tlMs / 1000.0f ) );
+}
+
+// the marks either side of the moment, or the start and the end
+static void CM_LoopSpan( int *from, int *to ) {
+	const int total = CM_Total( &cm.cine ), at = cm.tlPinned ? cm.tlMs : 0;
+
+	*from = 0;
+	*to = total;
+	for ( int i = 0; i < cm.cine.numMarks; i++ ) {
+		const int m = cm.cine.marks[i];
+
+		if ( m <= at && m > *from )
+			*from = m;
+		if ( m > at && m < *to )
+			*to = m;
+	}
+}
+
 // a moment marked where the timeline's at, or the mark there taken away
 static void CM_ToggleMark( void ) {
 	cmCine_t *c = &cm.cine;
@@ -9124,6 +9224,13 @@ static void CM_DrawTimeline( void ) {
 		CM_TlLetGo();
 	if ( CM_Button( x + w - 44 - 4 - 104 - 4 - 50, headY, 50, cm.tlPinned && CM_MarkNear( cm.tlMs, 0 ) >= 0 ? "Unmark" : "+ Mark", qfalse, cm.tlPinned ) )
 		CM_ToggleMark();
+	// a second more or less at the moment, and previews going round between the marks
+	if ( CM_Button( x + w - 44 - 4 - 104 - 4 - 50 - 4 - 30, headY, 30, "-1 s", qfalse, cm.tlPinned ) )
+		CM_ChangeTime( -1000 );
+	if ( CM_Button( x + w - 44 - 4 - 104 - 4 - 50 - 4 - 30 - 4 - 30, headY, 30, "+1 s", qfalse, cm.tlPinned ) )
+		CM_ChangeTime( 1000 );
+	if ( CM_Button( x + w - 44 - 4 - 104 - 4 - 50 - 4 - 30 - 4 - 30 - 4 - 34, headY, 34, "Loop", cm.loop, qtrue ) )
+		cm.loop = (qboolean)!cm.loop;
 	if ( CM_Button( x + w - 44 - 4 - 104, headY, 104, cm.tlCam ? "Seen: the cinematic's" : "Seen: free camera", qfalse, cm.tlPinned ) ) {
 		cm.tlCam = (qboolean)!cm.tlCam;
 		if ( cm.tlCam )
@@ -9457,6 +9564,19 @@ static void CM_DrawEditor( void ) {
 		CM_DrawScreens( &cm.cine, cm.tlMs );
 		CM_DrawTexts( &cm.cine, cm.tlMs );
 	}
+	// a picture being taken: the bars as they'll be, and nothing else
+	if ( cm.pictureFrames > 0 ) {
+		if ( cm.cine.bars ) {
+			static const vec4_t black = { 0, 0, 0, 1 };
+			const float h = CM_BarFrac( &cm.cine ) * SCREEN_HEIGHT;
+
+			CM_Fill( 0, 0, SCREEN_WIDTH, h, black );
+			CM_Fill( 0, SCREEN_HEIGHT - h, SCREEN_WIDTH, h, black );
+			// the texts over the bars
+			CM_DrawTexts( &cm.cine, cm.tlMs );
+		}
+		return;
+	}
 	CM_DrawGuides();
 	CM_DrawFocusCircle();
 	CM_GizmoFrame();
@@ -9617,10 +9737,13 @@ static void CM_DrawEditor( void ) {
 		CM_Text( x, y, CL_RpHooks_Experimental() ? va( S_COLOR_GREY "%.1f s, %i shot%s, %i in it", total / 1000.0f, cm.cine.numShots, cm.cine.numShots == 1 ? "" : "s", cm.cine.numEnts )
 			: S_COLOR_GREY "For everyone: " RP_EXPERIMENTAL_LABEL, cmWhite );
 		y += CM_ROW_H;
-		if ( CM_Button( x, y, half, cm.tlPinned && cm.tlMs < total ? va( "Preview from %.1f s", cm.tlMs / 1000.0f ) : "Preview (P)", qfalse, (qboolean)( total > 0 ) ) )
+		if ( CM_Button( x, y, third, cm.loop ? "Preview, loop" : cm.tlPinned && cm.tlMs < total ? va( "Preview %.1f s", cm.tlMs / 1000.0f ) : "Preview (P)", qfalse,
+			(qboolean)( total > 0 ) ) )
 			CM_Preview();
-		if ( CM_Button( x + half + 4, y, half, va( "Video, %i fps", cl_aviFrameRate->integer ), qfalse, (qboolean)( total > 0 && !CL_VideoRecording() ) ) )
+		if ( CM_Button( x + third + 4, y, third, va( "Video %i fps", cl_aviFrameRate->integer ), qfalse, (qboolean)( total > 0 && !CL_VideoRecording() ) ) )
 			CM_RecordVideo();
+		if ( CM_Button( x + ( third + 4 ) * 2, y, third, "Picture", qfalse, (qboolean)( total > 0 ) ) )
+			CM_Picture();
 		y += CM_CTRL_H + CM_GAP;
 		if ( CM_PartsLeft() ) {
 			CM_Text( x, y + 2, va( S_COLOR_GREEN "Sending it, %i part%s to go", CM_PartsLeft(), CM_PartsLeft() == 1 ? "" : "s" ), cmWhite );
@@ -11200,6 +11323,8 @@ void CM_Frame( void ) {
 	if ( cm.open ) {
 		CM_UndoFrame();
 		CM_CamRecFrame();
+		if ( cm.pictureFrames > 0 )
+			cm.pictureFrames--;
 	}
 	CM_PickFxFrame();
 	CM_PickSndFrame();
