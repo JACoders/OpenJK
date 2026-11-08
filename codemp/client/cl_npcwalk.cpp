@@ -1248,6 +1248,8 @@ For the cinematic manager: where a move has its NPCs at any moment, and holding 
 */
 
 qboolean CL_NpcWalk_NpcOrigin( int num, vec3_t out ) {
+	if ( CL_Extras_IsNum( num ) )
+		return CL_Extras_Origin( num, out );
 	return NW_NpcOrigin( num, out );
 }
 
@@ -1300,6 +1302,18 @@ void CL_NpcWalk_PoseEx( int num, const vec3_t pos, const vec3_t angles, int pace
 	float ground, ofs = NW_GROUND_HEIGHT;
 	int i = 0;
 
+	// an extra, only this client's: on the ground as an NPC would be, tipped over only if asked
+	if ( CL_Extras_IsNum( num ) ) {
+		vec3_t at, ang;
+
+		VectorCopy( pos, at );
+		if ( !free && NW_Ground( pos, &ground ) )
+			at[2] = ground + NW_GROUND_HEIGHT;
+		VectorSet( ang, tilt ? angles[PITCH] : 0.0f, angles[YAW], tilt ? angles[ROLL] : 0.0f );
+		CL_Extras_Pose( num, at, ang, pace, st );
+		return;
+	}
+
 	while ( i < nwNumPoses && nwPose[i].num != num )
 		i++;
 	if ( i == NW_MAX_POSES )
@@ -1348,6 +1362,7 @@ int CL_NpcWalk_Tilts( vec3_t *pos, vec3_t *angles, int max ) {
 
 void CL_NpcWalk_ClearPoses( void ) {
 	nwNumPoses = 0;
+	CL_Extras_ResetPoses();
 }
 
 // your own player held where a cinematic has you: the snapshot's player state the cgame draws
@@ -1384,6 +1399,8 @@ void CL_NpcWalk_PosePlayer( playerState_t *ps ) {
 
 // which way a cinematic has it facing; qfalse if it doesn't hold it
 qboolean CL_NpcWalk_PoseYaw( int num, float *yaw ) {
+	if ( CL_Extras_IsNum( num ) )
+		return CL_Extras_Yaw( num, yaw );
 	for ( int i = 0; i < nwNumPoses; i++ ) {
 		if ( nwPose[i].num == num ) {
 			*yaw = nwPose[i].yaw;
@@ -1395,6 +1412,8 @@ qboolean CL_NpcWalk_PoseYaw( int num, float *yaw ) {
 
 // where a cinematic holds it; qfalse if it doesn't
 qboolean CL_NpcWalk_PoseOf( int num, vec3_t out ) {
+	if ( CL_Extras_IsNum( num ) )
+		return CL_Extras_Origin( num, out );
 	for ( int i = 0; i < nwNumPoses; i++ ) {
 		if ( nwPose[i].num == num ) {
 			VectorCopy( nwPose[i].pos, out );

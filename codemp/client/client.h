@@ -750,6 +750,31 @@ typedef struct {
 } npcPoseState_t;
 void CL_NpcWalk_PoseEvent( int num, int event, int parm );
 void CL_NpcWalk_PoseEx( int num, const vec3_t pos, const vec3_t angles, int pace, qboolean free, const npcPoseState_t *st, qboolean tilt );
+
+// cl_extras.cpp: people only this client draws, for a cinematic, by entity numbers past any real one
+#define CL_MAX_EXTRAS			12
+#define CL_EXTRA_NUM_BASE		4096
+#define CL_EXTRA_NUM_COLORS		6
+typedef enum {
+	CL_EXTRA_SABER_NONE,
+	CL_EXTRA_SABER_SINGLE,
+	CL_EXTRA_SABER_STAFF,
+	CL_EXTRA_SABER_TWO
+} clExtraSaber_t;
+qboolean CL_Extras_IsNum( int num );
+void CL_Extras_Clear( void );
+void CL_Extras_Shutdown( void );
+void CL_Extras_Define( int slot, const char *name, const char *model, int saber, int color, const vec3_t home, float yaw, qboolean shown );
+void CL_Extras_Keep( const qboolean *keep );
+int CL_Extras_Find( const char *name );
+void CL_Extras_ResetPoses( void );
+void CL_Extras_Pose( int num, const vec3_t pos, const vec3_t angles, int pace, const npcPoseState_t *st );
+void CL_Extras_Show( int num, qboolean shown );
+qboolean CL_Extras_Origin( int num, vec3_t out );
+qboolean CL_Extras_Yaw( int num, float *yaw );
+int CL_Extras_Bodies( int *nums, vec3_t *orgs, int max );
+void CL_Extras_AddToScene( const refdef_t *fd );
+const char *CL_EmotePreview_AnimName( int anim );
 int CL_NpcWalk_Tilts( vec3_t *pos, vec3_t *angles, int max );
 int CL_EmotePreview_Count( void );
 const char *CL_EmotePreview_Name( int index );

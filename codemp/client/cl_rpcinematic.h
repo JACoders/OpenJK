@@ -225,6 +225,7 @@ int RC_AnimTargets( const char *who, int *nums, int max );
 int RC_AnimMs( const rcAnim_t *a, int shotMs );
 int RC_EntCfg( int num );
 const rcAnimDef_t *RC_FindAnim( int cfg, const char *name );
+int RC_AnimCfg( const char *gla );
 const rcAnimDef_t *RC_AnimDefs( int cfg, int *count );
 // a cinematic's animations now: each of nums on its animation, elapsed ms into it; the others it
 // had let go
@@ -240,6 +241,8 @@ int CM_EditorFilter( void );
 void CM_Frame( void );
 void CM_Draw( void );
 void CM_DrawPlayingTexts( void );
+const refEntity_t *CM_LookEntity( const refEntity_t *ent, refEntity_t *copy );
+qboolean RC_EntityOrigin( int num, vec3_t out );
 void CM_Init( void );
 void CM_Shutdown( void );
 void CM_Reset( void );

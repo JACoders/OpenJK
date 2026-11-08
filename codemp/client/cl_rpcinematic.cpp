@@ -1056,7 +1056,7 @@ static struct {
 } rcSend;
 
 // the animation.cfg of a skeleton; -1 if it has none
-static int RC_AnimCfg( const char *gla ) {
+int RC_AnimCfg( const char *gla ) {
 	char path[MAX_QPATH], *buf, *slash;
 	const char *p;
 	int oldest = 0;
@@ -1220,7 +1220,7 @@ const rcAnimDef_t *RC_AnimDefs( int cfg, int *count ) {
 }
 
 // where an entity is drawn now, near enough: where its walk has it, else the snapshot's
-static qboolean RC_EntityOrigin( int num, vec3_t out ) {
+qboolean RC_EntityOrigin( int num, vec3_t out ) {
 	npcWalkInfo_t w;
 
 	if ( num == clc.clientNum ) {
@@ -1313,7 +1313,8 @@ static void RC_AnimateModel( const refEntity_t *ent ) {
 	def = RC_FindAnim( RC_AnimCfg( gla ), pick->anim );
 	if ( !def )
 		return;
-	Q_strncpyz( rcEntGla[pick->num], gla, sizeof( rcEntGla[0] ) );
+	if ( pick->num >= 0 && pick->num < MAX_GENTITIES )
+		Q_strncpyz( rcEntGla[pick->num], gla, sizeof( rcEntGla[0] ) );
 	frame = RC_AnimFrame( pick, def, &last );
 	RC_SetFrame( g2, frame, last );
 }
@@ -1380,6 +1381,9 @@ int RC_AnimTargets( const char *who, int *nums, int max ) {
 			continue;
 		if ( !Q_stricmp( item, "me" ) ) {
 			num = clc.clientNum;
+		} else if ( item[0] == '+' ) {
+			// a cinematic's extra
+			num = CL_Extras_Find( item );
 		} else if ( Q_isanumber( item ) ) {
 			num = atoi( item );
 		} else {
@@ -1398,7 +1402,7 @@ int RC_AnimTargets( const char *who, int *nums, int max ) {
 			if ( num < 0 )
 				num = CL_NpcWalk_Target( item );
 		}
-		if ( num >= 0 && num < MAX_GENTITIES )
+		if ( ( num >= 0 && num < MAX_GENTITIES ) || CL_Extras_IsNum( num ) )
 			nums[count++] = num;
 	}
 	return count;
@@ -2353,6 +2357,9 @@ const refEntity_t *CL_RpCinematic_Entity( const refEntity_t *ent, refEntity_t *c
 			break;
 		}
 	}
+	// how a cinematic has someone look meanwhile: hidden, bigger, a hologram, their saber
+	if ( !( ent = CM_LookEntity( ent, copy ) ) )
+		return NULL;
 	// through a thermal camera, people are white hot
 	if ( ent->ghoul2 && ent->reType == RT_MODEL && RC_FilterNow() == RC_FI_THERMAL ) {
 		*copy = *ent;

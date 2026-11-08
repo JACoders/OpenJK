@@ -381,6 +381,8 @@ static void CL_R_RenderScene( const refdef_t *fd ) {
 	CL_ShaderManager_SkyLook();
 	// the map editor's models and lights are in every main view
 	CL_MapEditor_AddToScene( fd );
+	// a cinematic's extras, people only this client draws
+	CL_Extras_AddToScene( fd );
 	// where the stories armed wait, for the storyteller
 	CL_Storyteller_AddToScene( fd );
 	// where the crosshair looks, for an NPC's name under it

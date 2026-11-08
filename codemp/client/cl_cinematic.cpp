@@ -42,7 +42,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //   npccmd <ent> <seconds in> <command> [value]     an npc command, spaces in it as _
 //   spawn <ent> <seconds in> <x y z yaw> <team> <NPC type>   its targetname the ent's who
 //   remove <ent> <seconds in>                       taken out with npc kill
+//   appear <ent> <seconds in> <seconds, 0 to the end> <hidden 0|1> <size %> <cmShells> <cmSaberLooks> <blade %>
 //   txt <seconds in> <seconds> <where 0 bottom bar|1 top bar|2 center|3 notify> <size 0-2> <typed 0|1> <who>|<text>
+//   extra <ent> <x y z yaw> <saber 0 none|1|2 staff|3 two> <colour 0-5> <model[/skin]>   the ent "+name"
 //   rs <recording> <ms> <x y z> <pitch> <yaw> <legs> <torso> <flips> <holstered> <force powers> <saber move>
 // The shots of the camera editor from before (camshots/*.cam) open as a cinematic of one shot.
 //
@@ -114,8 +116,35 @@ typedef enum {
 	CM_CLIP_NPCCMD,		// an npc command at its moment: freeze, follow, dialog, hologram...
 	CM_CLIP_SPAWN,		// the NPC spawned at its moment, its targetname the ent's who
 	CM_CLIP_REMOVE,		// and taken out
+	CM_CLIP_LOOK,		// how they look meanwhile: hidden, their size, drawn as a hologram, their saber
 	CM_NUM_CLIPS
 } cmClipKind_t;
+
+// what a look can draw someone as: in place of their body, or over it
+typedef struct {
+	const char	*name;
+	const char	*shader;
+	qboolean	over;
+} cmShell_t;
+
+static const cmShell_t cmShells[] = {
+	{ "as they are", NULL, qfalse },
+	{ "a hologram", "powerups/ysaliblueshell", qfalse },
+	{ "cloaked", "gfx/effects/cloakedShader", qfalse },
+	{ "force glow", "powerups/forceshell", qtrue },
+	{ "light side", "powerups/enlightenmentshell", qtrue },
+	{ "dark side", "powerups/endarkenmentshell", qtrue },
+	{ "electric", "gfx/effects/demp2shell", qtrue },
+	{ "red glow", "powerups/ysaliredshell", qtrue },
+	{ "yellow glow", "powerups/ysalimarishell", qtrue },
+	{ "force protect", "gfx/misc/forceprotect", qtrue }
+};
+
+// a look's saber: as it is, its blades off, or blades of a colour
+static const char *cmSaberLooks[] = { "as it is", "off", "red", "orange", "yellow", "green", "blue", "purple" };
+#define CM_SABER_OFF		1
+#define CM_SABER_COLORS		2		// the first of the colours
+#define CM_LOOK_UP			24.0f	// a player's origin is this far over their feet
 
 // what an NPC command can be
 static const char *cmNpcCmds[] = { "freeze", "unfreeze", "follow me", "stop following", "dialog", "no dialog",
@@ -195,11 +224,30 @@ typedef struct {
 	// a spawn: the NPC type and team, where in keys[0]
 	char		npcType[MAX_QPATH];
 	char		team[16];
+
+	// a look, for its a.ms (0 to the end): hidden, their size and blades' length in percent,
+	// cmShells, cmSaberLooks
+	qboolean	hidden;
+	int			size;
+	int			shell;
+	int			saber;
+	int			blade;
 } cmClip_t;
 
+// someone in it: a player or an NPC by who, or an extra, "+" and its name, that only screens
+// with this client draw, with its model, saber and spot
 typedef struct {
 	char		who[MAX_QPATH];
+	char		model[MAX_QPATH];	// an extra's: "model" or "model/skin"
+	int			saber;				// clExtraSaber_t
+	int			color;				// its blades', red to purple
+	vec3_t		home;				// where it stands until moved: an entity's origin, over the floor
+	float		yaw;
 } cmEnt_t;
+
+static qboolean CM_IsExtra( const char *who ) {
+	return (qboolean)( who[0] == '+' );
+}
 
 // an effect played at its moment: once, or again and again while it lasts
 typedef struct {
@@ -377,7 +425,11 @@ static int CM_Resolve( const char *who, int *nums, int max ) {
 			p++;
 		if ( !item[0] )
 			continue;
-		if ( Q_stricmp( item, "me" ) && !Q_isanumber( item ) && ( found[0] = CM_FindPlayer( item ) ) >= 0 )
+		if ( CM_IsExtra( item ) && ( found[0] = CL_Extras_Find( item ) ) >= 0 )
+			n = 1;
+		else if ( CM_IsExtra( item ) )
+			continue;
+		if ( n <= 0 && Q_stricmp( item, "me" ) && !Q_isanumber( item ) && ( found[0] = CM_FindPlayer( item ) ) >= 0 )
 			n = 1;
 		if ( n <= 0 && Q_stricmp( item, "me" ) && !Q_isanumber( item ) )
 			n = CL_NpcWalk_Targets( item, found, CM_MAX_GROUP );
@@ -671,6 +723,7 @@ static void CM_RecEvents( const cmRec_t *r, const cmClip_t *clip, int from, int 
 }
 
 static qboolean CM_Playing( const cmCine_t *c );
+static void CM_SyncExtras( void );
 
 // everyone where the cinematic has them t ms in, on their animation's frame
 static void CM_Apply( const cmCine_t *c, const cmPlan_t *plans, int t ) {
@@ -870,6 +923,13 @@ static int CM_ToText( const cmCine_t *c, char *out, int size ) {
 	}
 	for ( int i = 0; i < c->numEnts; i++ )
 		CM_ADD( va( "ent %s\n", c->ents[i].who[0] ? c->ents[i].who : "-" ) );
+	for ( int i = 0; i < c->numEnts; i++ ) {
+		const cmEnt_t *e = &c->ents[i];
+
+		if ( CM_IsExtra( e->who ) )
+			CM_ADD( va( "extra %i %i %i %i %i %i %i %s\n", i, RC_Round( e->home[0] ), RC_Round( e->home[1] ), RC_Round( e->home[2] ),
+				RC_Round( AngleNormalize360( e->yaw ) ), e->saber, e->color, e->model[0] ? e->model : "kyle" ) );
+	}
 	for ( int i = 0; i < c->numClips; i++ ) {
 		const cmClip_t *clip = &c->clips[i];
 
@@ -888,6 +948,9 @@ static int CM_ToText( const cmCine_t *c, char *out, int size ) {
 		} else if ( clip->kind == CM_CLIP_SAY ) {
 			Com_sprintf( line, sizeof( line ), "say %i %g %s|%s\n", clip->ent, RC_Seconds( clip->start ), clip->name, clip->text );
 			CM_ADD( line );
+		} else if ( clip->kind == CM_CLIP_LOOK ) {
+			CM_ADD( va( "appear %i %g %g %i %i %i %i %i\n", clip->ent, RC_Seconds( clip->start ), RC_Seconds( clip->a.ms ), clip->hidden ? 1 : 0,
+				clip->size, clip->shell, clip->saber, clip->blade ) );
 		} else if ( clip->kind == CM_CLIP_EMOTE ) {
 			Com_sprintf( line, sizeof( line ), "emote %i %g %g %s %i %i\n", clip->ent, RC_Seconds( clip->start ), RC_Seconds( clip->a.ms ),
 				clip->emote[0] ? clip->emote : "-", clip->a.loop ? 1 : 0, clip->realEmote ? 1 : 0 );
@@ -1055,6 +1118,36 @@ static void CM_Parse( char *text, cmCine_t *c ) {
 			while ( *who == ' ' )
 				who++;
 			Q_strncpyz( c->ents[c->numEnts++].who, strcmp( who, "-" ) ? who : "", sizeof( c->ents[0].who ) );
+		} else if ( !Q_stricmpn( line, "extra ", 6 ) ) {
+			float v[4];
+			int ent, saber = 0, color = 0, n = 0;
+
+			if ( sscanf( line + 6, "%i %f %f %f %f %i %i %n", &ent, &v[0], &v[1], &v[2], &v[3], &saber, &color, &n ) < 7 || n <= 0
+				|| ent < 0 || ent >= c->numEnts )
+				continue;
+			VectorCopy( v, c->ents[ent].home );
+			c->ents[ent].yaw = v[3];
+			c->ents[ent].saber = Com_Clampi( 0, CL_EXTRA_SABER_TWO, saber );
+			c->ents[ent].color = Com_Clampi( 0, CL_EXTRA_NUM_COLORS - 1, color );
+			Q_strncpyz( c->ents[ent].model, line + 6 + n, sizeof( c->ents[ent].model ) );
+		} else if ( !Q_stricmpn( line, "appear ", 7 ) && c->numClips < CM_MAX_CLIPS ) {
+			cmClip_t *clip = &c->clips[c->numClips];
+			float start, seconds;
+			int ent, hidden = 0, size = 100, shell = 0, saber = 0, blade = 100;
+
+			memset( clip, 0, sizeof( *clip ) );
+			if ( sscanf( line + 7, "%i %f %f %i %i %i %i %i", &ent, &start, &seconds, &hidden, &size, &shell, &saber, &blade ) < 3 || ent < 0 || ent >= CM_MAX_ENTS )
+				continue;
+			clip->kind = CM_CLIP_LOOK;
+			clip->ent = ent;
+			clip->start = RC_SecondsMs( start );
+			clip->a.ms = RC_SecondsMs( seconds );
+			clip->hidden = (qboolean)( hidden != 0 );
+			clip->size = Com_Clampi( 25, 400, size );
+			clip->shell = Com_Clampi( 0, (int)ARRAY_LEN( cmShells ) - 1, shell );
+			clip->saber = Com_Clampi( 0, (int)ARRAY_LEN( cmSaberLooks ) - 1, saber );
+			clip->blade = Com_Clampi( 25, 300, blade );
+			c->numClips++;
 		} else if ( !Q_stricmpn( line, "emote ", 6 ) && c->numClips < CM_MAX_CLIPS ) {
 			cmClip_t *clip = &c->clips[c->numClips];
 			char emote[48];
@@ -1625,7 +1718,7 @@ static void CM_DriverTeles( int t, qboolean now ) {
 			const int ms = CM_PlanLen( &cmp.cine, p, clip, m );
 			vec3_t pos, ang;
 
-			if ( p->nums[m] < MAX_CLIENTS || cmp.teleSent[i][m] || ( !now && t < clip->start + ms ) )
+			if ( p->nums[m] < MAX_CLIENTS || CL_Extras_IsNum( p->nums[m] ) || cmp.teleSent[i][m] || ( !now && t < clip->start + ms ) )
 				continue;
 			CM_PlanAt( &cmp.cine, p, clip, m, Q_min( t - clip->start, ms ), pos, ang );
 			CM_Queue( va( "npc tele %i %i %i %i %i", RC_Round( pos[0] ), RC_Round( pos[1] ), RC_Round( pos[2] ),
@@ -1663,7 +1756,8 @@ static const char *CM_SayCommand( const cmCine_t *c, const cmClip_t *clip, qbool
 		return va( "say %s", text );
 	if ( nums[0] < MAX_CLIENTS )
 		return CL_RpHooks_NpcTalkCommand( va( "%i", nums[0] ), CM_PlayerName( nums[0] ), "^7", "", text );
-	return CL_RpHooks_NpcTalkCommand( c->ents[clip->ent].who, clip->name[0] ? clip->name : c->ents[clip->ent].who, "^7", "", text );
+	return CL_RpHooks_NpcTalkCommand( c->ents[clip->ent].who, clip->name[0] ? clip->name : CM_IsExtra( c->ents[clip->ent].who ) ? c->ents[clip->ent].who + 1
+		: c->ents[clip->ent].who, "^7", "", text );
 }
 
 // a hook shown on this screen alone, as if the server had sent it: a preview's lines
@@ -1718,7 +1812,8 @@ static void CM_RunEmotes( int t ) {
 static const char *CM_ActCommand( const cmCine_t *c, const cmClip_t *clip ) {
 	const char *who = c->ents[clip->ent].who;
 
-	if ( !who[0] || strchr( who, ',' ) )
+	// an extra is this client's alone: nothing goes to the server
+	if ( !who[0] || strchr( who, ',' ) || CM_IsExtra( who ) )
 		return NULL;
 	if ( clip->kind == CM_CLIP_REMOVE )
 		return va( "npc kill %s", who );
@@ -1823,6 +1918,9 @@ static qboolean CM_Play( const cmCine_t *c, int fromMs, qboolean local ) {
 	cmp.shot = -1;
 	cmp.driver = qfalse;
 	cmp.local = local;
+	// its extras there before anything is worked out from where everyone is
+	cmp.playing = qtrue;
+	CM_SyncExtras();
 	memset( cmp.teleSent, 0, sizeof( cmp.teleSent ) );
 	memset( cmp.said, 0, sizeof( cmp.said ) );
 	memset( cmp.emoted, 0, sizeof( cmp.emoted ) );
@@ -2152,7 +2250,9 @@ typedef enum {
 	CM_TYPE_DIALOG,		// an NPC command's dialog
 	CM_TYPE_TXT,		// a text's words
 	CM_TYPE_TXTWHO,		// and who says them
-	CM_TYPE_TRACK		// who a shot keeps in frame
+	CM_TYPE_TRACK,		// who a shot keeps in frame
+	CM_TYPE_EXTRANAME,	// an extra's name, + first
+	CM_TYPE_EXTRAMODEL	// and its model
 } cmTyping_t;
 
 typedef enum {
@@ -2239,6 +2339,7 @@ static struct {
 	gzDrag_t	gzDrag;
 	int			gzHot;
 	qboolean	addOpen;			// the actions to add are listed
+	qboolean	extraOpen;			// an extra's settings shown
 	char		newNpc[MAX_QPATH];	// an NPC to spawn in it, by its targetname, being typed
 	int			listAsked;			// cls.realtime the NPC list was last asked for
 	int			entScroll, pickScroll;
@@ -2807,6 +2908,11 @@ static void CM_AddClip( int kind, qboolean tele ) {
 	} else if ( kind == CM_CLIP_SAY ) {
 		cm.typing = CM_TYPE_SAY;
 		CM_Message( "Type what they say" );
+	} else if ( kind == CM_CLIP_LOOK ) {
+		clip->a.ms = CM_EMOTE_MS;
+		clip->size = 100;
+		clip->blade = 100;
+		CM_Message( "How they look meanwhile: drag its end on the timeline for how long" );
 	} else if ( kind == CM_CLIP_EMOTE ) {
 		clip->a.to = -1;
 		clip->a.speed = 100;
@@ -3395,6 +3501,12 @@ static char *CM_TypedText( int *size ) {
 			return NULL;
 		*size = sizeof( s->dofWho );
 		return s->dofWho;
+	case CM_TYPE_EXTRANAME:
+	case CM_TYPE_EXTRAMODEL:
+		if ( cm.ent < 0 || cm.ent >= cm.cine.numEnts || !CM_IsExtra( cm.cine.ents[cm.ent].who ) )
+			return NULL;
+		*size = cm.typing == CM_TYPE_EXTRANAME ? sizeof( cm.cine.ents[0].who ) : sizeof( cm.cine.ents[0].model );
+		return cm.typing == CM_TYPE_EXTRANAME ? cm.cine.ents[cm.ent].who : cm.cine.ents[cm.ent].model;
 	case CM_TYPE_TRACK:
 		if ( !s )
 			return NULL;
@@ -3440,12 +3552,25 @@ static char *CM_TypedText( int *size ) {
 static qboolean CM_AllowChar( int ch ) {
 	if ( cm.typing == CM_TYPE_SAY || cm.typing == CM_TYPE_SAYNAME || cm.typing == CM_TYPE_DIALOG || cm.typing == CM_TYPE_TXT || cm.typing == CM_TYPE_TXTWHO )
 		return (qboolean)!( ch < ' ' || ch > '~' || ( cm.typing != CM_TYPE_SAY && cm.typing != CM_TYPE_TXT && ch == '|' ) || ( cm.typing == CM_TYPE_DIALOG && ch == ';' ) );
+	if ( cm.typing == CM_TYPE_EXTRAMODEL )
+		return (qboolean)( CM_NameChar( ch ) || ch == '/' || ch == '|' );
+	if ( cm.typing == CM_TYPE_EXTRANAME )
+		return (qboolean)( CM_NameChar( ch ) || ch == '+' );
 	return (qboolean)( CM_NameChar( ch ) || ( ( cm.typing == CM_TYPE_WHO || cm.typing == CM_TYPE_FOCUS || cm.typing == CM_TYPE_TRACK ) && ch == ',' ) );
 }
 
 // what was typed changed: the animations' names are in capitals, the emotes' small, and their
 // lists start again from the top
 static void CM_TypedChanged( char *text ) {
+	// an extra's name always starts with its +
+	if ( cm.typing == CM_TYPE_EXTRANAME && text[0] != '+' ) {
+		const int len = (int)strlen( text );
+
+		if ( len < MAX_QPATH - 1 ) {
+			memmove( text + 1, text, len + 1 );
+			text[0] = '+';
+		}
+	}
 	if ( cm.typing == CM_TYPE_ANIM ) {
 		Q_strupr( text );
 		cm.pickScroll = 0;
@@ -5109,7 +5234,10 @@ static void CM_ListPeople( void ) {
 		p->num = -1;
 		p->ent = e;
 		Q_strncpyz( p->who, cm.cine.ents[e].who, sizeof( p->who ) );
-		Com_sprintf( p->label, sizeof( p->label ), "%s" S_COLOR_YELLOW "  not here", p->who[0] ? p->who : "nobody" );
+		if ( CM_IsExtra( p->who ) )
+			Com_sprintf( p->label, sizeof( p->label ), "%s" S_COLOR_GREY "  extra, %s", p->who + 1, cm.cine.ents[e].model[0] ? cm.cine.ents[e].model : "kyle" );
+		else
+			Com_sprintf( p->label, sizeof( p->label ), "%s" S_COLOR_YELLOW "  not here", p->who[0] ? p->who : "nobody" );
 		cmNumPeople++;
 	}
 }
@@ -5450,8 +5578,162 @@ static void CM_DrawRecordClip( float x, float y, float w, cmClip_t *clip ) {
 	CM_Text( x, y + CM_ROW_H * 3, S_COLOR_GREY "they are then; drag it on the timeline", cmWhite );
 }
 
+static const char *cmExtraSabers[] = { "none", "a saber", "a staff", "two sabers" };
+static const char *cmExtraColors[CL_EXTRA_NUM_COLORS] = { "red", "orange", "yellow", "green", "blue", "purple" };
+
+// the model you wear, as everyone sees it
+static const char *CM_MyModel( void ) {
+	const int index = cl.gameState.stringOffsets[CS_PLAYERS + clc.clientNum];
+	const char *model = index ? Info_ValueForKey( cl.gameState.stringData + index, "model" ) : "";
+
+	return model[0] ? model : "kyle";
+}
+
+// a new extra where the crosshair is, facing the camera, in your model, a blue saber in hand
+static void CM_AddExtra( void ) {
+	char who[MAX_QPATH];
+	cmEnt_t *e;
+	int n = 1;
+
+	do {
+		Com_sprintf( who, sizeof( who ), "+Extra%i", n++ );
+	} while ( CM_FindEnt( &cm.cine, who, qfalse ) >= 0 );
+	if ( CM_AddEnt( who ) < 0 )
+		return;
+	e = &cm.cine.ents[cm.ent];
+	Q_strncpyz( e->model, CM_MyModel(), sizeof( e->model ) );
+	e->saber = CL_EXTRA_SABER_SINGLE;
+	e->color = 4;
+	if ( cm.haveAim ) {
+		VectorCopy( cm.aim, e->home );
+	} else {
+		vec3_t forward;
+
+		AngleVectors( cm.camAng, forward, NULL, NULL );
+		VectorMA( cm.camOrg, 128.0f, forward, e->home );
+	}
+	e->home[2] += CM_LOOK_UP;
+	e->yaw = AngleNormalize360( cm.camAng[YAW] + 180.0f );
+	cm.pickNum = -1;
+	Q_strncpyz( cm.pickWho, who, sizeof( cm.pickWho ) );
+	cm.clip = -1;
+	cm.extraOpen = qtrue;
+	CM_Changed();
+	CM_Message( "An extra: only screens with this client see it. Give it a name, a model, and actions" );
+}
+
+// an extra's name, model, saber and spot; where the next row goes
+static float CM_DrawExtra( float x, float y, float w, cmEnt_t *e ) {
+	const float half = ( w - 4 ) * 0.5f;
+	int steps;
+
+	if ( CM_Button( x, y, w, va( "Extra: %s, %s   %s", e->model[0] ? e->model : "kyle", cmExtraSabers[e->saber], cm.extraOpen ? "^" : "v" ),
+		cm.extraOpen, qtrue ) )
+		cm.extraOpen = (qboolean)!cm.extraOpen;
+	y += CM_CTRL_H + CM_GAP;
+	if ( !cm.extraOpen )
+		return y;
+	CM_Text( x, y + 2, "Name", cmDim );
+	CM_TextBox( x + 40, y, w - 40, e->who, "+ and a name", CM_TYPE_EXTRANAME, NULL );
+	y += CM_CTRL_H + CM_GAP;
+	CM_Text( x, y + 2, "Model", cmDim );
+	CM_TextBox( x + 40, y, w - 40 - 40, e->model, "model/skin", CM_TYPE_EXTRAMODEL, NULL );
+	if ( CM_Button( x + w - 36, y, 36, "Mine", qfalse, qtrue ) ) {
+		Q_strncpyz( e->model, CM_MyModel(), sizeof( e->model ) );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	steps = CM_Stepper( x, y, w, "Holds", cmExtraSabers[e->saber] );
+	if ( steps ) {
+		e->saber = ( e->saber + steps + ARRAY_LEN( cmExtraSabers ) ) % ARRAY_LEN( cmExtraSabers );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	if ( e->saber ) {
+		steps = CM_Stepper( x, y, w, "Blades", cmExtraColors[e->color] );
+		if ( steps ) {
+			e->color = ( e->color + steps + CL_EXTRA_NUM_COLORS ) % CL_EXTRA_NUM_COLORS;
+			CM_Changed();
+		}
+		y += CM_CTRL_H + CM_GAP;
+	}
+	if ( CM_Button( x, y, half, "Stand at crosshair", qfalse, cm.haveAim ) ) {
+		VectorCopy( cm.aim, e->home );
+		e->home[2] += CM_LOOK_UP;
+		CM_Changed();
+	}
+	steps = CM_MiniStepper( x + half + 4, y, half, "Yaw", va( "%i", RC_Round( AngleNormalize360( e->yaw ) ) ) );
+	if ( steps ) {
+		e->yaw = AngleNormalize360( e->yaw + steps * 15.0f );
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	CM_Text( x, y, S_COLOR_GREY "Stands there until an action moves it", cmWhite );
+	return y + CM_ROW_H + 4;
+}
+
+// a look in a few words, for its bar
+static const char *CM_LookSummary( const cmClip_t *clip ) {
+	static char out[96];
+
+	if ( clip->hidden )
+		return "look: hidden";
+	Q_strncpyz( out, "look:", sizeof( out ) );
+	if ( clip->size != 100 )
+		Q_strcat( out, sizeof( out ), va( " %i%%", clip->size ) );
+	if ( clip->shell )
+		Q_strcat( out, sizeof( out ), va( " %s", cmShells[clip->shell].name ) );
+	if ( clip->saber )
+		Q_strcat( out, sizeof( out ), va( " saber %s", cmSaberLooks[clip->saber] ) );
+	if ( clip->saber != CM_SABER_OFF && clip->blade != 100 )
+		Q_strcat( out, sizeof( out ), va( " blade %i%%", clip->blade ) );
+	return !strcmp( out, "look:" ) ? "look: as they are" : out;
+}
+
+static void CM_DrawLookClip( float x, float y, float w, cmClip_t *clip ) {
+	int steps;
+
+	if ( CM_Switch( x, y, w, "Shown", clip->hidden ? "no, hidden" : "yes" ) ) {
+		clip->hidden = (qboolean)!clip->hidden;
+		CM_Changed();
+	}
+	y += CM_CTRL_H + CM_GAP;
+	if ( !clip->hidden ) {
+		steps = CM_Stepper( x, y, w, "Size", va( "%i%%", clip->size ) );
+		if ( steps ) {
+			clip->size = Com_Clampi( 25, 400, clip->size + steps * ( clip->size > 100 || ( clip->size == 100 && steps > 0 ) ? 10 : 5 ) );
+			CM_Changed();
+		}
+		y += CM_CTRL_H + CM_GAP;
+		steps = CM_Stepper( x, y, w, "Drawn", cmShells[clip->shell].name );
+		if ( steps ) {
+			clip->shell = ( clip->shell + steps + ARRAY_LEN( cmShells ) ) % ARRAY_LEN( cmShells );
+			CM_Changed();
+		}
+		y += CM_CTRL_H + CM_GAP;
+		steps = CM_Stepper( x, y, w, "Saber", cmSaberLooks[clip->saber] );
+		if ( steps ) {
+			clip->saber = ( clip->saber + steps + ARRAY_LEN( cmSaberLooks ) ) % ARRAY_LEN( cmSaberLooks );
+			CM_Changed();
+		}
+		y += CM_CTRL_H + CM_GAP;
+		if ( clip->saber != CM_SABER_OFF ) {
+			steps = CM_Stepper( x, y, w, "Blades", va( "%i%% long", clip->blade ) );
+			if ( steps ) {
+				clip->blade = Com_Clampi( 25, 300, clip->blade + steps * 10 );
+				CM_Changed();
+			}
+			y += CM_CTRL_H + CM_GAP;
+		}
+	}
+	CM_Text( x, y + 1, va( S_COLOR_GREY "%.1f s to %s: drag it on the timeline", clip->start / 1000.0f,
+		clip->a.ms ? va( "%.1f s", ( clip->start + clip->a.ms ) / 1000.0f ) : "the end" ), cmWhite );
+	CM_Text( x, y + 1 + CM_ROW_H, S_COLOR_GREY "Seen on screens with this client; a saber", cmWhite );
+	CM_Text( x, y + 1 + CM_ROW_H * 2, S_COLOR_GREY "that's off can't be lit here", cmWhite );
+}
+
 static void CM_DrawEntitiesTab( float x, float y, float w ) {
-	static const char *kinds[CM_NUM_CLIPS] = { "Move", "Animation", "Say", "Emote", "Position", "Record", "NPC command", "Spawn", "Remove" };
+	static const char *kinds[CM_NUM_CLIPS] = { "Move", "Animation", "Say", "Emote", "Position", "Record", "NPC command", "Spawn", "Remove", "Look" };
 	// the actions to add: a teleport is a position of one key
 	static const struct {
 		const char	*label;
@@ -5460,8 +5742,8 @@ static void CM_DrawEntitiesTab( float x, float y, float w ) {
 	} adds[] = {
 		{ "Move", CM_CLIP_MOVE, qfalse }, { "Position", CM_CLIP_PLACE, qfalse }, { "Teleport", CM_CLIP_PLACE, qtrue },
 		{ "Record", CM_CLIP_RECORD, qfalse }, { "Animation", CM_CLIP_ANIM, qfalse }, { "Emote", CM_CLIP_EMOTE, qfalse },
-		{ "Say", CM_CLIP_SAY, qfalse }, { "NPC command", CM_CLIP_NPCCMD, qfalse }, { "Spawn", CM_CLIP_SPAWN, qfalse },
-		{ "Remove", CM_CLIP_REMOVE, qfalse } };
+		{ "Say", CM_CLIP_SAY, qfalse }, { "Look", CM_CLIP_LOOK, qfalse }, { "NPC command", CM_CLIP_NPCCMD, qfalse },
+		{ "Spawn", CM_CLIP_SPAWN, qfalse }, { "Remove", CM_CLIP_REMOVE, qfalse } };
 	cmCine_t *c = &cm.cine;
 	const int rows = CM_Clip() && cm.ent >= 0 && CM_Clip()->ent == cm.ent ? 4 : 6;
 	const cmPerson_t *picked = NULL;
@@ -5521,6 +5803,12 @@ static void CM_DrawEntitiesTab( float x, float y, float w ) {
 		return;
 	}
 	y += CM_CTRL_H + 4;
+	// someone only this client draws, any model, where the crosshair is
+	if ( CM_Button( x, y, w, "+ Extra: anyone, drawn by this client", qfalse, (qboolean)( c->numEnts < CM_MAX_ENTS ) ) ) {
+		CM_AddExtra();
+		return;
+	}
+	y += CM_CTRL_H + 4;
 	if ( !picked ) {
 		CM_Text( x, y, S_COLOR_GREY "Pick someone here, or click them", cmWhite );
 		CM_Text( x, y + CM_ROW_H, S_COLOR_GREY "in the view", cmWhite );
@@ -5534,6 +5822,8 @@ static void CM_DrawEntitiesTab( float x, float y, float w ) {
 	}
 	CM_TextClipped( x, y + 2, w - 56, picked->label, cmWhite );
 	y += CM_CTRL_H + CM_GAP;
+	if ( picked->ent >= 0 && CM_IsExtra( c->ents[picked->ent].who ) )
+		y = CM_DrawExtra( x, y, w, &c->ents[picked->ent] );
 	if ( CM_Button( x, y, w, va( "+ Add action at %.1f s   %s", CM_AddTime( CM_CLIP_MOVE ) / 1000.0f, cm.addOpen ? "^" : "v" ), cm.addOpen,
 		(qboolean)( c->numClips < CM_MAX_CLIPS ) ) )
 		cm.addOpen = (qboolean)!cm.addOpen;
@@ -5583,6 +5873,8 @@ static void CM_DrawEntitiesTab( float x, float y, float w ) {
 		CM_DrawSpawnClip( x, y, w, clip );
 	else if ( clip->kind == CM_CLIP_REMOVE )
 		CM_DrawRemoveClip( x, y, w, clip );
+	else if ( clip->kind == CM_CLIP_LOOK )
+		CM_DrawLookClip( x, y, w, clip );
 	else
 		CM_DrawAnimClip( x, y, w, clip );
 }
@@ -6851,7 +7143,7 @@ static void CM_TlClick( const cmTrack_t *t, float rowsY, int numRows ) {
 			Q_strncpyz( cm.pickWho, c->ents[e].who, sizeof( cm.pickWho ) );
 			cm.tab = CM_TAB_ENTITIES;
 			cm.tlDragIndex = i;
-			if ( ( clip->kind == CM_CLIP_ANIM || clip->kind == CM_CLIP_EMOTE ) && cx >= x1 - CM_TL_GRAB && x1 - x0 > CM_TL_GRAB * 2 ) {
+			if ( ( clip->kind == CM_CLIP_ANIM || clip->kind == CM_CLIP_EMOTE || clip->kind == CM_CLIP_LOOK ) && cx >= x1 - CM_TL_GRAB && x1 - x0 > CM_TL_GRAB * 2 ) {
 				cm.tlDrag = CM_DRAG_CLIP_END;
 			} else {
 				cm.tlDrag = CM_DRAG_CLIP;
@@ -7169,6 +7461,8 @@ static void CM_DrawTimeline( void ) {
 				else if ( clip->kind == CM_CLIP_EMOTE )
 					CM_TlBar( CM_TlX( &t, clip->start ), CM_TlX( &t, CM_ClipEnd( i, t.span ) ), ry, cmTlEmote,
 						clip->emote[0] ? va( "/%s", clip->emote ) : "no emote yet", sel );
+				else if ( clip->kind == CM_CLIP_LOOK )
+					CM_TlBar( CM_TlX( &t, clip->start ), CM_TlX( &t, CM_ClipEnd( i, t.span ) ), ry, cmTlEmote, CM_LookSummary( clip ), sel );
 				else if ( clip->kind == CM_CLIP_SAY )
 					CM_TlBar( CM_TlX( &t, clip->start ), CM_TlX( &t, CM_ClipEnd( i, t.span ) ), ry, cmTlSay,
 						clip->text[0] ? va( "\"%s\"", clip->text ) : "says nothing yet", sel );
@@ -8011,7 +8305,7 @@ static void CM_Hits( const cmBody_t *bodies, int numBodies ) {
 		const int num = bodies[i].num;
 		vec3_t low, high;
 
-		if ( cls.realtime - cmLastHit[num] < CM_HIT_MS )
+		if ( num < 0 || num >= MAX_GENTITIES || cls.realtime - cmLastHit[num] < CM_HIT_MS )
 			continue;
 		VectorCopy( bodies[i].pos, low );
 		VectorCopy( bodies[i].pos, high );
@@ -8082,12 +8376,255 @@ static void CM_Clashes( void ) {
 /*
 ===============================================================================
 
+Looks: how people are drawn while a look of theirs lasts, on this screen
+
+===============================================================================
+*/
+
+#define CM_MAX_LOOKS		32
+#define CM_LOOK_BODIES		( MAX_CLIENTS + 128 )
+#define CM_BODY_REACH		48.0f	// a body drawn this near someone is theirs
+#define CM_BLADE_REACH		96.0f	// and a blade, from its hilt
+
+typedef struct {
+	int				num;
+	const cmClip_t	*clip;
+	vec3_t			org;
+} cmLookNow_t;
+
+static cmLookNow_t	cmLooks[CM_MAX_LOOKS];
+static int			cmNumLooks, cmLooksFrame = -1;
+static int			cmBodyNums[CM_LOOK_BODIES];
+static vec3_t		cmBodyOrgs[CM_LOOK_BODIES];
+static int			cmNumBodies;
+
+// the looks going on now, and where everyone is, once a frame
+static void CM_LooksFrame( void ) {
+	const cmCine_t *c = NULL;
+	int t = 0;
+
+	if ( cmLooksFrame == cls.framecount )
+		return;
+	cmLooksFrame = cls.framecount;
+	cmNumLooks = cmNumBodies = 0;
+	if ( cmp.playing ) {
+		c = &cmp.cine;
+		t = cls.realtime - cmp.start;
+	} else if ( cm.open && cm.tlPinned ) {
+		c = &cm.cine;
+		t = cm.tlMs;
+	}
+	if ( !c || cls.state != CA_ACTIVE )
+		return;
+	// the one that started last, for each of them
+	for ( int i = 0; i < c->numClips; i++ ) {
+		const cmClip_t *clip = &c->clips[i];
+		int nums[CM_MAX_GROUP], n;
+
+		if ( clip->kind != CM_CLIP_LOOK || t < clip->start || t >= clip->start + ( clip->a.ms > 0 ? clip->a.ms : CM_Total( c ) - clip->start + 1 )
+			|| CM_GoneAt( c, clip->ent, t ) )
+			continue;
+		n = CM_Resolve( c->ents[clip->ent].who, nums, CM_MAX_GROUP );
+		for ( int m = 0; m < n; m++ ) {
+			int j;
+
+			for ( j = 0; j < cmNumLooks && cmLooks[j].num != nums[m]; j++ )
+				;
+			if ( j < cmNumLooks ) {
+				if ( clip->start >= cmLooks[j].clip->start )
+					cmLooks[j].clip = clip;
+			} else if ( cmNumLooks < CM_MAX_LOOKS && RC_EntityOrigin( nums[m], cmLooks[j].org ) ) {
+				cmLooks[j].num = nums[m];
+				cmLooks[j].clip = clip;
+				cmNumLooks++;
+			}
+		}
+	}
+	if ( !cmNumLooks )
+		return;
+	// everyone drawn, to tell whose a body or a blade is
+	if ( RC_EntityOrigin( clc.clientNum, cmBodyOrgs[0] ) )
+		cmBodyNums[cmNumBodies++] = clc.clientNum;
+	for ( int i = 0; i < cl.snap.numEntities && cmNumBodies < CM_LOOK_BODIES; i++ ) {
+		const entityState_t *es = &cl.parseEntities[( cl.snap.parseEntitiesNum + i ) & ( MAX_PARSE_ENTITIES - 1 )];
+
+		if ( ( es->eType == ET_PLAYER || es->eType == ET_NPC ) && es->number != clc.clientNum && RC_EntityOrigin( es->number, cmBodyOrgs[cmNumBodies] ) )
+			cmBodyNums[cmNumBodies++] = es->number;
+	}
+	cmNumBodies += CL_Extras_Bodies( cmBodyNums + cmNumBodies, cmBodyOrgs + cmNumBodies, CM_LOOK_BODIES - cmNumBodies );
+}
+
+// the look of whoever is nearest the point, if they're that near and have one
+static const cmLookNow_t *CM_LookAt( const vec3_t p, float reach ) {
+	float best = reach;
+	int num = -1;
+
+	for ( int i = 0; i < cmNumBodies; i++ ) {
+		const float d = Distance( p, cmBodyOrgs[i] );
+
+		if ( d < best ) {
+			best = d;
+			num = cmBodyNums[i];
+		}
+	}
+	for ( int i = 0; num >= 0 && i < cmNumLooks; i++ ) {
+		if ( cmLooks[i].num == num )
+			return &cmLooks[i];
+	}
+	return NULL;
+}
+
+static void CM_LookScalePoint( vec3_t p, const vec3_t feet, float k ) {
+	vec3_t d;
+
+	VectorSubtract( p, feet, d );
+	VectorMA( feet, k, d, p );
+}
+
+// what cgame draws, as a look has it: a body hidden, scaled, drawn as a hologram or with a shell
+// over it; a blade hidden, coloured, longer or shorter, and where a scaled hand holds it. NULL
+// leaves it out
+const refEntity_t *CM_LookEntity( const refEntity_t *ent, refEntity_t *copy ) {
+	const qboolean body = (qboolean)( ent->ghoul2 && ent->reType == RT_MODEL );
+	const qboolean glow = (qboolean)( ent->reType == RT_SABER_GLOW ), line = (qboolean)( ent->reType == RT_LINE );
+	const cmLookNow_t *l;
+	const cmClip_t *clip;
+	float k;
+
+	if ( !body && !glow && !line )
+		return ent;
+	CM_LooksFrame();
+	if ( !cmNumLooks || !( l = CM_LookAt( line ? ent->oldorigin : ent->origin, body ? CM_BODY_REACH : CM_BLADE_REACH ) ) )
+		return ent;
+	clip = l->clip;
+	if ( clip->hidden || ( !body && clip->saber == CM_SABER_OFF ) )
+		return NULL;
+	if ( copy != ent )
+		*copy = *ent;
+	k = clip->size / 100.0f;
+	if ( body ) {
+		if ( clip->size != 100 ) {
+			const float was = ent->modelScale[2] > 0.0f ? ent->modelScale[2] : 1.0f;
+
+			// as cgame scales a model: its bones' places, and its axes
+			for ( int i = 0; i < 3; i++ ) {
+				copy->modelScale[i] = ( ent->modelScale[i] > 0.0f ? ent->modelScale[i] : 1.0f ) * k;
+				VectorScale( copy->axis[i], k, copy->axis[i] );
+			}
+			copy->nonNormalizedAxes = qtrue;
+			// standing on the same floor
+			copy->origin[2] += CM_LOOK_UP * was * ( k - 1.0f );
+		}
+		if ( clip->shell ) {
+			const cmShell_t *sh = &cmShells[clip->shell];
+			const qhandle_t h = re->RegisterShader( sh->shader );
+
+			if ( h && sh->over ) {
+				refEntity_t over = *copy;
+
+				over.customShader = h;
+				over.renderfx &= ~RF_RGB_TINT;
+				over.shaderRGBA[0] = over.shaderRGBA[1] = over.shaderRGBA[2] = over.shaderRGBA[3] = 255;
+				re->AddRefEntityToScene( &over );
+			} else if ( h ) {
+				copy->customShader = h;
+				copy->renderfx &= ~RF_RGB_TINT;
+				copy->shaderRGBA[0] = copy->shaderRGBA[1] = copy->shaderRGBA[2] = copy->shaderRGBA[3] = 255;
+			}
+		}
+		return copy;
+	}
+
+	// a blade: its length, its colour, then where it is in a hand scaled about their feet
+	if ( glow )
+		copy->saberLength *= clip->blade / 100.0f;
+	else if ( clip->blade != 100 ) {
+		vec3_t d;
+
+		// the core: origin its tip, oldorigin the hilt
+		VectorSubtract( copy->origin, copy->oldorigin, d );
+		VectorMA( copy->oldorigin, clip->blade / 100.0f, d, copy->origin );
+	}
+	if ( clip->saber >= CM_SABER_COLORS ) {
+		const qhandle_t h = re->RegisterShader( va( "gfx/effects/sabers/%s_%s", cmSaberLooks[clip->saber], glow ? "glow" : "line" ) );
+
+		if ( h ) {
+			copy->customShader = h;
+			copy->shaderRGBA[0] = copy->shaderRGBA[1] = copy->shaderRGBA[2] = 255;
+		}
+	}
+	if ( clip->size != 100 ) {
+		vec3_t feet;
+
+		VectorCopy( l->org, feet );
+		feet[2] -= CM_LOOK_UP;
+		CM_LookScalePoint( copy->origin, feet, k );
+		if ( line )
+			CM_LookScalePoint( copy->oldorigin, feet, k );
+		else
+			copy->saberLength *= k;
+		copy->radius *= k;
+	}
+	return copy;
+}
+
+/*
+===============================================================================
+
 Every frame, and the command
 
 ===============================================================================
 */
 
+// the extras of the cinematic playing, or being made: defined for cl_extras, shown from their
+// spawn, if they have one, until they're taken out
+static void CM_SyncExtras( void ) {
+	const cmCine_t *c = cmp.playing ? &cmp.cine : cm.open ? &cm.cine : NULL;
+	const int t = cmp.playing ? cls.realtime - cmp.start : cm.tlPinned ? cm.tlMs : -1;
+	qboolean keep[CL_MAX_EXTRAS] = { qfalse };
+
+	if ( c && cls.state == CA_ACTIVE ) {
+		for ( int e = 0; e < c->numEnts && e < CL_MAX_EXTRAS; e++ ) {
+			const cmEnt_t *ent = &c->ents[e];
+			const cmClip_t *spawn = NULL;
+			vec3_t home;
+			float yaw = ent->yaw;
+
+			if ( !CM_IsExtra( ent->who ) )
+				continue;
+			VectorCopy( ent->home, home );
+			for ( int i = 0; i < c->numClips && !spawn; i++ ) {
+				if ( c->clips[i].ent == e && c->clips[i].kind == CM_CLIP_SPAWN && c->clips[i].numKeys )
+					spawn = &c->clips[i];
+			}
+			if ( spawn ) {
+				VectorCopy( spawn->keys[0].org, home );
+				home[2] += CM_LOOK_UP;
+				yaw = spawn->keys[0].ang[YAW];
+			}
+			// standing on the floor under its spot
+			{
+				trace_t tr;
+				vec3_t from, to;
+
+				VectorCopy( home, from );
+				VectorCopy( home, to );
+				from[2] += 16.0f;
+				to[2] -= 1024.0f;
+				CM_BoxTrace( &tr, from, to, vec3_origin, vec3_origin, 0, CONTENTS_SOLID | CONTENTS_TERRAIN, qfalse );
+				if ( !tr.startsolid && tr.fraction < 1.0f )
+					home[2] = tr.endpos[2] + CM_LOOK_UP;
+			}
+			CL_Extras_Define( e, ent->who, ent->model, ent->saber, ent->color, home, yaw,
+				(qboolean)( t < 0 || ( ( !spawn || t >= spawn->start ) && !CM_GoneAt( c, e, t ) ) ) );
+			keep[e] = qtrue;
+		}
+	}
+	CL_Extras_Keep( keep );
+}
+
 void CM_Frame( void ) {
+	CM_SyncExtras();
 	CM_PickFxFrame();
 	CM_PickSndFrame();
 	CM_PreviewFx();

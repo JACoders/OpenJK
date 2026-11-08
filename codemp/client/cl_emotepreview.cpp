@@ -475,6 +475,11 @@ static void EP_Animate( const epEmote_t *e ) {
 	ep.cycleMs = ms > 0 ? ms + EP_HOLD_MS : 0;
 }
 
+// an animation's name by its number, RPMod's own too; NULL if there's none
+const char *CL_EmotePreview_AnimName( int anim ) {
+	return EP_AnimName( anim );
+}
+
 // a player's animations, by number as the server sends them, put on a ghoul2 instance as cgame
 // does: the legs on the whole, the torso from the waist up. For a model the cgame just made, which
 // would stand in its bind pose until the animation next changes
