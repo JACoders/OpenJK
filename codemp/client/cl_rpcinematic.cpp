@@ -44,6 +44,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //                                   track <turn 0|1> <who>: the camera keeps who in frame (a
 //                                   player or NPC); a path turns to them, an orbit circles them,
 //                                   from the way they face with turn 1
+//                                   stops <i,j,...>: the spots, from 0, it slows to a stop at
 //                                   dolly: zoomed as it goes so what it keeps in frame, or looks at,
 //                                   stays the size it was at the start (the vertigo shot)
 //                                   handheld <1-3>: the camera sways as if held by hand
@@ -261,7 +262,15 @@ void RC_EvalShot( const rcShot_t *s, int ms, vec3_t org, vec3_t ang, float *fov 
 
 		for ( i = 1; i < s->numKeys - 1 && u > from + s->keys[i].ms; i++ )
 			from += s->keys[i].ms;
-		const float local = s->keys[i].ms > 0 ? Com_Clamp( 0.0f, 1.0f, ( u - from ) / s->keys[i].ms ) : 1.0f;
+		float local = s->keys[i].ms > 0 ? Com_Clamp( 0.0f, 1.0f, ( u - from ) / s->keys[i].ms ) : 1.0f;
+
+		// slowing into a spot it stops at, setting off slowly from one
+		if ( s->keys[i - 1].stops && s->keys[i].stops )
+			local = RC_Ease( local, qfalse );
+		else if ( s->keys[i].stops )
+			local = sinf( local * M_PI * 0.5f );
+		else if ( s->keys[i - 1].stops )
+			local = 1.0f - cosf( local * M_PI * 0.5f );
 		const rcKey_t *k0 = &s->keys[Q_max( i - 2, 0 )], *k1 = &s->keys[i - 1], *k2 = &s->keys[i];
 		const rcKey_t *k3 = &s->keys[Q_min( i + 1, s->numKeys - 1 )];
 
@@ -464,6 +473,11 @@ static qboolean RC_ParseOption( const char *p, rcShot_t *s ) {
 		}
 		return qtrue;
 	}
+	if ( !Q_stricmpn( p, "stops ", 6 ) ) {
+		// the spots it stops at, by number from 0, with commas; kept for after the spots are read
+		Q_strncpyz( s->stopsAt, p + 6, sizeof( s->stopsAt ) );
+		return qtrue;
+	}
 	if ( !Q_stricmp( p, "dolly" ) ) {
 		s->dolly = qtrue;
 		return qtrue;
@@ -560,6 +574,16 @@ static void RC_WriteOptions( const rcShot_t *s, char *out, int size ) {
 		Q_strcat( out, size, va( "/handheld %i", s->handheld ) );
 	if ( s->dolly )
 		Q_strcat( out, size, "/dolly" );
+	if ( !s->orbit ) {
+		char stops[RC_MAX_KEYS * 4] = "";
+
+		for ( int i = 0; i < s->numKeys; i++ ) {
+			if ( s->keys[i].stops )
+				Q_strcat( stops, sizeof( stops ), va( "%s%i", stops[0] ? "," : "", i ) );
+		}
+		if ( stops[0] )
+			Q_strcat( out, size, va( "/stops %s", stops ) );
+	}
 	for ( int i = 0; i < s->numShakes; i++ )
 		Q_strcat( out, size, va( "/shake %g %i %g", RC_Seconds( s->shakes[i].ms ), s->shakes[i].strength, RC_Seconds( s->shakes[i].len ) ) );
 	for ( int i = 0; i < 2; i++ ) {
@@ -675,6 +699,18 @@ qboolean RC_ParseShot( char **argv, int argc, rcShot_t *s, const vec3_t ang ) {
 	if ( Q_stricmp( argv[0], "path" ) )
 		return qfalse;
 	RC_ParseKeys( argv + 1, argc - 1, s, ang );
+	// the spots it stops at, now they're read
+	for ( const char *p = s->stopsAt; *p; ) {
+		const int i = atoi( p );
+
+		if ( i >= 0 && i < s->numKeys )
+			s->keys[i].stops = qtrue;
+		p = strchr( p, ',' );
+		if ( !p )
+			break;
+		p++;
+	}
+	s->stopsAt[0] = '\0';
 	return (qboolean)( s->numKeys > 0 );
 }
 
@@ -870,6 +906,14 @@ void RC_CineBegin( qboolean hud, qboolean bars ) {
 }
 
 // one of its shots, msIn ms into it already
+// the shot playing this far in, as a cinematic's own clock has it: slowed, or sped up
+void RC_SetShotTime( int msIn ) {
+	if ( !rc.playing )
+		return;
+	rc.start = cls.realtime - msIn;
+	rc.frame = -1;
+}
+
 void RC_CineShot( const rcShot_t *shot, int msIn ) {
 	RC_Start();
 	RC_Hold();

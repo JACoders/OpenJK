@@ -484,6 +484,11 @@ typedef struct {
 	qboolean	showLayouts;
 	char		layoutName[MAX_QPATH];
 	char		layouts[ME_MAX_LAYOUTS][MAX_QPATH];
+
+	// a cinematic's layout shown meanwhile, and what was shown before it, kept to put back
+	char		cineLayout[MAX_QPATH];
+	qboolean	cineKept, cineWasShared, cineWasDirty;
+	char		cineWasName[MAX_QPATH];
 	int			numLayouts, layoutScroll, layoutSel;
 	int			confirmTime;
 	qboolean	experimentalBox;	// the warning before turning experimental features on
@@ -3036,6 +3041,51 @@ static void ME_LoadLayout( const char *name ) {
 	me.dirty = qfalse;
 	Q_strncpyz( me.layoutName, name, sizeof( me.layoutName ) );
 	ME_Message( va( S_COLOR_GREEN "Loaded %s: Share shows it to everyone", name ) );
+}
+
+#define ME_CINE_KEPT		"_before-cinematic"
+
+// a cinematic's map edits: a layout of this map shown while it wants it ("" or NULL: done), what
+// was shown before saved aside and put back after
+void CL_MapEditor_CineLayout( const char *name ) {
+	if ( !name )
+		name = "";
+	if ( !Q_stricmp( name, me.cineLayout ) || cls.state != CA_ACTIVE || !me.map[0] )
+		return;
+	if ( !me.cineLayout[0] ) {
+		// what's there now, kept aside
+		me.cineKept = (qboolean)( ME_SaveTo( ME_LayoutPath( ME_CINE_KEPT ) ) >= 0 );
+		me.cineWasShared = me.shared;
+		me.cineWasDirty = me.dirty;
+		Q_strncpyz( me.cineWasName, me.layoutName, sizeof( me.cineWasName ) );
+	}
+	Q_strncpyz( me.cineLayout, name, sizeof( me.cineLayout ) );
+	if ( name[0] ) {
+		if ( !ME_LayoutNameOk( name ) || !ME_LoadFrom( ME_LayoutPath( name ) ) )
+			ME_Load();
+		return;
+	}
+	// done: what was there back
+	if ( me.cineKept && ME_LoadFrom( ME_LayoutPath( ME_CINE_KEPT ) ) )
+		FS_HomeRemove( ME_LayoutPath( ME_CINE_KEPT ) );
+	else
+		ME_Load();
+	me.cineKept = qfalse;
+	me.shared = me.cineWasShared;
+	me.dirty = me.cineWasDirty;
+	Q_strncpyz( me.layoutName, me.cineWasName, sizeof( me.layoutName ) );
+}
+
+// this map's layouts, by name
+int CL_MapEditor_Layouts( char ( *out )[MAX_QPATH], int max ) {
+	int n = 0;
+
+	ME_ListLayouts();
+	for ( int i = 0; i < me.numLayouts && n < max; i++ ) {
+		if ( Q_stricmp( me.layouts[i], ME_CINE_KEPT ) )
+			Q_strncpyz( out[n++], me.layouts[i], MAX_QPATH );
+	}
+	return n;
 }
 
 static void ME_DeleteLayout( const char *name ) {

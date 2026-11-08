@@ -934,6 +934,8 @@ void CL_MapEditor_Frame( void );
 void CL_MapEditor_Draw( void );
 void CL_MapEditor_Sounds( const vec3_t ear );
 void CL_MapEditor_AddToScene( const refdef_t *fd );
+void CL_MapEditor_CineLayout( const char *name );
+int CL_MapEditor_Layouts( char ( *out )[MAX_QPATH], int max );
 qboolean CL_MapEditor_RenderScene( const refdef_t *fd );
 qboolean CL_MapEditor_Camera( vec3_t origin, vec3_t angles );
 qboolean CL_MapEditor_FilterEntity( const refEntity_t *ent );

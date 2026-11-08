@@ -59,6 +59,8 @@ typedef struct {
 	// its own depth of field, or the one before's
 	qboolean	dofSet;
 	float		dofFocus, dofRange, dofBlur;
+
+	qboolean	stops;		// the camera slows to a stop at it, and sets off slowly from it
 } rcKey_t;
 
 // how a shot comes in or goes: cut, faded from or to a colour, or wiped across from a side
@@ -148,6 +150,7 @@ typedef struct {
 	char		trackWho[MAX_QPATH];
 	qboolean	trackTurn;
 	qboolean	dolly;			// zoomed as it moves so what it looks at stays the same size
+	char		stopsAt[RC_MAX_KEYS * 4];	// as the hook has them, while it's read
 
 	// the camera shaken: held by hand all along (0 not, up to RC_MAX_HANDHELD), and jolts
 	int			handheld;
@@ -192,6 +195,7 @@ float RC_Seconds( int ms );
 int RC_ShotMs( const rcShot_t *s );
 void RC_EvalShot( const rcShot_t *s, int ms, vec3_t org, vec3_t ang, float *fov );
 void RC_SetBarFrac( float frac );
+void RC_SetShotTime( int msIn );
 void RC_EvalShotLive( const rcShot_t *s, int ms, vec3_t org, vec3_t ang, float *fov, qboolean smooth );
 qboolean RC_TrackTarget( const char *who, vec3_t at, float *yaw );
 void RC_FillFov( rcShot_t *s, float fov );
