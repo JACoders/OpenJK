@@ -498,6 +498,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			CL_Presets_Draw();
 			CL_SpecialMoves_Draw();
 			CL_ChatLog_Draw();
+			CL_Datapad_Draw();
 			CL_AssetManager_Draw();
 			CL_RadialMenu_DrawSettings();
 			CL_Languages_Draw();

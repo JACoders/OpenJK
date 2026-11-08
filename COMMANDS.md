@@ -243,6 +243,9 @@ The console commands, keys and settings this client adds. What each feature does
 ## Other tools
 
 - `/chatlog` opens or closes the chat log window; `/chatlog start` and `/chatlog stop` record or stop on this server; `/chatlog open` opens today's page in your browser, `/chatlog folder` the folder
+- `/datapad` opens your datapad in the bottom right corner, or puts it away; `/datapad open`, `/datapad close` and `/datapad settings` go straight there. Its Settings set the keys that open and close it; Esc puts it away
+- `cl_datapadColor` (0-6) is its colour; `cl_datapadEmote 1` has your character hold a datapad (`/emlift`) while it's open
+- `/datapad pos <x> <y>` moves where it opens on the 640x480 screen (its top left; `cl_datapadX`, `cl_datapadY`); `/datapad pos` puts it back above the HUD
 - `cl_chatLog 1` records by itself on joining a server; `cl_chatLogTells`, `cl_chatLogTeam`, `cl_chatLogWhispers`, `cl_chatLogOOC`, `cl_chatLogEmotes`, `cl_chatLogAdmin` (1 or 0) keep those kinds of chat or not
 
 - `/toolaccess` shows whether the admin tools open for you on this server, and on Temple whether your rank may turn experimental features on; `/toolaccess check` asks again

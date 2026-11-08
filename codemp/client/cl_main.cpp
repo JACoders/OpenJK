@@ -862,6 +862,7 @@ void CL_Disconnect( qboolean showMainMenu ) {
 	CL_RpHooks_Disconnect();
 	CL_RpAdmin_Disconnect();
 	CL_ChatLog_Disconnect();
+	CL_Datapad_Disconnect();
 	CL_Feedback_Disconnect();
 	CL_NpcNames_Disconnect();
 	CL_AdminFlags_Reset();
@@ -2955,6 +2956,7 @@ void CL_Init( void ) {
 	CL_SpecialMoves_Init ();
 	CL_EffectSwap_Init ();
 	CL_ChatLog_Init ();
+	CL_Datapad_Init ();
 	CL_AssetManager_Init ();
 	CL_AdminFlags_Init ();
 	CL_QuickConnect_Init ();

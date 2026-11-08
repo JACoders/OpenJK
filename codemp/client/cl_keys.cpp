@@ -1683,6 +1683,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 			CL_ChatLog_Escape();
 			return;
 		}
+		if ( ( Key_GetCatcher() & KEYCATCH_DATAPAD ) && !( Key_GetCatcher() & KEYCATCH_UI ) ) {
+			CL_Datapad_Escape();
+			return;
+		}
 		if ( ( Key_GetCatcher() & KEYCATCH_CINEDITOR ) && !( Key_GetCatcher() & KEYCATCH_UI ) ) {
 			CL_RpCinematic_EditorEscape();
 			return;
@@ -1797,6 +1801,10 @@ void CL_KeyDownEvent( int key, unsigned time )
 	// chat log
 	else if ( Key_GetCatcher() & KEYCATCH_CHATLOG ) {
 		CL_ChatLog_KeyEvent( key, qtrue );
+	}
+	// datapad, open
+	else if ( Key_GetCatcher() & KEYCATCH_DATAPAD ) {
+		CL_Datapad_KeyEvent( key, qtrue );
 	}
 	// asset manager
 	else if ( Key_GetCatcher() & KEYCATCH_ASSETMANAGER ) {

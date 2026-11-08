@@ -503,6 +503,7 @@ if(BuildMPEngine)
 		"${MPDir}/client/cl_specialmoves.cpp"
 		"${MPDir}/client/cl_chatlog.cpp"
 		"${MPDir}/client/cl_effectswap.cpp"
+		"${MPDir}/client/cl_datapad.cpp"
 		"${MPDir}/client/cl_assetmanager.cpp"
 		"${MPDir}/client/cl_adminflags.cpp"
 		"${MPDir}/client/cl_quickconnect.cpp"

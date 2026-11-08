@@ -28,6 +28,7 @@ Some features reach other players through workarounds only this client understan
 - [Console Selection and Find](#console-selection-and-find)
 - [Lists and Text Boxes](#lists-and-text-boxes)
 - [Chat Log](#chat-log)
+- [Datapad](#datapad)
 - [Long Chat in Parts](#long-chat-in-parts)
 - [Chat Capitals](#chat-capitals)
 - [Console Key](#console-key)
@@ -609,6 +610,19 @@ The chat kept in files as you play: plain text, and a page that looks like the c
 - Normal chat always goes in; each of these has a setting: **Tells** (yours say who they went to), **Team chat**, **Whispers and comms**, **OOC** `(( ))`, **Emotes** `/me`, **Admin chat** (`<Admin>`)
 - The chat is kept as it was shown: a language your character doesn't know as gibberish, NPC talk as chat. The storyteller's hidden messages and the tools' hooks never go in
 - **Open page** opens today's page in your browser, **Open folder** the folder
+
+## Datapad
+
+A datapad on your screen, used like a phone. `/datapad`, or **TOOLS** in the in-game menu.
+
+- `/datapad` opens it: it rises in the bottom right corner, from above the force and ammo HUD down to the screen's edge, and the mouse works on it at once. **Esc**, `/datapad` again or **Close** puts it away; **Home** goes back to its apps. An app that needs the room has it bigger, on the right side of the screen
+- On a wide screen with `cl_ratioFix 1` it keeps its shape, as the text does
+- **Apps:** the home screen has the apps; one opens over it, and **< Back** or **Home** returns. The first is **Settings**:
+  - **Colour:** what it's lit in: cyan, blue, green, amber, red, violet or white
+  - **Keys:** click **Open it** or **Close it**, then press the key for it (Esc leaves it as it was). They work while you play and while it's open
+  - **Your character holds a datapad while it's open:** your character plays RPMod's `/emlift` as you open it, and it ends (a moment's crouch, as C does) as you fold or close it
+- `/datapad open`, `/datapad close` and `/datapad settings` go straight there
+- `/datapad pos <x> <y>` opens it elsewhere, on the 640x480 screen; `/datapad pos` puts it back above the HUD
 
 ## Long Chat in Parts
 
