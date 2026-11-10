@@ -366,6 +366,62 @@ static void DoLine2( const vec3_t start, const vec3_t end, const vec3_t up, floa
 	tess.indexes[tess.numIndexes++] = vbase + 3;
 }
 
+static void DoLine_Oriented(const vec3_t start, const vec3_t end, const vec3_t up, float spanWidth)
+{
+	float		spanWidth2;
+	int			vbase;
+
+	vbase = tess.numVertexes;
+
+	spanWidth2 = -spanWidth;
+
+	// FIXME: use quad stamp?
+	VectorMA(start, spanWidth, up, tess.xyz[tess.numVertexes]);
+	tess.texCoords[tess.numVertexes][0][0] = 0;
+	tess.texCoords[tess.numVertexes][0][1] = 0;
+	tess.vertexColors[tess.numVertexes][0] = backEnd.currentEntity->e.shaderRGBA[0];// * 0.25;
+	tess.vertexColors[tess.numVertexes][1] = backEnd.currentEntity->e.shaderRGBA[1];// * 0.25;
+	tess.vertexColors[tess.numVertexes][2] = backEnd.currentEntity->e.shaderRGBA[2];// * 0.25;
+	tess.vertexColors[tess.numVertexes][3] = backEnd.currentEntity->e.shaderRGBA[3];// * 0.25;
+	tess.numVertexes++;
+
+	VectorMA(start, spanWidth2, up, tess.xyz[tess.numVertexes]);
+	tess.texCoords[tess.numVertexes][0][0] = 1;
+	tess.texCoords[tess.numVertexes][0][1] = 0;
+	tess.vertexColors[tess.numVertexes][0] = backEnd.currentEntity->e.shaderRGBA[0];
+	tess.vertexColors[tess.numVertexes][1] = backEnd.currentEntity->e.shaderRGBA[1];
+	tess.vertexColors[tess.numVertexes][2] = backEnd.currentEntity->e.shaderRGBA[2];
+	tess.vertexColors[tess.numVertexes][3] = backEnd.currentEntity->e.shaderRGBA[3];// * 0.25;
+	tess.numVertexes++;
+
+	VectorMA(end, spanWidth, up, tess.xyz[tess.numVertexes]);
+
+	tess.texCoords[tess.numVertexes][0][0] = 0;
+	tess.texCoords[tess.numVertexes][0][1] = backEnd.currentEntity->e.data.line.stscale;
+	tess.vertexColors[tess.numVertexes][0] = backEnd.currentEntity->e.shaderRGBA[0];
+	tess.vertexColors[tess.numVertexes][1] = backEnd.currentEntity->e.shaderRGBA[1];
+	tess.vertexColors[tess.numVertexes][2] = backEnd.currentEntity->e.shaderRGBA[2];
+	tess.vertexColors[tess.numVertexes][3] = backEnd.currentEntity->e.shaderRGBA[3];// * 0.25;
+	tess.numVertexes++;
+
+	VectorMA(end, spanWidth2, up, tess.xyz[tess.numVertexes]);
+	tess.texCoords[tess.numVertexes][0][0] = 1;
+	tess.texCoords[tess.numVertexes][0][1] = backEnd.currentEntity->e.data.line.stscale;
+	tess.vertexColors[tess.numVertexes][0] = backEnd.currentEntity->e.shaderRGBA[0];
+	tess.vertexColors[tess.numVertexes][1] = backEnd.currentEntity->e.shaderRGBA[1];
+	tess.vertexColors[tess.numVertexes][2] = backEnd.currentEntity->e.shaderRGBA[2];
+	tess.vertexColors[tess.numVertexes][3] = backEnd.currentEntity->e.shaderRGBA[3];// * 0.25;
+	tess.numVertexes++;
+
+	tess.indexes[tess.numIndexes++] = vbase;
+	tess.indexes[tess.numIndexes++] = vbase + 1;
+	tess.indexes[tess.numIndexes++] = vbase + 2;
+
+	tess.indexes[tess.numIndexes++] = vbase + 2;
+	tess.indexes[tess.numIndexes++] = vbase + 1;
+	tess.indexes[tess.numIndexes++] = vbase + 3;
+}
+
 //-----------------
 // RB_SurfaceLine
 //-----------------
@@ -388,6 +444,23 @@ static void RB_SurfaceLine( void )
 	VectorNormalize( right );
 
 	DoLine( start, end, right, e->radius);
+}
+
+static void RB_SurfaceOrientedLine(void)
+{
+	refEntity_t *e;
+	vec3_t		right;
+	vec3_t		start, end;
+
+	e = &backEnd.currentEntity->e;
+
+	VectorCopy(e->oldorigin, end);
+	VectorCopy(e->origin, start);
+
+	// compute side vector
+	VectorNormalize(e->axis[1]);
+	VectorCopy(e->axis[1], right);
+	DoLine_Oriented(start, end, right, e->data.line.width*0.5);
 }
 
 /*
@@ -1951,14 +2024,17 @@ void RB_SurfaceEntity( surfaceType_t *surfType ) {
 	case RT_ORIENTED_QUAD:
 		RB_SurfaceOrientedQuad();
 		break;
-	case RT_LINE:
-		RB_SurfaceLine();
+	case RT_BEAM:
+		RB_SurfaceBeam();
 		break;
 	case RT_ELECTRICITY:
 		RB_SurfaceElectricity();
 		break;
-	case RT_BEAM:
-		RB_SurfaceBeam();
+	case RT_LINE:
+		RB_SurfaceLine();
+		break;
+	case RT_ORIENTEDLINE:
+		RB_SurfaceOrientedLine();
 		break;
 	case RT_SABER_GLOW:
 		RB_SurfaceSaberGlow();
@@ -1966,6 +2042,30 @@ void RB_SurfaceEntity( surfaceType_t *surfType ) {
 	case RT_CYLINDER:
 		RB_SurfaceCylinder();
 		break;
+	case RT_ENT_CHAIN:
+	{
+		static trRefEntity_t tempEnt = *backEnd.currentEntity;
+
+		//rww - if not static then currentEntity is garbage because
+		//this is a local. This was not static in sof2.. but I guess
+		//they never check ce.renderfx so it didn't show up.
+
+		const int start = backEnd.currentEntity->e.uRefEnt.uMini.miniStart;
+		const int count = backEnd.currentEntity->e.uRefEnt.uMini.miniCount;
+		assert(count > 0);
+		backEnd.currentEntity = &tempEnt;
+
+		assert(backEnd.currentEntity->e.renderfx >= 0);
+
+		for (int i = 0, j = start; i < count; i++, j++)
+		{
+			backEnd.currentEntity->e = backEnd.refdef.entities[j].e;
+			assert(backEnd.currentEntity->e.renderfx >= 0);
+
+			RB_SurfaceEntity(surfType);
+		}
+	}
+	break;
 	case RT_LATHE:
 		RB_SurfaceLathe();
 		break;

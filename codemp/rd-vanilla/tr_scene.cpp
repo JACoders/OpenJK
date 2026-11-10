@@ -36,8 +36,6 @@ static	int			r_firstSceneDlight;
 static	int			r_numentities;
 static	int			r_firstSceneEntity;
 static	int			r_numminientities;
-static	int			r_firstSceneMiniEntity;
-static	int			refEntParent = -1;
 
 static	int			r_numpolys;
 static	int			r_firstScenePoly;
@@ -63,9 +61,7 @@ void R_InitNextFrame( void ) {
 
 	r_numentities = 0;
 	r_firstSceneEntity = 0;
-	refEntParent = -1;
 	r_numminientities = 0;
-	r_firstSceneMiniEntity = 0;
 
 	r_numpolys = 0;
 	r_firstScenePoly = 0;
@@ -84,8 +80,6 @@ void RE_ClearScene( void ) {
 	r_firstSceneDlight = r_numdlights;
 	r_firstSceneEntity = r_numentities;
 	r_firstScenePoly = r_numpolys;
-	refEntParent = -1;
-	r_firstSceneMiniEntity = r_numminientities;
 }
 
 /*
@@ -238,8 +232,8 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 		assert(ent->hModel || ent->ghoul2 || ent->customShader);
 	}
 #endif
-
-	if ( (int)ent->reType < 0 || ent->reType >= RT_MAX_REF_ENTITY_TYPE ) {
+	// TODO: We could implement RT_LATHE and RT_CLOUDS here in MP too to check the same as in the SP renderer -> less differences
+	if ( (int)ent->reType < 0 || ent->reType >= RT_MAX_MP_REF_ENTITY_TYPE ) {
 		Com_Error( ERR_DROP, "RE_AddRefEntityToScene: bad reType %i", ent->reType );
 	}
 
@@ -255,19 +249,6 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 			ri.Printf( PRINT_ALL, "Your ghoul2 instance has no model!\n");
 		}
 	}
-
-	/*
-	if (ent->reType == RT_ENT_CHAIN)
-	{
-		refEntParent = r_numentities;
-		backEndData->entities[r_numentities].e.uRefEnt.uMini.miniStart = r_numminientities - r_firstSceneMiniEntity;
-		backEndData->entities[r_numentities].e.uRefEnt.uMini.miniCount = 0;
-	}
-	else
-	{
-	*/
-		refEntParent = -1;
-	//}
 
 	r_numentities++;
 }
@@ -288,50 +269,20 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
  ************************************************************************************************/
 void RE_AddMiniRefEntityToScene( const miniRefEntity_t *ent )
 {
-#if 0
-	refEntity_t		*parent;
-#endif
-
 	if ( !tr.registered )
 	{
 		return;
 	}
 	if (!ent)
 	{
-		refEntParent = -1;
 		return;
 	}
 
-#if 1 //i hate you minirefent!
 	refEntity_t		tempEnt;
 
 	memcpy(&tempEnt, ent, sizeof(*ent));
 	memset(((char *)&tempEnt)+sizeof(*ent), 0, sizeof(tempEnt) - sizeof(*ent));
 	RE_AddRefEntityToScene(&tempEnt);
-#else
-
-	if ( ent->reType < 0 || ent->reType >= RT_MAX_REF_ENTITY_TYPE )
-	{
-		Com_Error( ERR_DROP, "RE_AddMiniRefEntityToScene: bad reType %i", ent->reType );
-	}
-
-	if (!r_numentities || refEntParent == -1 || r_numminientities >= MAX_MINI_ENTITIES)
-	{ //rww - add it as a refent also if we run out of minis
-//		Com_Error( ERR_DROP, "RE_AddMiniRefEntityToScene: mini without parent ref ent");
-		refEntity_t		tempEnt;
-
-		memcpy(&tempEnt, ent, sizeof(*ent));
-		memset(((char *)&tempEnt)+sizeof(*ent), 0, sizeof(tempEnt) - sizeof(*ent));
-		RE_AddRefEntityToScene(&tempEnt);
-		return;
-	}
-
-	parent = &backEndData->entities[refEntParent].e;
-	parent->uRefEnt.uMini.miniCount++;
-
-	backEndData->miniEntities[r_numminientities].e = *ent;
-	r_numminientities++;
-#endif
 }
 
 /*
@@ -491,7 +442,6 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	tr.refdef.num_entities = r_numentities - r_firstSceneEntity;
 	tr.refdef.entities = &backEndData->entities[r_firstSceneEntity];
-	tr.refdef.miniEntities = &backEndData->miniEntities[r_firstSceneMiniEntity];
 
 	tr.refdef.num_dlights = r_numdlights - r_firstSceneDlight;
 	tr.refdef.dlights = &backEndData->dlights[r_firstSceneDlight];
@@ -549,11 +499,8 @@ void RE_RenderScene( const refdef_t *fd ) {
 	// the next scene rendered in this frame will tack on after this one
 	r_firstSceneDrawSurf = tr.refdef.numDrawSurfs;
 	r_firstSceneEntity = r_numentities;
-	r_firstSceneMiniEntity = r_numminientities;
 	r_firstSceneDlight = r_numdlights;
 	r_firstScenePoly = r_numpolys;
-
-	refEntParent = -1;
 
 	tr.frontEndMsec += ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" ) - startTime;
 

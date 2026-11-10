@@ -368,6 +368,7 @@ qboolean COM_ParseVec4( const char **buffer, vec4_t *c);
 
 void	COM_MatchToken( char**buf_p, char *match );
 
+qboolean SkipBracedSection (const char **program, int depth);
 void SkipBracedSection (const char **program);
 void SkipRestOfLine ( const char **data );
 

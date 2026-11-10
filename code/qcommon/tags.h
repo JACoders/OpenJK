@@ -67,6 +67,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	TAGDEF(POINTCACHE),					// weather effects
 	TAGDEF(NEWDEL),
 	TAGDEF(MINIZIP),
+
+	TAGDEF(GRIDMESH),					// some specific temp workspace that only seems to be in the MP codebase
+	TAGDEF(GENERAL),
+	TAGDEF(GHOUL2_GORE),
+	TAGDEF(TEMP_HUNKALLOC),
+	
 	TAGDEF(COUNT)
 
 //////////////// eof //////////////
