@@ -3636,6 +3636,9 @@ static qboolean CollapseStagesToGLSL(void)
 			{
 				pStage->glslShaderGroup = tr.lightallShader;
 				pStage->glslShaderIndex = LIGHTDEF_USE_LIGHT_VERTEX;
+
+				if (pStage->bundle[0].tcGen != TCGEN_TEXTURE || pStage->bundle[0].numTexMods != 0)
+					pStage->glslShaderIndex |= LIGHTDEF_USE_TCGEN_AND_TCMOD;
 			}
 			
 			if (pStage->rgbGen == CGEN_LIGHTING_DIFFUSE ||
