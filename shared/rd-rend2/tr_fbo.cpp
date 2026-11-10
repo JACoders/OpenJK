@@ -787,6 +787,9 @@ void FBO_Shutdown(void)
 		if(fbo->stencilBuffer)
 			qglDeleteRenderbuffers(1, &fbo->stencilBuffer);
 
+		if (fbo->packedDepthStencilBuffer)
+			qglDeleteRenderbuffers(1, &fbo->packedDepthStencilBuffer);
+
 		if(fbo->frameBuffer)
 			qglDeleteFramebuffers(1, &fbo->frameBuffer);
 	}
