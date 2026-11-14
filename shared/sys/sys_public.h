@@ -162,6 +162,9 @@ typedef enum graphicsApi_e
 
 	// Only OpenGL needs special treatment..
 	GRAPHICS_API_OPENGL,
+
+	// Vulkan
+	GRAPHICS_API_VULKAN,
 } graphicsApi_t;
 
 // Graphics API
@@ -206,3 +209,8 @@ void *		WIN_GL_GetProcAddress( const char *proc );
 qboolean	WIN_GL_ExtensionSupported( const char *extension );
 
 uint8_t ConvertUTF32ToExpectedCharset( uint32_t utf32 );
+
+// Vulkan
+void		*WIN_VK_GetInstanceProcAddress( void );
+qboolean	WIN_VK_createSurfaceImpl( void *instance, void **surface );
+qboolean	WIN_VK_IsMinimized( void );
