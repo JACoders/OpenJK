@@ -178,7 +178,6 @@ static	void R_LoadLightmaps( lump_t *l, const char *psMapName, world_t &worldDat
 	byte		image[LIGHTMAP_SIZE*LIGHTMAP_SIZE*4];
 	int					i, j;
 	float				maxIntensity = 0;
-	double				sumIntensity = 0;
 	int					count;
 
 	if (&worldData == &s_worldData)
@@ -238,8 +237,6 @@ static	void R_LoadLightmaps( lump_t *l, const char *psMapName, world_t &worldDat
 				image[j*4+1] = out[1] * 255;
 				image[j*4+2] = out[2] * 255;
 				image[j*4+3] = 255;
-
-				sumIntensity += intensity;
 			}
 		} else {
 			for ( j = 0 ; j < LIGHTMAP_SIZE * LIGHTMAP_SIZE; j++ ) {
