@@ -348,16 +348,25 @@ endif()
 
 # Current Git tag/version
 # ideally we would separate the hash suffix into its own variable, but sed is not available everywhere
-execute_process(
-	COMMAND "git" "describe" "--tag"
-	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	OUTPUT_VARIABLE GIT_TAG
-	RESULT_VARIABLE GIT_TAG_ERROR
-	OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(GIT_TAG_ERROR AND NOT GIT_TAG_ERROR EQUAL 0)
-	message(WARNING "Unable to determine Git tag")
-	set(GIT_TAG vUNKNOWN)
+set(GIT_TAG "vUNKNOWN")
+
+# Try to get git tag if git is available
+find_program(GIT_EXECUTABLE NAMES git)
+if(GIT_EXECUTABLE)
+    execute_process(
+	    COMMAND "${GIT_EXECUTABLE}" describe --tag
+	    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	    OUTPUT_VARIABLE GIT_TAG
+	    ERROR_VARIABLE GIT_TAG_ERROR
+	    OUTPUT_STRIP_TRAILING_WHITESPACE
+	    ERROR_STRIP_TRAILING_WHITESPACE
+	    RESULT_VARIABLE GIT_RESULT)
+    # Only use the git tag if the command succeeded
+    if(NOT GIT_RESULT EQUAL 0)
+	set(GIT_TAG "vUNKNOWN")
+    endif()
 endif()
+
 message(STATUS "Git tag is ${GIT_TAG}")
 
 configure_file(shared/qcommon/q_version.h.in shared/qcommon/q_version.h @ONLY)
