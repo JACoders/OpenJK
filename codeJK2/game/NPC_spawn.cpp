@@ -1347,7 +1347,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 	{
 		for ( int parmNum = 0; parmNum < MAX_PARMS; parmNum++ )
 		{
-			if ( ent->parms->parm[parmNum] && ent->parms->parm[parmNum][0] )
+			if ( ent->parms->parm[parmNum][0] )
 			{
 				Q3_SetParm( newent->s.number, parmNum, ent->parms->parm[parmNum] );
 			}
