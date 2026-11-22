@@ -1258,7 +1258,7 @@ void G_RunMissile( gentity_t *ent )
 		}
 		*/
 
-		if ( tr.entityNum != ENTITYNUM_NONE && &g_entities[tr.entityNum] != NULL )
+		if ( tr.entityNum != ENTITYNUM_NONE && tr.entityNum < MAX_GENTITIES )
 		{
 			gentity_t *other = &g_entities[tr.entityNum];
 			// check for hitting a lightsaber

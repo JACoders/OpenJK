@@ -808,10 +808,8 @@ void FinishSpawningItem( gentity_t *ent ) {
 	trace_t		tr;
 	vec3_t		dest;
 	gitem_t		*item;
-	int			itemNum;
 
-	itemNum=1;
-	for ( item = bg_itemlist + 1 ; item->classname ; item++,itemNum++)
+	for ( item = bg_itemlist + 1 ; item->classname ; item++ )
 	{
 		if (!strcmp(item->classname,ent->classname))
 		{

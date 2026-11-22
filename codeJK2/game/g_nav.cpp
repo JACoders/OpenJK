@@ -284,7 +284,7 @@ qboolean NAV_ClearPathToPoint( gentity_t *self, vec3_t pmins, vec3_t pmaxs, vec3
 		{
 			if ( NAVDEBUG_showCollision )
 			{
-				if ( trace.entityNum < ENTITYNUM_WORLD && (&g_entities[trace.entityNum] != NULL) && !g_entities[trace.entityNum].bmodel )
+				if ( trace.entityNum < ENTITYNUM_WORLD && trace.entityNum < MAX_GENTITIES && !g_entities[trace.entityNum].bmodel )
 				{
 					vec3_t	p1, p2;
 					CG_DrawEdge( point, trace.endpos, EDGE_PATH );
@@ -317,7 +317,7 @@ qboolean NAV_ClearPathToPoint( gentity_t *self, vec3_t pmins, vec3_t pmaxs, vec3
 
 		if ( NAVDEBUG_showCollision )
 		{
-			if ( trace.entityNum < ENTITYNUM_WORLD && (&g_entities[trace.entityNum] != NULL) && !g_entities[trace.entityNum].bmodel )
+			if ( trace.entityNum < ENTITYNUM_WORLD && trace.entityNum < MAX_GENTITIES && !g_entities[trace.entityNum].bmodel )
 			{
 				vec3_t	p1, p2;
 				CG_DrawEdge( self->currentOrigin, trace.endpos, EDGE_PATH );
