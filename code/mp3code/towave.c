@@ -379,7 +379,6 @@ char *C_MP3_GetUnpackedSize(void *pvData, int iSourceBytesRemaining, int *piUnpa
 	int	 iDestWriteIndex = 0;
 
 	int iFrameBytes;
-	int iFrameCounter;
 
 	DEC_INFO decinfo;
 	IN_OUT	 x;
@@ -410,7 +409,7 @@ char *C_MP3_GetUnpackedSize(void *pvData, int iSourceBytesRemaining, int *piUnpa
 
 				// decode...
 				//
-				for (iFrameCounter = 0;;iFrameCounter++)
+				while (1)
 				{
 					if ( iSourceBytesRemaining == 0 || iSourceBytesRemaining < iFrameBytes)
 						break;	// end of file
@@ -480,7 +479,6 @@ char *C_MP3_UnpackRawPCM( void *pvData, int iSourceBytesRemaining, int *piUnpack
 	int	 iDestWriteIndex = 0;
 
 	int iFrameBytes;
-	int iFrameCounter;
 
 	DEC_INFO decinfo;
 	IN_OUT	 x;
@@ -516,7 +514,7 @@ char *C_MP3_UnpackRawPCM( void *pvData, int iSourceBytesRemaining, int *piUnpack
 
 				// decode...
 				//
-				for (iFrameCounter = 0;;iFrameCounter++)
+				while (1)
 				{
 					if ( iSourceBytesRemaining == 0 || iSourceBytesRemaining < iFrameBytes)
 						break;	// end of file
