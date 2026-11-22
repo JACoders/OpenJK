@@ -1078,8 +1078,6 @@ Com_Init
 =================
 */
 void Com_Init( char *commandLine ) {
-	char	*s;
-
 	Com_Printf( "%s %s %s\n", JK_VERSION, PLATFORM_STRING, SOURCE_DATE );
 
 	try {
