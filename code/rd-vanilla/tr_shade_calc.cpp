@@ -1106,7 +1106,7 @@ void RB_CalcSpecularAlpha( unsigned char *alphas ) {
 void RB_CalcDiffuseColor( unsigned char *colors )
 {
 	int				i, j;
-	float			*v, *normal;
+	float			*normal;
 	float			incoming;
 	trRefEntity_t	*ent;
 	int				ambientLightInt;
@@ -1121,12 +1121,11 @@ void RB_CalcDiffuseColor( unsigned char *colors )
 	VectorCopy( ent->directedLight, directedLight );
 	VectorCopy( ent->lightDir, lightDir );
 
-	v = tess.xyz[0];
 	normal = tess.normal[0];
 
 	numVertexes = tess.numVertexes;
 
-	for ( i = 0 ; i < numVertexes ; i++, v += 4, normal += 4)
+	for ( i = 0 ; i < numVertexes ; i++, normal += 4)
 	{
 		incoming = DotProduct (normal, lightDir);
 		if ( incoming <= 0 ) {
@@ -1163,7 +1162,7 @@ void RB_CalcDiffuseColor( unsigned char *colors )
 void RB_CalcDiffuseEntityColor( unsigned char *colors )
 {
 	int				i;
-	float			*v, *normal;
+	float			*normal;
 	float			incoming;
 	trRefEntity_t	*ent;
 	int				ambientLightInt;
@@ -1192,12 +1191,11 @@ void RB_CalcDiffuseEntityColor( unsigned char *colors )
 	((byte *)&ambientLightInt)[2] = Q_ftol( b*ent->ambientLight[2] );
 	((byte *)&ambientLightInt)[3] = backEnd.currentEntity->e.shaderRGBA[3];
 
-	v = tess.xyz[0];
 	normal = tess.normal[0];
 
 	numVertexes = tess.numVertexes;
 
-	for ( i = 0 ; i < numVertexes ; i++, v += 4, normal += 4)
+	for ( i = 0 ; i < numVertexes ; i++, normal += 4)
 	{
 		incoming = DotProduct (normal, lightDir);
 		if ( incoming <= 0 ) {
