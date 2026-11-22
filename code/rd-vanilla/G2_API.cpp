@@ -128,14 +128,12 @@ public:
 
 		int numFramesInFile=ghlInfo->aHeader->numFrames;
 
-		int numActiveBones=0;
 		for (i=0;i<ghlInfo->mBlist.size();i++)
 		{
 			if (ghlInfo->mBlist[i].boneNumber!=-1) // slot used?
 			{
 				if (ghlInfo->mBlist[i].flags&BONE_ANIM_TOTAL) // anim on this?
 				{
-					numActiveBones++;
 					bool loop=!!(ghlInfo->mBlist[i].flags&BONE_ANIM_OVERRIDE_LOOP);
 					bool not_loop=!!(ghlInfo->mBlist[i].flags&BONE_ANIM_OVERRIDE);
 
