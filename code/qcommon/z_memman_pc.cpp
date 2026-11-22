@@ -990,7 +990,7 @@ Com_TouchMemory
 Touch all known used data to make sure it is paged in
 ===============
 */
-void Com_TouchMemory( void ) {
+void Com_TouchMemory() {
 	//int		start, end;
 	int		i, j;
 	unsigned int		sum;
@@ -1012,6 +1012,7 @@ void Com_TouchMemory( void ) {
 			sum += ((unsigned int*)pMem)[i];
 		}
 		//totalTouched+=pMemory->iSize;
+		(void)sum; // Fake use against -Wunused-but-set-variable compiler warning
 		pMemory = pMemory->pNext;
 	}
 
