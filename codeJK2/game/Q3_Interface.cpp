@@ -724,13 +724,11 @@ static void Q3_SetObjective(const char *ObjEnum, int status)
 	int objectiveID;
 	gclient_t	*client;
 	objectives_t	*objective;
-	int				*objectivesShown;
 
 	client = &level.clients[0];
 
 	objectiveID = GetIDForString( objectiveTable, ObjEnum );
 	objective = &client->sess.mission_objectives[objectiveID];
-	objectivesShown = &client->sess.missionObjectivesShown;
 
 
 	switch (status)
@@ -740,14 +738,12 @@ static void Q3_SetObjective(const char *ObjEnum, int status)
 		break;
 	case SET_OBJ_SHOW :
 		objective->display = OBJECTIVE_SHOW;
-		objectivesShown++;
 		missionInfo_Updated = qtrue;	// Activate flashing text
 		break;
 	case SET_OBJ_PENDING :
 		objective->status = OBJECTIVE_STAT_PENDING;
 		if (objective->display != OBJECTIVE_HIDE)
 		{
-			objectivesShown++;
 			missionInfo_Updated = qtrue;	// Activate flashing text
 		}
 		break;
@@ -755,7 +751,6 @@ static void Q3_SetObjective(const char *ObjEnum, int status)
 		objective->status = OBJECTIVE_STAT_SUCCEEDED;
 		if (objective->display != OBJECTIVE_HIDE)
 		{
-			objectivesShown++;
 			missionInfo_Updated = qtrue;	// Activate flashing text
 		}
 		break;
@@ -763,7 +758,6 @@ static void Q3_SetObjective(const char *ObjEnum, int status)
 		objective->status = OBJECTIVE_STAT_FAILED;
 		if (objective->display != OBJECTIVE_HIDE)
 		{
-			objectivesShown++;
 			missionInfo_Updated = qtrue;	// Activate flashing text
 		}
 		break;
