@@ -275,7 +275,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		return;
 	}
 
-	if ( !cent->gent )//|| !cent->gent->client )
+	if ( !cent->gent || !cent->gent->inuse)//|| !cent->gent->client )
 	{
 		return;
 	}
