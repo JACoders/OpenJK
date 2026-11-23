@@ -1670,116 +1670,36 @@ CG_DrawDataPadIconBackground
 */
 void CG_DrawDataPadIconBackground(int backgroundType)
 {
-	int				height,xAdd,x2,y2;
-	int				prongLeftX,prongRightX;
-	qhandle_t		background;
+	cgs.media.currentDataPadIconBackground = backgroundType;
 
-	x2 = 0;
-	y2 = 295;
+	/* --- Background beam and glow ---*/
+	float bgX  = 117;
+	float bgYT = 325;
+	float bgYB = 323;
+	float bhH  = 60;
 
-	prongLeftX =x2+97;
-	prongRightX =x2+544;
+	qhandle_t background = backgroundType == ICON_INVENTORY ? cgs.media.inventoryIconBackground :
+	                       backgroundType == ICON_WEAPONS ?   cgs.media.weaponIconBackground :
+	                                                          cgs.media.forceIconBackground;
 
-	if (backgroundType == ICON_INVENTORY)	// Display inventory background?
-	{
-		background = cgs.media.inventoryIconBackground;
-	}
-	else if (backgroundType == ICON_WEAPONS)	// Display weapon background?
-	{
-		background = cgs.media.weaponIconBackground;
-	}
-	else 	// Display force background?
-	{
-		background = cgs.media.forceIconBackground;
-	}
-
-/*	if ((cg.iconDataPadSelectTime+WEAPON_SELECT_TIME)<cg.time)	// Time is up for the HUD to display
-	{
-		if (cg.iconDataPadHUDActive)		// The time is up, but we still need to move the prongs back to their original position
-		{
-			t =  cg.time - (cg.iconDataPadSelectTime+WEAPON_SELECT_TIME);
-			cg.iconDataPadHUDPercent = t/ 130.0f;
-			cg.iconDataPadHUDPercent = 1 - cg.iconDataPadHUDPercent;
-
-			if (cg.iconDataPadHUDPercent<0)
-			{
-				cg.iconDataPadHUDActive = qfalse;
-				cg.iconDataPadHUDPercent=0;
-			}
-
-			xAdd = (int) 8*cg.iconDataPadHUDPercent;
-
-			height = (int) (60.0f*cg.iconDataPadHUDPercent);
-			CG_DrawPic( x2+60, y2+30, 460, -height, background);	// Top half
-			CG_DrawPic( x2+60, y2+30-2,460, height, background);	// Bottom half
-
-		}
-		else
-		{
-			xAdd = 0;
-		}
-
-		cgi_R_SetColor( colorTable[CT_WHITE] );
-		CG_DrawPic( prongLeftX+xAdd, y2-10, 40, 80, cgs.media.weaponProngsOff);
-		CG_DrawPic( prongRightX-xAdd, y2-10, -40, 80, cgs.media.weaponProngsOff);
-
-		return;
-	}
-*/
-
-	prongLeftX =x2+97;
-	prongRightX =x2+544;
-/*
-	if (!cg.iconDataPadHUDActive)
-	{
-		t = cg.time - cg.iconDataPadSelectTime;
-		cg.iconDataPadHUDPercent = t/ 130.0f;
-
-		// Calc how far into opening sequence we are
-		if (cg.iconDataPadHUDPercent>1)
-		{
-			cg.iconDataPadHUDActive = qtrue;
-			cg.iconDataPadHUDPercent=1;
-		}
-		else if (cg.iconDataPadHUDPercent<0)
-		{
-			cg.iconDataPadHUDPercent=0;
-		}
-	}
-	else
-	{
-		cg.iconDataPadHUDPercent=1;
-	}
-*/
 	cgi_R_SetColor( colorTable[CT_WHITE] );
-//	height = (int) (60.0f*cg.iconDataPadHUDPercent);
-	height = (int) 60.0f;
-	CG_DrawPic( x2+110, y2+30, 410, -height, background);	// Top half
-	CG_DrawPic( x2+110, y2+30-2,410, height, background);	// Bottom half
 
-	// And now for the prongs
-	if (backgroundType==ICON_INVENTORY)
-	{
-		cgs.media.currentDataPadIconBackground = ICON_INVENTORY;
-		background = cgs.media.inventoryProngsOn;
-	}
-	else if (backgroundType==ICON_WEAPONS)
-	{
-		cgs.media.currentDataPadIconBackground = ICON_WEAPONS;
-		background = cgs.media.weaponProngsOn;
-	}
-	else
-	{
-		cgs.media.currentDataPadIconBackground = ICON_FORCE;
-		background = cgs.media.forceProngsOn;
-	}
+	CG_DrawPic( bgX, bgYT,410, -bhH, background); // Top half
+	CG_DrawPic( bgX, bgYB,410,  bhH, background); // Bottom half
 
-	// Side Prongs
+	/* --- Background prongs on either side of the beam --- */
+	float prXl = 104;
+	float prXR = 537;
+	float prY  = 285;
+	float prH  = 80;
+	float prW  = 40;
+
+	background = backgroundType == ICON_INVENTORY ? cgs.media.inventoryProngsOn :
+				 backgroundType == ICON_WEAPONS ?   cgs.media.weaponProngsOn :
+													cgs.media.forceProngsOn;
 	cgi_R_SetColor( colorTable[CT_WHITE]);
-//	xAdd = (int) 8*cg.iconDataPadHUDPercent;
-	xAdd = (int) 8;
-	CG_DrawPic( prongLeftX+xAdd, y2-10, 40, 80, background);
-	CG_DrawPic( prongRightX-xAdd, y2-10, -40, 80, background);
+	CG_DrawPic( prXl, prY,  prW, prH, background);
+	CG_DrawPic( prXR, prY, -prW, prH, background);
 }
 
 /*
