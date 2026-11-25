@@ -22,7 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#pragma once
+#if !defined(TR_LOCAL_H_INC)
+#define TR_LOCAL_H_INC
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qfiles.h"
@@ -992,6 +993,11 @@ typedef struct {
 	// A rectangular texture representing the normally rendered scene.
 	GLuint					sceneImage;
 
+	// Gamma correction using vertex/pixel programs
+	GLuint					gammaCorrectLUTImage;
+	GLuint					gammaCorrectVtxShader;
+	GLuint					gammaCorrectPxShader;
+
 	// Image used to downsample and blur scene to.	- AReis
 	GLuint					blurImage;
 
@@ -1066,6 +1072,15 @@ typedef struct {
 	float					distanceCull;
 } trGlobals_t;
 
+struct glconfigExt_t
+{
+	glconfig_t *glConfig;
+
+	qboolean doGammaCorrectionWithShaders;
+	qboolean doStencilShadowsInOneDrawcall;
+	const char *originalExtensionString;
+};
+
 int		 R_Images_StartIteration(void);
 image_t *R_Images_GetNextIteration(void);
 void	 R_Images_Clear(void);
@@ -1076,6 +1091,7 @@ void	 R_Images_DeleteImage(image_t *pImage);
 extern backEndState_t	backEnd;
 extern trGlobals_t	tr;
 extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared during ref re-init
+extern glconfigExt_t glConfigExt;
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
 extern window_t		window;
 
@@ -1144,6 +1160,7 @@ extern cvar_t	*r_fullscreen;
 extern cvar_t	*r_noborder;			// disable border in windowed mode
 extern cvar_t	*r_centerWindow;		// override vid_x/ypos and center the window
 extern cvar_t	*r_gamma;
+extern cvar_t	*r_gammaShaders;
 extern cvar_t	*r_displayRefresh;		// optional display refresh option
 extern cvar_t	*r_ignorehwgamma;		// overrides hardware gamma capabilities
 
@@ -1338,6 +1355,7 @@ image_t		*R_CreateImage( const char *name, const byte *pic, int width, int heigh
 qboolean	R_GetModeInfo( int *width, int *height, int mode );
 
 void		R_SetColorMappings( void );
+void		R_SetGammaCorrectionLUT();
 void		R_GammaCorrect( byte *buffer, int bufSize );
 
 void	R_ImageList_f( void );
@@ -1842,3 +1860,5 @@ Ghoul2 Insert End
 
 // tr_surfacesprites
 void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input);
+
+#endif // TR_LOCAL_H_INC

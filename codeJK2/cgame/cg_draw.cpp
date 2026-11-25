@@ -25,9 +25,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // active (after loading) gameplay
 
 #include "../game/g_local.h"
+#include "../game/objectives.h"
 #include "cg_local.h"
 #include "cg_media.h"
-#include "../game/objectives.h"
 
 void CG_DrawIconBackground(void);
 void CG_DrawMissionInformation( void );
@@ -823,11 +823,14 @@ CG_DrawDataPadHUD
 */
 void CG_DrawDataPadHUD( centity_t *cent )
 {
-	int x,y;
+	int x = 34;
+	int y = 286;
 
-	x = 34;
-	y = 286;
+	/* fake a security key draw. Its medium is known to fix gamma shader overlays */
+	qhandle_t graphic = cgi_R_RegisterShaderNoMip("textures/system/securitycode_green" );
+	CG_DrawPic( 0, 0, 1, 1, graphic );
 
+	/* Now draw the rest of the HUD, free from gamma shader disturbances. */
 	CG_DrawHUDLeftFrame1(x,y);
 	CG_DrawArmor(x,y);
 	CG_DrawHealth(x,y);

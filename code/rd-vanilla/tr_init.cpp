@@ -33,6 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "tr_WorldEffects.h"
 
 glconfig_t	glConfig;
+glconfigExt_t glConfigExt;
 glstate_t	glState;
 window_t	window;
 
@@ -126,6 +127,7 @@ cvar_t	*r_textureMode;
 cvar_t	*r_offsetFactor;
 cvar_t	*r_offsetUnits;
 cvar_t	*r_gamma;
+cvar_t	*r_gammaShaders;
 cvar_t	*r_intensity;
 cvar_t	*r_lockpvs;
 cvar_t	*r_noportals;
@@ -192,6 +194,10 @@ PFNGLSTENCILOPSEPARATEPROC qglStencilOpSeparate;
 PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
 PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
 PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
+#if !defined(__APPLE__)
+PFNGLTEXIMAGE3DPROC qglTexImage3D;
+PFNGLTEXSUBIMAGE3DPROC qglTexSubImage3D;
+#endif
 
 PFNGLCOMBINERPARAMETERFVNVPROC qglCombinerParameterfvNV;
 PFNGLCOMBINERPARAMETERIVNVPROC qglCombinerParameterivNV;
@@ -673,6 +679,21 @@ static void GLimp_InitExtensions( void )
 		ri.Cvar_Set( "r_DynamicGlow","0" );
 	}
 
+	glConfigExt.doGammaCorrectionWithShaders = qfalse;
+	if ( r_gammaShaders->integer && qglActiveTextureARB && bTexRectSupported && bARBVertexProgram && bARBFragmentProgram )
+	{
+#if !defined(__APPLE__)
+		qglTexImage3D = (PFNGLTEXIMAGE3DPROC)ri.GL_GetProcAddress("glTexImage3D");
+		qglTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)ri.GL_GetProcAddress("glTexSubImage3D");
+		if ( qglTexImage3D && qglTexSubImage3D )
+		{
+			glConfigExt.doGammaCorrectionWithShaders = qtrue;
+		}
+#else
+		glConfigExt.doGammaCorrectionWithShaders = qtrue;
+#endif
+	}
+
 #if !defined(__APPLE__)
 	qglStencilOpSeparate = (PFNGLSTENCILOPSEPARATEPROC)ri.GL_GetProcAddress("glStencilOpSeparate");
 	if (qglStencilOpSeparate)
@@ -882,7 +903,7 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	memcount = linelen * height;
 
 	// gamma correct
-	if(glConfig.deviceSupportsGamma)
+	if(glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders)
 		R_GammaCorrect(allbuf + offset, memcount);
 
 	ri.FS_WriteFile(fileName, buffer, memcount + 18);
@@ -919,7 +940,7 @@ void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName )
 	memcount = (width * 3 + padlen) * height;
 
 	// gamma correct
-	if(glConfig.deviceSupportsGamma)
+	if(glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders)
 		R_GammaCorrect(buffer + offset, memcount);
 
 	RE_SaveJPG(fileName, r_screenshotJpegQuality->integer, width, height, buffer + offset, padlen);
@@ -998,7 +1019,7 @@ static void R_LevelShot( void ) {
 	}
 
 	// gamma correct
-	if ( ( tr.overbrightBits > 0 ) && glConfig.deviceSupportsGamma ) {
+	if ( ( tr.overbrightBits > 0 ) && glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders ) {
 		R_GammaCorrect( buffer + 18, LEVELSHOTSIZE * LEVELSHOTSIZE * 3 );
 	}
 
@@ -1273,7 +1294,7 @@ void GfxInfo_f( void )
 	{
 		ri.Printf( PRINT_ALL, "N/A\n" );
 	}
-	if ( glConfig.deviceSupportsGamma )
+	if ( glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders )
 	{
 		ri.Printf( PRINT_ALL, "GAMMA: hardware w/ %d overbright bits\n", tr.overbrightBits );
 	}
@@ -1569,6 +1590,7 @@ void R_Register( void )
 	r_finish = ri.Cvar_Get ("r_finish", "0", CVAR_ARCHIVE_ND);
 	r_textureMode = ri.Cvar_Get( "r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE );
 	r_gamma = ri.Cvar_Get( "r_gamma", "1", CVAR_ARCHIVE_ND );
+	r_gammaShaders = ri.Cvar_Get( "r_gammaShaders", "0", CVAR_ARCHIVE_ND|CVAR_LATCH );
 	r_facePlaneCull = ri.Cvar_Get ("r_facePlaneCull", "1", CVAR_ARCHIVE_ND );
 
 	r_dlightStyle = ri.Cvar_Get ("r_dlightStyle", "1", CVAR_ARCHIVE_ND);
@@ -1817,6 +1839,8 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 		// Release the scene texture.
 		qglDeleteTextures( 1, &tr.sceneImage );
+
+		qglDeleteTextures(1, &tr.gammaCorrectLUTImage);
 
 		// Release the blur texture.
 		qglDeleteTextures( 1, &tr.blurImage );

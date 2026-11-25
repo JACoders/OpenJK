@@ -1420,6 +1420,16 @@ const void	*RB_DrawBuffer( const void *data ) {
 		qglClearColor(fog->parms.color[0],  fog->parms.color[1], fog->parms.color[2], 1.0f );
 		qglClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	}
+	else if ( glConfigExt.doGammaCorrectionWithShaders )
+	{
+		// The fullscreen gamma pass reprocesses the whole framebuffer, so every
+		// presented frame must start from freshly drawn pixels: start from black
+		// and let the world and UI redraw cover it. Fully redrawn frames (game
+		// world, menu art) are unaffected; retained regions would otherwise
+		// accumulate brightness. Inactive unless the shader gamma path is enabled.
+		qglClearColor( 0, 0, 0, 1 );
+		qglClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	}
 	else if ( r_clear->integer )
 	{	// clear screen for debugging
 		int i = r_clear->integer;
@@ -1529,12 +1539,63 @@ RB_SwapBuffers
 =============
 */
 extern void RB_RenderWorldEffects( void );
+
+static void RB_GammaCorrectRender()
+{
+	qglPushAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+
+	RB_SetGL2D();
+
+	// All this fixed-function texture type enabling/disabling is ludicrous :(
+	qglEnable(GL_TEXTURE_RECTANGLE_ARB);
+	GL_SelectTexture(0);
+	qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, tr.sceneImage);
+	qglCopyTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, 0, 0, glConfig.vidWidth, glConfig.vidHeight, 0);
+
+	qglEnable(GL_TEXTURE_3D);
+	GL_SelectTexture(1);
+	qglBindTexture(GL_TEXTURE_3D, tr.gammaCorrectLUTImage);
+
+	qglBindProgramARB(GL_VERTEX_PROGRAM_ARB, tr.gammaCorrectVtxShader);
+	qglBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, tr.gammaCorrectPxShader);
+
+	qglEnable(GL_VERTEX_PROGRAM_ARB);
+	qglEnable(GL_FRAGMENT_PROGRAM_ARB);
+
+	qglBegin(GL_QUADS);
+		qglTexCoord2f(0.0f, 0.0f);
+		qglVertex2f(-1.0f, -1.0f);
+
+		qglTexCoord2f(0.0f, (float)glConfig.vidHeight);
+		qglVertex2f(-1.0f,  1.0f);
+
+		qglTexCoord2f((float)glConfig.vidWidth, (float)glConfig.vidHeight);
+		qglVertex2f( 1.0f,  1.0f);
+
+		qglTexCoord2f((float)glConfig.vidWidth, 0.0f);
+		qglVertex2f( 1.0f, -1.0f);
+	qglEnd();
+
+	qglDisable(GL_VERTEX_PROGRAM_ARB);
+	qglDisable(GL_FRAGMENT_PROGRAM_ARB);
+
+	qglDisable(GL_TEXTURE_3D);
+	GL_SelectTexture(0);
+
+	qglPopAttrib();
+}
+
 const void	*RB_SwapBuffers( const void *data ) {
 	const swapBuffersCommand_t	*cmd;
 
 	// finish any 2D drawing if needed
 	if ( tess.numIndexes ) {
 		RB_EndSurface();
+	}
+
+	if ( glConfigExt.doGammaCorrectionWithShaders )
+	{
+		RB_GammaCorrectRender();
 	}
 
 	// texture swapping test
