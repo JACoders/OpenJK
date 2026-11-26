@@ -1268,9 +1268,8 @@ void SP_waypoint ( gentity_t *ent )
 			ent->maxs[2] = CROUCH_MAXS_2;
 			if(G_CheckInSolid (ent, qtrue))
 			{
-				gi.Printf(S_COLOR_RED"ERROR: Waypoint %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
-				assert(0 && "Waypoint in solid!");
 #ifndef FINAL_BUILD
+				// Only report in debug builds, fix silently on release builds
 				if (!g_entities[ENTITYNUM_WORLD].s.radius){	//not a region
 					G_Error("Waypoint %s at %s in solid!", ent->targetname, vtos(ent->currentOrigin));
 				}
