@@ -407,7 +407,7 @@ typedef struct itemDef_s {
 	qboolean	disabledHidden;				// hide the item when 'disabled' is true (for generic image items)
 } itemDef_t;
 
-typedef struct {
+typedef struct menuDef_s {
 	Window window;
 	const char  *font;						// font
 	qboolean	fullScreen;					// covers entire screen
@@ -437,8 +437,6 @@ typedef struct {
 	int			descAlignment;				// Description of alignment
 	float		descScale;					// Description scale
 	int			descTextStyle;					// ( optional ) style, normal and shadowed are it for now
-
-
 } menuDef_t;
 
 typedef struct textScrollDef_s

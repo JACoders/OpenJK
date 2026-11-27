@@ -1045,7 +1045,7 @@ int NPC_FindNearestEnemy( gentity_t *ent )
 	int			nearestEntID = -1;
 	float		nearestDist = (float)WORLD_SIZE*(float)WORLD_SIZE;
 	float		distance;
-	int			numEnts, numChecks = 0;
+	int			numEnts;
 	int			i;
 
 	//Setup the bbox to search in
@@ -1068,7 +1068,6 @@ int NPC_FindNearestEnemy( gentity_t *ent )
 		if ( NPC_ValidEnemy( radiusEnts[i] ) == qfalse )
 			continue;
 
-		numChecks++;
 		//Must be visible
 		if ( NPC_TargetVisible( radiusEnts[i] ) == qfalse )
 			continue;
@@ -1407,7 +1406,7 @@ qboolean NPC_CheckLookTarget( gentity_t *self )
 	{
 		if ( self->client->renderInfo.lookTarget >= 0 && self->client->renderInfo.lookTarget < ENTITYNUM_WORLD )
 		{//within valid range
-			if ( (&g_entities[self->client->renderInfo.lookTarget] == NULL) || !g_entities[self->client->renderInfo.lookTarget].inuse )
+			if ( !g_entities[self->client->renderInfo.lookTarget].inuse )
 			{//lookTarget not inuse or not valid anymore
 				NPC_ClearLookTarget( self );
 			}

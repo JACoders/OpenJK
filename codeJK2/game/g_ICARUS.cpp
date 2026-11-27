@@ -199,7 +199,12 @@ FIXME: shouldn't ICARUS handle this internally?
 */
 void ICARUS_FreeEnt( gentity_t *ent )
 {
-	assert( iICARUS );
+	// ShutdownGame can run a second time after ICARUS_Shutdown already deleted
+	// the instance (server shutdown followed by client shutdown). Tolerate a
+	// NULL instance: every sequencer is already NULL then, matching release
+	// (NDEBUG) behavior instead of aborting on assert builds.
+	if ( !iICARUS )
+		return;
 
 	//Make sure the ent is valid
 	if ( ent->sequencer == NULL )

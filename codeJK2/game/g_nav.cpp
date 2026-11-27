@@ -284,7 +284,7 @@ qboolean NAV_ClearPathToPoint( gentity_t *self, vec3_t pmins, vec3_t pmaxs, vec3
 		{
 			if ( NAVDEBUG_showCollision )
 			{
-				if ( trace.entityNum < ENTITYNUM_WORLD && (&g_entities[trace.entityNum] != NULL) && !g_entities[trace.entityNum].bmodel )
+				if ( trace.entityNum < ENTITYNUM_WORLD && trace.entityNum < MAX_GENTITIES && !g_entities[trace.entityNum].bmodel )
 				{
 					vec3_t	p1, p2;
 					CG_DrawEdge( point, trace.endpos, EDGE_PATH );
@@ -317,7 +317,7 @@ qboolean NAV_ClearPathToPoint( gentity_t *self, vec3_t pmins, vec3_t pmaxs, vec3
 
 		if ( NAVDEBUG_showCollision )
 		{
-			if ( trace.entityNum < ENTITYNUM_WORLD && (&g_entities[trace.entityNum] != NULL) && !g_entities[trace.entityNum].bmodel )
+			if ( trace.entityNum < ENTITYNUM_WORLD && trace.entityNum < MAX_GENTITIES && !g_entities[trace.entityNum].bmodel )
 			{
 				vec3_t	p1, p2;
 				CG_DrawEdge( self->currentOrigin, trace.endpos, EDGE_PATH );
@@ -1268,9 +1268,8 @@ void SP_waypoint ( gentity_t *ent )
 			ent->maxs[2] = CROUCH_MAXS_2;
 			if(G_CheckInSolid (ent, qtrue))
 			{
-				gi.Printf(S_COLOR_RED"ERROR: Waypoint %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
-				assert(0 && "Waypoint in solid!");
 #ifndef FINAL_BUILD
+				// Only report in debug builds, fix silently on release builds
 				if (!g_entities[ENTITYNUM_WORLD].s.radius){	//not a region
 					G_Error("Waypoint %s at %s in solid!", ent->targetname, vtos(ent->currentOrigin));
 				}

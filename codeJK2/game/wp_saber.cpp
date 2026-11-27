@@ -758,7 +758,7 @@ qboolean WP_SaberApplyDamage( gentity_t *ent, float baseDamage, int baseDFlags, 
 	for ( int i = 0; i < numVictims; i++ )
 	{
 		dFlags = baseDFlags|DAMAGE_DEATH_KNOCKBACK|DAMAGE_NO_HIT_LOC;
-		if ( victimEntityNum[i] != ENTITYNUM_NONE && &g_entities[victimEntityNum[i]] != NULL )
+		if ( victimEntityNum[i] != ENTITYNUM_NONE && victimEntityNum[i] < MAX_GENTITIES )
 		{	// Don't bother with this damage if the fraction is higher than the saber's fraction
 			if ( dmgFraction[i] < saberHitFraction || brokenParry )
 			{
@@ -1516,7 +1516,7 @@ qboolean WP_SaberDamageForTrace( int ignore, vec3_t start, vec3_t end, float dmg
 		return qtrue;
 	}
 
-	if ( &g_entities[tr.entityNum] )
+	if ( tr.entityNum < MAX_GENTITIES )
 	{
 		gentity_t *hitEnt = &g_entities[tr.entityNum];
 		gentity_t *owner = g_entities[tr.entityNum].owner;
@@ -1591,7 +1591,7 @@ qboolean WP_SaberDamageForTrace( int ignore, vec3_t start, vec3_t end, float dmg
 				{
  					return qtrue;
 				}
-				if ( tr.entityNum == ENTITYNUM_NONE || &g_entities[tr.entityNum] == NULL )
+				if ( tr.entityNum == ENTITYNUM_NONE )
 				{//didn't hit the owner
 					/*
 					if ( attacker
@@ -8385,7 +8385,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 	{//don't regen force power while throwing saber
 		if ( self->client->ps.saberEntityNum < ENTITYNUM_NONE && self->client->ps.saberEntityNum > 0 )//player is 0
 		{//
-			if ( &g_entities[self->client->ps.saberEntityNum] != NULL && g_entities[self->client->ps.saberEntityNum].s.pos.trType == TR_LINEAR )
+			if ( self->client->ps.saberEntityNum < MAX_GENTITIES && g_entities[self->client->ps.saberEntityNum].s.pos.trType == TR_LINEAR )
 			{//fell to the ground and we're trying to pull it back
 				usingForce = qtrue;
 			}

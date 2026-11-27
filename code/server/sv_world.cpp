@@ -561,7 +561,7 @@ void SV_SectorList_f( void )
 //===========================================================================
 
 
-typedef struct {
+struct moveclip_t {
 	vec3_t		boxmins, boxmaxs;// enclose the test object along entire move
 	const float	*mins;
 	const float *maxs;	// size of the moving object
@@ -584,7 +584,7 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
-} moveclip_t;
+};
 
 
 /*

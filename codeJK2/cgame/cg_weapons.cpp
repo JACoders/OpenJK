@@ -2445,7 +2445,7 @@ void CG_Weapon_f( void )
 			if ( !in_camera )
 			{//player can't activate/deactivate saber when in a cinematic
 				//can't toggle it if not holding it and not controlling it or dead
-				if ( cg.predicted_player_state.stats[STAT_HEALTH] > 0 && (!cg_entities[0].currentState.saberInFlight || (&g_entities[cg_entities[0].gent->client->ps.saberEntityNum] != NULL && g_entities[cg_entities[0].gent->client->ps.saberEntityNum].s.pos.trType == TR_LINEAR) ) )
+				if ( cg.predicted_player_state.stats[STAT_HEALTH] > 0 && (!cg_entities[0].currentState.saberInFlight || (cg_entities[0].gent->client->ps.saberEntityNum < MAX_GENTITIES && g_entities[cg_entities[0].gent->client->ps.saberEntityNum].s.pos.trType == TR_LINEAR) ) )
 				{//it's either in-hand or it's under telekinetic control
 					if ( cg_entities[0].currentState.saberActive )
 					{

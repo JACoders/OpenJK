@@ -989,7 +989,7 @@ void target_change_parm_use(gentity_t *self, gentity_t *other, gentity_t *activa
 	{
 		for ( int parmNum = 0; parmNum < MAX_PARMS; parmNum++ )
 		{
-			if ( self->parms->parm[parmNum] && self->parms->parm[parmNum][0] )
+			if ( self->parms->parm[parmNum][0] )
 			{
 				Q3_SetParm( activator->s.number, parmNum, self->parms->parm[parmNum] );
 			}

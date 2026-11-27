@@ -128,14 +128,12 @@ public:
 
 		int numFramesInFile=ghlInfo->aHeader->numFrames;
 
-		int numActiveBones=0;
 		for (i=0;i<ghlInfo->mBlist.size();i++)
 		{
 			if (ghlInfo->mBlist[i].boneNumber!=-1) // slot used?
 			{
 				if (ghlInfo->mBlist[i].flags&BONE_ANIM_TOTAL) // anim on this?
 				{
-					numActiveBones++;
 					bool loop=!!(ghlInfo->mBlist[i].flags&BONE_ANIM_OVERRIDE_LOOP);
 					bool not_loop=!!(ghlInfo->mBlist[i].flags&BONE_ANIM_OVERRIDE);
 
@@ -759,7 +757,12 @@ void G2API_CleanGhoul2Models(CGhoul2Info_v &ghoul2)
 #ifdef _G2_GORE
 	G2API_ClearSkinGore ( ghoul2 );
 #endif
-	ghoul2.~CGhoul2Info_v();
+	// NOTE: do NOT invoke the destructor explicitly here. That ends the object's
+	// lifetime without reconstruction, so any later use (including the implicit
+	// destruction of the static g_entities array at shared-library unload) is
+	// undefined and surfaces as a stale-handle IsValid assert / bad Delete on
+	// builds with assertions enabled.
+	ghoul2.Clean();
 }
 
 qhandle_t G2API_PrecacheGhoul2Model(const char *fileName)
@@ -792,7 +795,9 @@ int G2API_InitGhoul2Model(CGhoul2Info_v &ghoul2, const char *fileName, int, qhan
 	}
 	if (model==ghoul2.size())
 	{
+#if 0 /// do not limit ghoul2 size to 8 (with assertion disabled, there would be no size limit anyway)
 		assert(model < 8);	//arb, just catching run-away models
+#endif // 0
 		CGhoul2Info info;
 		Q_strncpyz(info.mFileName, fileName, sizeof(info.mFileName));
 		info.mModelindex = 0;
@@ -2132,11 +2137,13 @@ void G2API_LoadGhoul2Models(CGhoul2Info_v &ghoul2, char *buffer)
 //	G2ERROR(ghoul2.IsValid(),"Invalid ghlInfo after load");
 }
 
-// this is kinda sad, but I need to call the destructor in this module (exe), not the game.dll...
+// The savegame loader releases the previous model data before binary-loading
+// the new state over the struct. Release the handle but keep the object alive
+// (see G2API_CleanGhoul2Models); the loader zeroes/reloads the fields after this.
 //
 void G2API_LoadSaveCodeDestructGhoul2Info(CGhoul2Info_v &ghoul2)
 {
-	ghoul2.~CGhoul2Info_v();	// so I can load junk over it then memset to 0 without orphaning
+	ghoul2.Clean();
 }
 
 #ifdef _G2_GORE

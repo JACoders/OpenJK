@@ -463,6 +463,7 @@ static void G_DynamicMusicUpdate( void )
 		}
 		else
 		*/
+		(void)danger; /* in case the danger calculation above will be used again some day, leave it in and silence compilers */
 		{//still nothing dangerous going on
 			if ( level.dmState != DM_EXPLORE )
 			{//just went to explore, hold it for a couple seconds at least

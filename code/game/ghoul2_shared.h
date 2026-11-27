@@ -20,8 +20,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#pragma once
-#if !defined(GHOUL2_SHARED_H_INC)
+#ifndef GHOUL2_SHARED_H_INC
 #define GHOUL2_SHARED_H_INC
 
 #include <vector>
@@ -638,6 +637,15 @@ public:
 	~CGhoul2Info_v()
 	{
 		Free(); //this had better be taken care of via the clean ghoul2 models call
+	}
+	// Release the info-array handle but keep this object alive.
+	// Use this instead of an explicit destructor call: invoking the destructor
+	// without placement-new reconstruction ends the object's lifetime, so the
+	// implicit destruction at shared-library unload would be a second,
+	// undefined destruction (stale mItem -> failed IsValid assert / bad Delete).
+	void Clean()
+	{
+		Free();
 	}
 	void operator=(const CGhoul2Info_v &other)
 	{

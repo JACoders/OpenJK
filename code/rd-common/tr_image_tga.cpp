@@ -220,7 +220,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 		for (int y=iYStart, iYCount=0; iYCount<pHeader->wImageHeight; y+=iYStep, iYCount++)
 		{
 			pOut = pRGBA + y * pHeader->wImageWidth *4;
-			for (int x=iXStart, iXCount=0; iXCount<pHeader->wImageWidth; x+=iXStep, iXCount++)
+			for (int iXCount=0; iXCount<pHeader->wImageWidth; iXCount++)
 			{
 				switch (pHeader->byImagePlanes)
 				{

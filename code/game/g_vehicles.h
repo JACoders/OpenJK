@@ -26,7 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../qcommon/q_shared.h"
 #include "g_public.h"
 
-typedef enum
+typedef enum vehicleType_e
 {
 	VH_NONE = 0,
 	VH_WALKER,		//something you ride inside of, it walks like you, like an AT-ST
@@ -52,7 +52,7 @@ extern stringID_table_t VehicleTable[VH_NUM_VEHICLES+1];
 //===========================================================================================================
 //START VEHICLE WEAPONS
 //===========================================================================================================
-typedef struct
+typedef struct vehWeaponInfo_s
 {
 //*** IMPORTANT!!! *** vWeapFields table correponds to this structure!
 	char	*name;
@@ -106,7 +106,7 @@ extern int	numVehicleWeapons;
 #define		MAX_VEHICLE_TURRETS			2
 #define		MAX_VEHICLE_TURRET_MUZZLES	2
 
-typedef struct
+typedef struct turretStats_s
 {
 	int			iWeapon;	//what vehWeaponInfo index to use
 	int			iDelay;		//delay between turret muzzle shots
@@ -129,7 +129,7 @@ typedef struct
 	int			passengerNum;//which passenger, if any, has control of this turret (overrides AI)
 } turretStats_t;
 
-typedef struct
+typedef struct vehWeaponStats_s
 {
 //*** IMPORTANT!!! *** See note at top of next structure!!! ***
 	// Weapon stuff.
@@ -511,7 +511,7 @@ struct Muzzle
 #define SHIPSURF_BROKEN_E	(1<<4) //wing 3
 #define SHIPSURF_BROKEN_F	(1<<5) //wing 4
 
-typedef struct
+typedef struct vehWeaponStatus_s
 {
 	//linked firing mode
 	qboolean	linked;//weapon 1's muzzles are in linked firing mode
@@ -522,7 +522,7 @@ typedef struct
 	//which muzzle will fire next
 	int			nextMuzzle;
 
-
+#ifdef __cplusplus
 	void sg_export(
 		ojk::SavedGameHelper& saved_game) const
 	{
@@ -540,9 +540,10 @@ typedef struct
 		saved_game.read<int32_t>(lastAmmoInc);
 		saved_game.read<int32_t>(nextMuzzle);
 	}
+#endif // __cplusplus
 } vehWeaponStatus_t;
 
-typedef struct
+typedef struct vehTurretStatus_s
 {
 	//current weapon ammo
 	int			ammo;
@@ -555,7 +556,7 @@ typedef struct
 	//how long to hold on to our current enemy
 	int			enemyHoldTime;
 
-
+#ifdef __cplusplus
 	void sg_export(
 		ojk::SavedGameHelper& saved_game) const
 	{
@@ -575,6 +576,7 @@ typedef struct
 		saved_game.read<int32_t>(enemyEntNum);
 		saved_game.read<int32_t>(enemyHoldTime);
 	}
+#endif // __cplusplus
 } vehTurretStatus_t;
 
 // This is the implementation of the vehicle interface and any of the other variables needed. This
@@ -692,7 +694,7 @@ struct Vehicle_t
 	int			m_safeJumpMountTime;
 	float		m_safeJumpMountRightDot;
 
-
+#ifdef __cplusplus
 	void sg_export(
 		ojk::SavedGameHelper& saved_game) const
 	{
@@ -786,6 +788,7 @@ struct Vehicle_t
 		saved_game.read<int32_t>(m_safeJumpMountTime);
 		saved_game.read<float>(m_safeJumpMountRightDot);
 	}
+#endif // __cplusplus
 };
 
 extern int BG_VehicleGetIndex( const char *vehicleName );
