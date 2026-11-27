@@ -795,7 +795,9 @@ int G2API_InitGhoul2Model(CGhoul2Info_v &ghoul2, const char *fileName, int, qhan
 	}
 	if (model==ghoul2.size())
 	{
+#if 0 /// do not limit ghoul2 size to 8 (with assertion disabled, there would be no size limit anyway)
 		assert(model < 8);	//arb, just catching run-away models
+#endif // 0
 		CGhoul2Info info;
 		Q_strncpyz(info.mFileName, fileName, sizeof(info.mFileName));
 		info.mModelindex = 0;
