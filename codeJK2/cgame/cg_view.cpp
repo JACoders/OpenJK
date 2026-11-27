@@ -1669,9 +1669,24 @@ static qboolean CG_CalcViewValues( void ) {
 		{
 			if ( cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE )
 			{
-				vec3_t dir;
+				vec3_t	dir;
+				int		standingViewHeight = 32;
+
+				if ( g_entities[0].client )
+				{
+					standingViewHeight = g_entities[0].client->standheight + STANDARD_VIEWHEIGHT_OFFSET;
+				}
+
 				CG_OffsetFirstPersonView( qtrue );
-				cg.refdef.vieworg[2] += 32;
+				// This camera has always sat a fixed 32 units above the player origin
+				// at level pitch (the standing eye height, 36, minus 4). Because the
+				// duck smoothing in CG_OffsetFirstPersonView still subtracts the
+				// viewheight delta, that fixed offset made crouching throw the camera
+				// *up* by the crouch amount, and standing up dip it to crouch height
+				// first. Anchor the offset to the eye height relative to standing so
+				// the camera follows the head down (and back up) when crouching.
+				// Standing is unchanged: 32 + (36 - 36) == 32.
+				cg.refdef.vieworg[2] += 32 + ( cg.predicted_player_state.viewheight - standingViewHeight );
 				AngleVectors( cg.refdefViewAngles, dir, NULL, NULL );
 				VectorMA( cg.refdef.vieworg, -2, dir, cg.refdef.vieworg );
 			}
